@@ -29,7 +29,7 @@ bool loopIter(SDL_Surface *screen) {
         } else if (event.key.keysym.sym == SDLK_ESCAPE) {
             std::cout << "Stopping!" << std::endl;
             audioTest->stopAudioPlayback();            
-        } else if (event.key.keysym.sym == SDLK_PAUSE) {
+        } else if (event.key.keysym.sym == SDLK_p) {
             std::cout << "Pausing!" << std::endl;
             audioTest->pauseAudioPlayback();            
         }
