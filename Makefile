@@ -12,6 +12,6 @@ CXXFLAGS = -std=gnu++11 $(CFLAGS)
 LDFLAGS = -s STB_IMAGE=1 --preload-file assets
 
 $(EXE): $(OBJS) $(wildcard assets/*)
-    $(CXX) $(OBJS) $(LDFLAGS) -o $@
+	$(CXX) $(OBJS) $(LDFLAGS) -o $@
 
 $(OBJS): $(wildcard *.hpp) Makefile
