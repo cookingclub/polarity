@@ -30,7 +30,8 @@ public:
         UNKNOWN = -2,
         STOPPED = 0,
         PAUSED = 1,
-        PLAYING = 2
+        PLAYING = 2,
+        LOADED = 3
     };
 
     AudioFile() :
@@ -55,19 +56,20 @@ public:
             fState = CurrentAudioState::ERROR;
             return AudioFileError::FILE_NOT_LOADED;
         }
+        fState = LOADED;
         return AudioFileError::OK;
     }
 
     AudioFileError startAudioPlayback() {
         // are we already playing? if not, start
-        if ( Mix_PlayingMusic() == 0) {
-            int err = Mix_PlayMusic(fMusic, fNumLoops);
+        if ( fState != CurrentAudioState::PLAYING ) {
+            int err = Mix_PlayMusic(this->fMusic, fNumLoops);
             if (err == -1) {
                 cerr << "Can't play back audio file for some reason... are you use the player is loaded?\n";
                 fState = ERROR;
                 return AudioFileError::CANT_PLAY;
             }
-        } else if ( Mix_PausedMusic() == 1 ) {
+        } else if ( Mix_PausedMusic() == 1 || fState == CurrentAudioState::PAUSED) {
             // if paused, resume it
             Mix_ResumeMusic();
         }
@@ -94,6 +96,18 @@ public:
             Mix_ResumeMusic();
             fState = CurrentAudioState::PLAYING;
         }
+    }
+
+    CurrentAudioState getState() const {
+        return fState;
+    }
+
+    Mix_Music* getMusic() const {
+        return fMusic;
+    }
+
+    string getPath() const {
+        return fPath;
     }
 private:
     string fPath;
