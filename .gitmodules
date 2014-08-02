@@ -1,0 +1,6 @@
+[submodule "libs/libtmx-parser"]
+	path = libs/libtmx-parser
+	url = https://github.com/halsafar/libtmx-parser
+[submodule "libs/box2d"]
+	path = libs/box2d
+	url = https://github.com/ansman/box2d.git
