@@ -4,7 +4,7 @@
 
 #include "audio/audio.hpp"
 #include "main/main.hpp"
-
+#include "world/world.hpp"
 using namespace std;
 
 const int AUDIO_RATE = 44100; // FIXME: Does this matter?
@@ -64,6 +64,7 @@ int main() {
     SDL_MapRGB(screen->format, 65, 65, 65);
     srand(time(NULL));
     Polarity::loadAssets();
+    Polarity::World::init();
     Polarity::mainloop();
 }
 

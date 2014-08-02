@@ -1,5 +1,6 @@
 #include "audio/audio.hpp"
 #include "main/main.hpp"
+#include "world/world.hpp"
 #include "graphics/graphics.hpp"
 
 namespace Polarity {
@@ -67,6 +68,7 @@ bool loopIter(SDL_Surface *screen) {
             audioPlayer->stopChannel("reverse");
         }
     }
+    world->tick();
     return true;
 }
 }
