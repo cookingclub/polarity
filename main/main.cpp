@@ -64,6 +64,7 @@ int main() {
     SDL_MapRGB(screen->format, 65, 65, 65);
     srand(time(NULL));
     Polarity::loadAssets();
+    Polarity::World::init();
     Polarity::mainloop();
 }
 
