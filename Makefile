@@ -17,5 +17,5 @@ $(EXE): $(OBJS) $(wildcard assets/*)
 $(OBJS): $(wildcard *.hpp) Makefile
 
 clean:
-	rm polarity.*
+	rm polarity.* $(OBJS)
 
