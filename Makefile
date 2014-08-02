@@ -1,7 +1,7 @@
 EXE = polarity.html
 
 INCLUDES = $(wildcard graphics/*.hpp audio/*.hpp physics/*.hpp main/*.hpp)
-SRCS = $(wildcard graphics/*.cpp physics/*.cpp main/*.cpp)
+SRCS = $(wildcard graphics/*.cpp physics/*.cpp main/*.cpp audio/*.cpp)
 OBJS = $(patsubst %.cpp, %.o, $(SRCS))
 #tinyxml2/tinyxml2.o libtmx-parser/src/tmxparser.o
 # audio/*.cpp

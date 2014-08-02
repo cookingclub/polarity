@@ -2,6 +2,7 @@
 #include "emscripten.h"
 #endif
 
+#include "audio/audio.hpp"
 #include "main/main.hpp"
 
 using namespace std;
@@ -61,6 +62,7 @@ int main() {
     SDL_MapRGB(screen->format, 65, 65, 65);
     srand(time(NULL));
 
+    try_audio();
     Polarity::mainloop();
 }
 
