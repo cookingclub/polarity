@@ -4,7 +4,7 @@
 
 #include "audio/audio.hpp"
 #include "main/main.hpp"
-
+#include "world/world.hpp"
 using namespace std;
 
 const int AUDIO_RATE = 44100; // FIXME: Does this matter?
