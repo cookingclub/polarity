@@ -13,6 +13,7 @@ const int CANVAS_HEIGHT = 600;
 
 
 static SDL_Surface *screen;
+static AudioFile audioTest;
 
 namespace Polarity {
 
@@ -62,7 +63,11 @@ int main() {
     SDL_MapRGB(screen->format, 65, 65, 65);
     srand(time(NULL));
 
-    try_audio();
+    audioTest = AudioFile("assets/bathed_in_the_light.mp3");
+    if (audioTest.validateMusicLoaded()) {
+        cerr << "Couldn't load audio" << endl;
+    }
+
     Polarity::mainloop();
 }
 

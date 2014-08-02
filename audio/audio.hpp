@@ -12,7 +12,9 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
 
-using std::string, std::cerr, std::cout;
+using std::string;
+using std::cerr;
+using std::cout;
 
 class AudioFile {
 public:
