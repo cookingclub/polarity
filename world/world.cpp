@@ -9,8 +9,9 @@ namespace Polarity {
   void World::init() {
       world = new World();
   }
-  void World::addObject() {
-      GameObject * object = new GameObject();
+  void World::addObject(const b2BodyDef&bdef) {
+      GameObject * object = new GameObject(&physics, bdef);
+      objects.emplace_back(object);
   }
 
 }

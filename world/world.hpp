@@ -10,7 +10,7 @@ class World {
 public:
   static void init();
   World();
-  void addObject();
+  void addObject(const b2BodyDef&);
 };
 extern World *world;
 }
