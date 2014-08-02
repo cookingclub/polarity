@@ -2824,21 +2824,23 @@
   </data>
  </layer>
  <objectgroup name="Solid" width="50" height="28">
-  <object x="935" y="740" width="339" height="219"/>
-  <object x="517" y="740" width="340" height="211"/>
-  <object x="7" y="741" width="435" height="208"/>
- </objectgroup>
- <objectgroup name="Interact" width="50" height="28">
-  <properties>
-   <property name="color" value="white"/>
-  </properties>
-  <object x="735" y="451" width="349" height="57"/>
- </objectgroup>
- <objectgroup name="Door" width="50" height="28">
-  <properties>
-   <property name="color" value="door"/>
-  </properties>
-  <object x="1121" y="577" width="92" height="158"/>
-  <object x="1469" y="863"/>
+  <object name="start" x="128" y="608" width="64" height="128">
+   <properties>
+    <property name="color" value="start"/>
+   </properties>
+  </object>
+  <object x="0" y="736" width="448" height="160"/>
+  <object x="512" y="736" width="352" height="160"/>
+  <object x="928" y="736" width="352" height="160"/>
+  <object name="door" type="door" x="1120" y="576" width="96" height="160">
+   <properties>
+    <property name="color" value="door"/>
+   </properties>
+  </object>
+  <object name="white" x="736" y="448" width="352" height="64">
+   <properties>
+    <property name="color" value="white"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>
