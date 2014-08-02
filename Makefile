@@ -15,3 +15,7 @@ $(EXE): $(OBJS) $(wildcard assets/*)
 	$(CXX) $(OBJS) $(LDFLAGS) -o $@
 
 $(OBJS): $(wildcard *.hpp) Makefile
+
+clean:
+	rm polarity.*
+
