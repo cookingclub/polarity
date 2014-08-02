@@ -13,5 +13,7 @@ namespace Polarity {
       GameObject * object = new GameObject(&physics, bdef);
       objects.emplace_back(object);
   }
-
+  void World::tick() {
+    // Gets called every frame
+  }
 }

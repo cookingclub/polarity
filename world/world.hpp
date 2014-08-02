@@ -11,6 +11,7 @@ public:
   static void init();
   World();
   void addObject(const b2BodyDef&);
+  void tick();
 };
 extern World *world;
 }

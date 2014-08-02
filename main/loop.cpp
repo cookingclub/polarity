@@ -1,5 +1,6 @@
 #include "audio/audio.hpp"
 #include "main/main.hpp"
+#include "world/world.hpp"
 #include "graphics/graphics.hpp"
 
 namespace Polarity {
@@ -34,6 +35,7 @@ bool loopIter(SDL_Surface *screen) {
             audioTest->pauseAudioPlayback();            
         }
     }
+    world->tick();
     return true;
 }
 }
