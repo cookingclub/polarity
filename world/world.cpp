@@ -27,8 +27,8 @@ void World::init() {
     world = new World("assets/levels/level3.tmx");
 }
 
-  GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef, const b2FixtureDef&fixture) {
-    GameObject * object = new GameObject(&physics, behavior, bdef, fixture);
+  GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef, const b2FixtureDef&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties) {
+    GameObject * object = new GameObject(&physics, behavior, bdef, fixture, name, type, properties);
     objects.emplace_back(object);
     return objects.back().get();
 }
@@ -101,12 +101,13 @@ void World::load(const std::string &tmxFile) {
         std::cerr << "Found object group: " << it.name << std::endl;
         for (auto &oit : it.objects) {
             b2BodyDef body_def;
-	    if (oit.name == "start") {
-	      std::cerr<<"Making dynamic "<<std::endl;
-	      body_def.type = b2_dynamicBody;
-	    }else {
-	      body_def.type = b2_staticBody;
-	    }
+            GameObject::Type type = GameObject::parseTypeStr(oit.type);
+            if (type == GameObject::START) {
+                std::cerr<<"Making dynamic "<<std::endl;
+                body_def.type = b2_dynamicBody;
+            } else {
+                body_def.type = b2_staticBody;
+            }
             body_def.position.Set(oit.x, oit.y);
             b2PolygonShape dynamic_box;
             dynamic_box.SetAsBox(oit.width, oit.height);
@@ -114,7 +115,7 @@ void World::load(const std::string &tmxFile) {
             fixture_def.shape = &dynamic_box;
             fixture_def.density = 1.0f;
             fixture_def.friction = 0.3f;
-            GameObject* game_obj = addObject(new Polarity::KeyboardBehavior(), body_def, fixture_def);
+            GameObject* game_obj = addObject(new Polarity::KeyboardBehavior(), body_def, fixture_def, oit.name, type, oit.propertyMap);
 
             std::cerr << "object name = " << oit.name << std::endl;
         }

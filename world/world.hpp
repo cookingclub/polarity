@@ -19,7 +19,7 @@ public:
   }
   static void init();
   World(const std::string& tmxFile);
-  GameObject* addObject(Behavior*behavior, const b2BodyDef&, const b2FixtureDef&fixture);
+  GameObject* addObject(Behavior*behavior, const b2BodyDef&, const b2FixtureDef&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties);
   void tick();
   void draw(SDL_Surface *screen);
   void keyEvent(int keyCode, bool pressed);

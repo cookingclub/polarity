@@ -1129,7 +1129,7 @@
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
-   <tile gid="5"/>
+   <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
@@ -1428,7 +1428,7 @@
    <tile gid="0"/>
   </data>
  </layer>
- <layer name="Dyanmic" width="50" height="28">
+ <layer name="Dynamic" width="50" height="28">
   <data>
    <tile gid="0"/>
    <tile gid="0"/>
@@ -2841,24 +2841,24 @@
   <object x="0" y="736" width="448" height="160"/>
   <object x="928" y="800" width="192" height="96"/>
   <object x="1120" y="576" width="448" height="320"/>
-  <object name="start" x="96" y="544" width="64" height="192">
-   <properties>
-    <property name="color" value="start"/>
-   </properties>
-  </object>
-  <object name="door" x="1312" y="416" width="128" height="160">
+  <object name="door" type="door" x="1312" y="416" width="128" height="160">
    <properties>
     <property name="door" value="door"/>
    </properties>
   </object>
-  <object name="white" x="288" y="352" width="448" height="64">
+  <object name="white" type="platform" x="288" y="352" width="448" height="64">
    <properties>
     <property name="color" value="white"/>
    </properties>
   </object>
-  <object name="white" x="928" y="736" width="192" height="64">
+  <object name="white" type="platform" x="928" y="736" width="192" height="64">
    <properties>
     <property name="color" value="white"/>
+   </properties>
+  </object>
+  <object name="start" type="start" gid="5" x="95" y="730" width="64" height="192">
+   <properties>
+    <property name="animation" value="assets/graphics/walking-15.png"/>
    </properties>
   </object>
  </objectgroup>
