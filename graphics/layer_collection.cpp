@@ -25,9 +25,10 @@ void Tileset::positionInImage(int tileindex, SDL_Rect *outRect) {
 }
 
 void Tileset::drawTile(int tileindex, SDL_Surface *surf, int x, int y) {
+    std::cerr << tileindex << " -> " << x << "," << y;
     SDL_Rect srcpos;
     positionInImage(tileindex, &srcpos);
-    image->draw(surf, &srcpos, x, y);
+    image->draw(surf, &srcpos, x, y - tileHeight);
 }
 
 Layer::Layer(LayerCollection* layers,
@@ -57,24 +58,28 @@ Layer::Layer(LayerCollection* layers,
 
 
 void Layer::draw(SDL_Surface* screen, int startx, int starty) {
-    int layerWidth = (int)width;
-    int layerHeight = (int)height;
-    int endx = std::min(startx + screen->w, startx + (int)width);
-    int endy = std::min(starty + screen->h, starty + (int)height);
-    startx = std::max(0, startx);
-    starty = std::max(0, starty);
+    int layerWidth = (int)width * layers->tileWidth;
+    int layerHeight = (int)height * layers->tileHeight;
 
     int tileid = 0;
-    for (int layerX = 0; layerX < layerWidth; layerX += layers->tileWidth) {
-        for (int layerY = 0; layerY < endy; layerY += layers->tileHeight,
-                ++tileid) {
+    for (int layerY = 0; layerY < layerHeight; layerY += layers->tileHeight) {
+        for (int layerX = 0; layerX < layerWidth; layerX += layers->tileWidth, ++tileid) {
             tmxparser::TmxLayerTile& t = tiles[tileid];
             if (!t.gid) {
                 continue;
             }
+            SDL_Rect foo;
+            foo.x = (startx + layerX);
+            foo.y = (starty + layerY);
+            foo.w = layers->tileWidth;
+            foo.h = layers->tileHeight;
+            if (t.gid > 0x1000000) {
+                SDL_FillRect(screen, &foo, 0xffff00ff);
+                continue;
+            }
             Tileset& tileset = *layers->tilesets[t.tilesetIndex];
             tileset.drawTile(t.tileInTilesetIndex, screen,
-                    startx + layerX, starty + layerY);
+                    startx + layerX, starty + layerY + layers->tileHeight);
         }
     }
 }

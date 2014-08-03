@@ -60,7 +60,7 @@ void World::tick() {
 
 void World::draw(SDL_Surface *screen) {
     for (auto& layer : layers->layers) {
-        layer->draw(screen, 0, 0);
+        layer->draw(screen, -300, -300);
     }
     for (auto& object : objects) {
         object->draw(screen);
