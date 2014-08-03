@@ -46,6 +46,18 @@ void World::keyEvent(int keyCode, bool pressed) {
 }
 
 void World::tick() {
+  if (keyState['a']) {
+    camera.x -=1;
+  }
+  if (keyState['d']) {
+    camera.x +=1;
+  }
+  if (keyState['w']) {
+    camera.y +=1;
+  }
+  if (keyState['s']) {
+    camera.y -=1;
+  }
     // timeStep, velocityIterations, positionIterations
     physics.Step(0.0166666, 1, 1);
     for (auto &obj : objects) {
