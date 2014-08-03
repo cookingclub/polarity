@@ -1,23 +1,23 @@
 #ifndef _BEHAVIOR_HPP_
 #define _BEHAVIOR_HPP_
 namespace Polarity {
-  class GameObject;
-  class World;
+class GameObject;
+class World;
 
-  class Behavior {
-  public:
+class Behavior {
+public:
     Behavior() {
     }
     virtual void tick(World *world, GameObject *obj){
     }
-  };
+};
 
 
-  class KeyboardBehavior : public Behavior{
-  public:
+class KeyboardBehavior : public Behavior{
+public:
     KeyboardBehavior() {
     }
     virtual void tick(World * world, GameObject *obj);
-  };
+};
 }
 #endif
