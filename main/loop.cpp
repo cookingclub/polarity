@@ -35,7 +35,7 @@ void loadAssets() {
     } else {
         audioPlayer->setChannelVolume("step-stone", 0.15);
     }
-    if (audioPlayer->addChannel("land-stone", "assets/audio/land_stone_weak.wav", 4) != AudioFileError::OK) {
+    if (audioPlayer->addChannel("land-stone", "assets/audio/land_stone_weak.wav", 5) != AudioFileError::OK) {
         std::cerr << "Couldn't load land_stone audio" << std::endl;
     } else {
         audioPlayer->setChannelVolume("land-stone", 0.15);
