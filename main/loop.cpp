@@ -11,7 +11,6 @@ AudioChannelPlayer *audioPlayer;
 bool loaded = false;
 
 void loadAssets() {
-    test_image = loadImage("assets/helloworld.png");
     audioPlayer = new AudioChannelPlayer(16);
     if (audioPlayer->addChannel("white", "assets/audio/frozen_star.mp3", 0) != AudioFileError::OK) {
         std::cerr << "Couldn't load white track" << std::endl;
