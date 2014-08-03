@@ -11,11 +11,12 @@
 namespace Polarity {
 World *world = nullptr;
 
-World::World(const std::string& tmxFile)
+World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> audioPlayer = nullptr)
         : physics(b2Vec2(0.0f, -10.0f)),
         camera(0, 300), //FIXME hard coded
         keyState(SDLK_LAST),
-        layers(nullptr) {
+        layers(nullptr),
+        player(audioPlayer) {
     std::cerr << "World has started"<<std::endl;
     for (int i=0; i< SDLK_LAST; ++i) {
       keyState[i] = false;

@@ -16,12 +16,17 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
     b2Body *phyobj = obj->groundBody;
     if (left) {
         phyobj->ApplyForce( b2Vec2(-100,0), phyobj->GetWorldCenter(), true);
+        std::cerr << "going left" << std::endl;
     }
     if (jump) {
         phyobj->ApplyForce( b2Vec2(0,500), phyobj->GetWorldCenter(), true);
+        std::cerr << "jumping" << std::endl;
+
     }
     if (right) {
         phyobj->ApplyForce( b2Vec2(100,0), phyobj->GetWorldCenter(), true);
+        std::cerr << "going right" << std::endl;
+
     }
 }
 }

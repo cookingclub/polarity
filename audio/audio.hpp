@@ -5,7 +5,7 @@
  *
  *  Contains some audio utilties
  */
-
+#pragma once
 #include <stdio.h>
 #include <iostream>
 #include <string>
@@ -18,6 +18,7 @@
 
 using namespace std;
 
+namespace Polarity {
 enum AudioFileError {
     OK = 0,
     FILE_NOT_LOADED = 1,
@@ -35,6 +36,7 @@ enum CurrentAudioState {
     PLAYING = 2,
     LOADED = 3
 };
+}
 
 // good for playing ambient tracks on a loop
 // recommend using one of the channel-mixed things for music though
@@ -45,67 +47,67 @@ public:
         fPath(""),
         fMusic(nullptr),
         fNumLoops(1),
-        fState(UNKNOWN) {
+        fState(Polarity::CurrentAudioState::UNKNOWN) {
     }
 
     AudioFile(string path, int nLoop = 1) :
         fPath(path),
         fMusic(Mix_LoadMUS( path.c_str() )),
         fNumLoops(nLoop),
-        fState(CurrentAudioState::UNKNOWN) {
+        fState(Polarity::CurrentAudioState::UNKNOWN) {
     }
     ~AudioFile() {
         Mix_FreeMusic( fMusic );
     }
 
-    AudioFileError validateMusicLoaded() {
+    Polarity::AudioFileError validateMusicLoaded() {
         if (fMusic == nullptr) {
-            fState = CurrentAudioState::ERROR;
-            return AudioFileError::FILE_NOT_LOADED;
+            fState = Polarity::CurrentAudioState::ERROR;
+            return Polarity::AudioFileError::FILE_NOT_LOADED;
         }
-        fState = LOADED;
-        return AudioFileError::OK;
+        fState = Polarity::CurrentAudioState::LOADED;
+        return Polarity::AudioFileError::OK;
     }
 
-    AudioFileError startAudioPlayback() {
+    Polarity::AudioFileError startAudioPlayback() {
         // are we already playing? if not, start
-        if ( fState != CurrentAudioState::PLAYING ) {
+        if ( fState != Polarity::CurrentAudioState::PLAYING ) {
             int err = Mix_PlayMusic(this->fMusic, fNumLoops);
             if (err == -1) {
                 cerr << "Can't play back audio file for some reason... are you use the player is loaded?\n";
-                fState = ERROR;
-                return AudioFileError::CANT_PLAY;
+                fState = Polarity::CurrentAudioState::ERROR;
+                return Polarity::AudioFileError::CANT_PLAY;
             }
-        } else if ( Mix_PausedMusic() == 1 || fState == CurrentAudioState::PAUSED) {
+        } else if ( Mix_PausedMusic() == 1 || fState == Polarity::CurrentAudioState::PAUSED) {
             // if paused, resume it
             Mix_ResumeMusic();
         }
-        fState = CurrentAudioState::PLAYING;
-        return AudioFileError::OK;
+        fState = Polarity::CurrentAudioState::PLAYING;
+        return Polarity::AudioFileError::OK;
     }
 
     void stopAudioPlayback() {
-        if (fState == CurrentAudioState::PLAYING || fState == CurrentAudioState::PAUSED) {
-            fState = CurrentAudioState::STOPPED;
+        if (fState == Polarity::CurrentAudioState::PLAYING || fState == Polarity::CurrentAudioState::PAUSED) {
+            fState = Polarity::CurrentAudioState::STOPPED;
             Mix_HaltMusic();
         }
     }
 
     void pauseAudioPlayback() {
-        if (fState == CurrentAudioState::PLAYING) {
+        if (fState == Polarity::CurrentAudioState::PLAYING) {
             Mix_PauseMusic();
-            fState = CurrentAudioState::PAUSED;
+            fState = Polarity::CurrentAudioState::PAUSED;
         }
     }
 
     void resumeAudioPlayback() {
-        if (fState == CurrentAudioState::PAUSED) {
+        if (fState == Polarity::CurrentAudioState::PAUSED) {
             Mix_ResumeMusic();
-            fState = CurrentAudioState::PLAYING;
+            fState = Polarity::CurrentAudioState::PLAYING;
         }
     }
 
-    CurrentAudioState getState() const {
+    Polarity::CurrentAudioState getState() const {
         return fState;
     }
 
@@ -120,7 +122,7 @@ private:
     string fPath;
     Mix_Music *fMusic;
     int fNumLoops;  // -1 indicates loop forever, 0 = don't play? why would i not want to play? it's so bad that I now have cancer
-    CurrentAudioState fState;
+    Polarity::CurrentAudioState fState;
 };
 
 class AudioChannelPlayer {
@@ -132,25 +134,25 @@ public:
         fNumAvailableChans = Mix_AllocateChannels(channels);
     }
 
-    AudioFileError addChannel(string id, string filePath, int num) {
+    Polarity::AudioFileError addChannel(string id, string filePath, int num) {
         if (fAllocatedChans >= fNumChans) {
             cerr << "All channels allocated, can't allocate another one" << endl;
-            return AudioFileError::NO_MORE_CHANNELS;
+            return Polarity::AudioFileError::NO_MORE_CHANNELS;
         }
         Mix_Chunk *chunk = Mix_LoadWAV( filePath.c_str() );
         if (chunk == nullptr) {
             cerr << "Couldn't load " << filePath << ", got error: " << Mix_GetError() << endl;
-            return AudioFileError::FILE_NOT_LOADED;
+            return Polarity::AudioFileError::FILE_NOT_LOADED;
         } 
 
         fChunks[id] = chunk;
         fChannelNames[id] = num;
         fChannelPaths[id] = filePath;
-        fChannelStates[id] = CurrentAudioState::LOADED;
+        fChannelStates[id] = Polarity::CurrentAudioState::LOADED;
         fChannelVolumes[id] = 0;
         setChannelVolume(id, 0);
         fAllocatedChans++;
-        return AudioFileError::OK;
+        return Polarity::AudioFileError::OK;
     }
 
 
@@ -161,69 +163,69 @@ public:
     }
 
     // scale is 0 to 1 and maps to 0 to 128
-    AudioFileError setChannelVolume(string id, double scale) {
+    Polarity::AudioFileError setChannelVolume(string id, double scale) {
         if (channelExists(id)) {
             fChannelVolumes[id] = Mix_Volume(fChannelNames[id], scale * MIX_MAX_VOLUME);
-            return AudioFileError::OK;
+            return Polarity::AudioFileError::OK;
         } else {
-            return AudioFileError::NO_SUCH_CHANNEL;
+            return Polarity::AudioFileError::NO_SUCH_CHANNEL;
         }
     }
 
-    AudioFileError playChannel(string id, int loops = 1) {
+    Polarity::AudioFileError playChannel(string id, int loops = 1) {
         if (!channelExists(id)) {
             cerr << "Channel " << id << " doesn't exist" << endl;
-            return AudioFileError::NO_SUCH_CHANNEL;
+            return Polarity::AudioFileError::NO_SUCH_CHANNEL;
         }
-        if (fChannelStates[id] != CurrentAudioState::PLAYING) {
+        if (fChannelStates[id] != Polarity::CurrentAudioState::PLAYING) {
             if (Mix_Playing(fChannelNames[id]) == 0) {
                 if( Mix_PlayChannel(fChannelNames[id], fChunks[id], loops) == -1) {
                     cerr << "Mix_PlayChannel failed: " << Mix_GetError() << endl;
-                    return AudioFileError::CANT_PLAY;
+                    return Polarity::AudioFileError::CANT_PLAY;
                 }
-            } else if (Mix_Paused(fChannelNames[id]) || fChannelStates[id] == CurrentAudioState::PAUSED) {
+            } else if (Mix_Paused(fChannelNames[id]) || fChannelStates[id] == Polarity::CurrentAudioState::PAUSED) {
                 Mix_Resume(fChannelNames[id]);
             }
         }
-        fChannelStates[id] = CurrentAudioState::PLAYING;
-        return AudioFileError::OK;
+        fChannelStates[id] = Polarity::CurrentAudioState::PLAYING;
+        return Polarity::AudioFileError::OK;
     }
 
-    AudioFileError stopChannel(string id) {
+    Polarity::AudioFileError stopChannel(string id) {
         if (!channelExists(id)) {
             cerr << "Channel " << id << " doesn't exist" << endl;
-            return AudioFileError::NO_SUCH_CHANNEL;
+            return Polarity::AudioFileError::NO_SUCH_CHANNEL;
         }
 
         Mix_HaltChannel(fChannelNames[id]);
-        fChannelStates[id] = CurrentAudioState::STOPPED;
-        return AudioFileError::OK;
+        fChannelStates[id] = Polarity::CurrentAudioState::STOPPED;
+        return Polarity::AudioFileError::OK;
     }
 
-    AudioFileError fadeOutChannel(string id, int durationMilliseconds) {
+    Polarity::AudioFileError fadeOutChannel(string id, int durationMilliseconds) {
         if (!channelExists(id)) {
             cerr << "Channel " << id << " doesn't exist" << endl;
-            return AudioFileError::NO_SUCH_CHANNEL;
+            return Polarity::AudioFileError::NO_SUCH_CHANNEL;
         }
 
         Mix_FadeOutChannel(fChannelNames[id], durationMilliseconds);
-        fChannelStates[id] = CurrentAudioState::STOPPED;
-        return AudioFileError::OK;
+        fChannelStates[id] = Polarity::CurrentAudioState::STOPPED;
+        return Polarity::AudioFileError::OK;
     }
 
-    AudioFileError fadeInChannel(string id, int durationMilliseconds) {
+    Polarity::AudioFileError fadeInChannel(string id, int durationMilliseconds) {
         if (!channelExists(id)) {
             cerr << "Channel " << id << " doesn't exist" << endl;
-            return AudioFileError::NO_SUCH_CHANNEL;
+            return Polarity::AudioFileError::NO_SUCH_CHANNEL;
         }
-        if (fChannelStates[id] != CurrentAudioState::PLAYING) {
+        if (fChannelStates[id] != Polarity::CurrentAudioState::PLAYING) {
             if( Mix_FadeInChannel(fChannelNames[id], fChunks[id], 1, durationMilliseconds) == -1) {
                 cerr << "Mix_PlayChannel failed: " << Mix_GetError() << endl;
-                return AudioFileError::CANT_PLAY;
+                return Polarity::AudioFileError::CANT_PLAY;
             }
         }
-        fChannelStates[id] = CurrentAudioState::PLAYING;
-        return AudioFileError::OK;
+        fChannelStates[id] = Polarity::CurrentAudioState::PLAYING;
+        return Polarity::AudioFileError::OK;
     }
 private:
 
@@ -232,7 +234,7 @@ private:
     map<string, Mix_Chunk*> fChunks;
     map<string, int> fChannelNames;
     map<string, string> fChannelPaths;
-    map<string, CurrentAudioState> fChannelStates;
+    map<string, Polarity::CurrentAudioState> fChannelStates;
     map<string, int> fChannelVolumes;
     int fAllocatedChans;
     int fNumAvailableChans;
