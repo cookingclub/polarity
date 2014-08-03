@@ -36,8 +36,11 @@ private:
     PropertyMap properties;
     Type type;
     std::shared_ptr<Animation> idle;
-    std::map<Actions, std::shared_ptr<Animation> > actions;
+    std::map<Actions, std::shared_ptr<Animation> > actionsAnimation;
 public:
+    void setAction(Actions a = Actions::IDLE) {
+        currentAction = a;
+    }
     b2AABB getBounds()const;
     void tick(World*world);
     void draw(World * world, SDL_Surface* surface);

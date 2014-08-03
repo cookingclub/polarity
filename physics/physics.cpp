@@ -21,9 +21,28 @@ GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef
     groundBody = world->CreateBody(&bdef);
     groundBody->CreateFixture(&fixture);
 
-    auto it = properties.find("animation");
+    auto it = properties.find("idle");
     if (it != properties.end()) {
         idle = Animation::get("/" + it->second);
+    }
+    for(int i=0;i<NUM_ACTIONS;++i) {
+        std::string stringName;
+        switch (i) {
+          case WALK: stringName = "walk";
+            break;
+          case RUN: stringName = "run";
+            break;
+          case JUMP: stringName = "jump";
+            break;
+          default:
+            break;
+        }
+        if (stringName.length()) {
+            auto it = properties.find(stringName);
+            if (it != properties.end()) {
+                actionsAnimation[(Actions)i] = Animation::get("/" + it->second);
+            }
+        }
     }
 }
 
@@ -55,7 +74,7 @@ b2AABB GameObject::getBounds() const{
     return aabb;
 }
 void GameObject::draw(World * world, SDL_Surface* screen) {
-    b2Vec2 wh = world->physicsToGraphics(this->getBounds().GetExtents(), 1);
+    b2Vec2 wh = 2. * world->physicsToGraphics(this->getBounds().GetExtents(), 1);
     b2Vec2 actualpos = world->physicsToGraphics(this->groundBody->GetPosition());
     actualpos -= world->getCamera();
     b2Vec2 drawpos = actualpos - 0.5 * wh;
@@ -72,10 +91,10 @@ void GameObject::draw(World * world, SDL_Surface* screen) {
     // TODO: set the right color
     SDL_FillRect(screen, &rect, SDL_MapRGBA(screen->format, r, g, b, 70));
 
-    auto actionAnimation = actions.find(currentAction);
+    auto actionAnimationIter = actionsAnimation.find(currentAction);
     std::shared_ptr<Animation> actionAnim;
-    if (actionAnimation != actions.end()) {
-        actionAnim = actionAnimation->second;
+    if (actionAnimationIter != actionsAnimation.end()) {
+        actionAnim = actionAnimationIter->second;
     } else if (idle) {
         actionAnim = idle;
     }

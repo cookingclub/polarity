@@ -15,16 +15,21 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
     bool jump = world->isKeyDown(SDLK_UP);
     b2Body *phyobj = obj->groundBody;
     if (left) {
+        obj->setAction(GameObject::WALK);
         phyobj->ApplyForce( b2Vec2(-100,0), phyobj->GetWorldCenter(), true);
         world->audio()->playChannel("step-stone", -1);
     }
     if (jump) {
-        phyobj->ApplyForce( b2Vec2(0,500), phyobj->GetWorldCenter(), true);
+        phyobj->ApplyForce( b2Vec2(0,50), phyobj->GetWorldCenter(), true);
         world->audio()->playChannel("jump", 0);
     }
     if (right) {
+        obj->setAction(GameObject::WALK);
         phyobj->ApplyForce( b2Vec2(100,0), phyobj->GetWorldCenter(), true);
         world->audio()->playChannel("step-stone", -1);
+    }
+    if (phyobj->GetLinearVelocity().LengthSquared() < .1) { // and contact
+        obj->setAction(GameObject::IDLE);
     }
 
     // stop sounds if we're not walking anymore

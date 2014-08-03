@@ -62,7 +62,7 @@ void World::tick() {
         camera.y -=1;
     }
     // timeStep, velocityIterations, positionIterations
-    physics.Step(0.0166666, 1, 1);
+    physics.Step(0.0166666, 8, 4);
     for (auto &obj : objects) {
         obj->tick(this);
         //std::cerr << obj->printPosition()<<std::endl;
@@ -115,6 +115,8 @@ void World::load(const std::string &tmxFile) {
                 body_def.type = b2_staticBody;
             }
             int y = oit.y;
+            body_def.angle = oit.rotation;
+            body_def.fixedRotation = true;
             if (oit.referenceGid) {
                 // Possibly bug in the map editor:
                 // Objects with a gid are positioned from bottom left.
@@ -125,12 +127,12 @@ void World::load(const std::string &tmxFile) {
             }
             body_def.position = graphicsToPhysics(b2Vec2(oit.x + oit.width / 2, y));
             b2PolygonShape dynamic_box;
-            b2Vec2 wh = graphicsToPhysics(b2Vec2(oit.width, oit.height), 1);
+            b2Vec2 wh = graphicsToPhysics(0.5 * b2Vec2(oit.width, oit.height), 1);
             dynamic_box.SetAsBox(wh.x, wh.y);
             b2FixtureDef fixture_def;
             fixture_def.shape = &dynamic_box;
             fixture_def.density = 1.0f;
-            fixture_def.friction = 0.3f;
+            fixture_def.friction = 1.0f;
             GameObject* game_obj = addObject(behavior, body_def, fixture_def, oit.name, type, oit.propertyMap);
 
             std::cerr << "object name = " << oit.name << std::endl;
