@@ -5,7 +5,6 @@
 
 namespace Polarity {
 
-SDL_Surface *test_image;
 AudioFile *audioTest;
 AudioChannelPlayer *audioPlayer;
 
@@ -13,13 +12,6 @@ bool loaded = false;
 
 void loadAssets() {
     test_image = loadImage("assets/helloworld.png");
-//     audioTest = new AudioFile("assets/audio/bathed_in_the_light.mp3", 1);
-//     if (audioTest->validateMusicLoaded()) {
-//         std::cerr << "Couldn't load audio" << std::endl;
-//     } else {
-//         std::cerr << "Audio is loaded: " << audioTest->getState() << std::endl;
-//     }
-
     audioPlayer = new AudioChannelPlayer(16);
     if (audioPlayer->addChannel("white", "assets/audio/frozen_star.mp3", 0) != AudioFileError::OK) {
         std::cerr << "Couldn't load white track" << std::endl;
@@ -30,11 +22,15 @@ void loadAssets() {
 }
 
 bool loopIter(SDL_Surface *screen) {
-    SDL_BlitSurface(test_image, NULL, screen, NULL );
     SDL_Event event;
+    std::vector<int> keyUps;
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-        world->keyEvent(event.key.keysym.sym, event.type == SDL_KEYDOWN);
+        if (event.type == SDL_KEYDOWN) {
+	  world->keyEvent(event.key.keysym.sym, true);
+	} else {
+	  keyUps.push_back(event.key.keysym.sym);
+	}
         if (event.key.keysym.sym == SDLK_SPACE) {
             audioPlayer->playChannel("white");
             audioPlayer->playChannel("black");
@@ -51,6 +47,10 @@ bool loopIter(SDL_Surface *screen) {
       }
     }
     world->tick();
+    // all key up have to happen after key downs so we get a full tick of downs
+    for (auto &key : keyUps) {
+      world->keyEvent(key, false);
+    }
     return true;
 }
 }
