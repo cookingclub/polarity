@@ -9,8 +9,8 @@
 using namespace std;
 
 const int AUDIO_RATE = 44100; // FIXME: Does this matter?
-const int CANVAS_WIDTH = 800;
-const int CANVAS_HEIGHT = 600;
+const int CANVAS_WIDTH = 1280;
+const int CANVAS_HEIGHT = 720;
 
 
 static SDL_Surface *screen;

@@ -4,7 +4,7 @@ using namespace std;
 namespace Polarity {
 GameObject::Type GameObject::parseTypeStr(const std::string& typeStr) {
     if (typeStr == "start") {
-      return START;
+      return PLAYER;
     } else if (typeStr == "door") {
       return DOOR;
     } else if (typeStr == "platform") {
@@ -54,8 +54,9 @@ b2AABB GameObject::getBounds() const{
     return aabb;
 }
 void GameObject::draw(World * world, SDL_Surface* screen) {
-    auto drawpos = this->groundBody->GetPosition() - world->getCamera();
     b2Vec2 wh = this->getBounds().GetExtents();
+    auto actualpos = this->groundBody->GetPosition() - world->getCamera();
+    auto drawpos = actualpos - 0.5 * wh;
     SDL_Rect rect;
     rect.x = drawpos.x;
     rect.y = drawpos.y;
@@ -64,12 +65,12 @@ void GameObject::draw(World * world, SDL_Surface* screen) {
     rect.h = wh.y;
     int r = type == TERRAIN ? 255 : 0;
     int g = type == DOOR || type == PLATFORM ? 255 : 0;
-    int b = type == START || type == DOOR ? 255 : 0;
+    int b = type == PLAYER || type == DOOR ? 255 : 0;
     // TODO: set the right color
     SDL_FillRect(screen, &rect, SDL_MapRGB(screen->format, r, g, b));
 
     if (anim) {
-        anim->draw(screen, drawpos.x, drawpos.y);
+        anim->draw(screen, actualpos.x - anim->width(), actualpos.y - anim->height());
     }
 }
 

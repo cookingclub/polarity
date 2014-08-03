@@ -102,20 +102,23 @@ void World::load(const std::string &tmxFile) {
         for (auto &oit : it.objects) {
             b2BodyDef body_def;
             GameObject::Type type = GameObject::parseTypeStr(oit.type);
-            if (type == GameObject::START) {
+            Behavior *behavior = NULL;
+            if (type == GameObject::PLAYER) {
+                behavior = new Polarity::KeyboardBehavior();
                 std::cerr<<"Making dynamic "<<std::endl;
                 body_def.type = b2_dynamicBody;
             } else {
+                behavior = new Polarity::Behavior();
                 body_def.type = b2_staticBody;
             }
-            body_def.position.Set(oit.x, oit.y);
+            body_def.position.Set(oit.x + oit.width / 2, oit.y + oit.height / 2);
             b2PolygonShape dynamic_box;
             dynamic_box.SetAsBox(oit.width, oit.height);
             b2FixtureDef fixture_def;
             fixture_def.shape = &dynamic_box;
             fixture_def.density = 1.0f;
             fixture_def.friction = 0.3f;
-            GameObject* game_obj = addObject(new Polarity::KeyboardBehavior(), body_def, fixture_def, oit.name, type, oit.propertyMap);
+            GameObject* game_obj = addObject(behavior, body_def, fixture_def, oit.name, type, oit.propertyMap);
 
             std::cerr << "object name = " << oit.name << std::endl;
         }
