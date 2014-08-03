@@ -7,6 +7,7 @@
 namespace Polarity {
 class World {
     b2World physics;
+    b2Vec2 graphicsScale;
     b2Vec2 camera;
     std::vector<bool> keyState;
     std::vector<std::unique_ptr<GameObject> > objects;
@@ -24,6 +25,12 @@ public:
     void draw(SDL_Surface *screen);
     void keyEvent(int keyCode, bool pressed);
     bool isKeyDown(int keyCode);
+    b2Vec2 graphicsToPhysics(const b2Vec2 &vec, float isBounds=-1) {
+        return b2Vec2(vec.x / graphicsScale.x, vec.y / graphicsScale.y * isBounds);
+    }
+    b2Vec2 physicsToGraphics(const b2Vec2 &vec, float isBounds=-1) {
+        return b2Vec2(vec.x * graphicsScale.x, vec.y * graphicsScale.y * isBounds);
+    }
 };
 extern World *world;
 }

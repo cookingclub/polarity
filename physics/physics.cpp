@@ -55,9 +55,11 @@ b2AABB GameObject::getBounds() const{
     return aabb;
 }
 void GameObject::draw(World * world, SDL_Surface* screen) {
-    b2Vec2 wh = this->getBounds().GetExtents();
-    auto actualpos = this->groundBody->GetPosition() - world->getCamera();
-    auto drawpos = actualpos - 0.5 * wh;
+    b2Vec2 wh = world->physicsToGraphics(this->getBounds().GetExtents(), 1);
+    b2Vec2 actualpos = world->physicsToGraphics(this->groundBody->GetPosition());
+    actualpos -= world->getCamera();
+    b2Vec2 drawpos = actualpos - 0.5 * wh;
+
     SDL_Rect rect;
     rect.x = drawpos.x;
     rect.y = drawpos.y;
