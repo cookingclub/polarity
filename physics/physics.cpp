@@ -17,6 +17,7 @@ GameObject::Type GameObject::parseTypeStr(const std::string& typeStr) {
 
 GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef, const b2FixtureDef &fixture, const std::string &name, Type type, const PropertyMap &props)
         : behavior(behavior), name(name), properties(props), type(type) {
+    currentAction = IDLE;
     groundBody = world->CreateBody(&bdef);
     groundBody->CreateFixture(&fixture);
 
@@ -69,9 +70,15 @@ void GameObject::draw(World * world, SDL_Surface* screen) {
     // TODO: set the right color
     SDL_FillRect(screen, &rect, SDL_MapRGBA(screen->format, r, g, b, 70));
 
-    if (idle) {
-        idle->draw(screen, actualpos.x - idle->width() / 2,
-                actualpos.y - idle->height() / 2);
+    auto actionAnimation = actions.find(currentAction);
+    std::shared_ptr<Animation> actionAnim;
+    if (actionAnimation != actions.end()) {
+        actionAnim = actionAnimation->second;
+    } else if (idle) {
+        actionAnim = idle;
+    }
+    if (actionAnim) {
+        actionAnim->draw(screen, actualpos.x - idle->width() / 2, actualpos.y - idle->height() / 2);
     }
 }
 
