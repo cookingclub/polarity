@@ -35,7 +35,11 @@ void loadAssets() {
     } else {
         audioPlayer->setChannelVolume("step-stone", 0.15);
     }
-
+    if (audioPlayer->addChannel("land-stone", "assets/audio/land_stone_weak.wav", 4) != AudioFileError::OK) {
+        std::cerr << "Couldn't load land_stone audio" << std::endl;
+    } else {
+        audioPlayer->setChannelVolume("land-stone", 0.15);
+    }
 }
 
 bool loopIter(SDL_Surface *screen) {
@@ -51,7 +55,7 @@ bool loopIter(SDL_Surface *screen) {
                 } else if (event.key.keysym.sym == SDLK_ESCAPE) {
                     audioPlayer->stopChannel("white");
                     audioPlayer->stopChannel("black");
-                } else if (event.key.keysym.sym == SDLK_w) {
+                } else if (event.key.keysym.sym == SDLK_v) {
                     // switch to white track
                     audioPlayer->setChannelVolume("white", 1.0);
                     audioPlayer->setChannelVolume("black", 0.0);
@@ -73,13 +77,15 @@ bool loopIter(SDL_Surface *screen) {
                         audioPlayer->stopChannel("woowoo");
                     }
                     woowooing = !woowooing;
-                } else if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_LEFT) {
+                } else if (event.key.keysym.sym == SDLK_d || event.key.keysym.sym == SDLK_a) {
                     audioPlayer->playChannel("step-stone", -1);
+                } else if (event.key.keysym.sym == SDLK_s) {
+                    audioPlayer->playChannel("land-stone", 1);
                 }
-
             } else {
                 keyUps.push_back(event.key.keysym.sym);
                 audioPlayer->stopChannel("step-stone");
+                audioPlayer->stopChannel("land-stone");
             }
         }
     }
