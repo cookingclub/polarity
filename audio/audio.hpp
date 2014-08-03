@@ -169,14 +169,14 @@ public:
         }
     }
 
-    AudioFileError playChannel(string id) {
+    AudioFileError playChannel(string id, int loops = 1) {
         if (!channelExists(id)) {
             cerr << "Channel " << id << " doesn't exist" << endl;
             return AudioFileError::NO_SUCH_CHANNEL;
         }
         if (fChannelStates[id] != CurrentAudioState::PLAYING) {
             if (Mix_Playing(fChannelNames[id]) == 0) {
-                if( Mix_PlayChannel(fChannelNames[id], fChunks[id], 1) == -1) {
+                if( Mix_PlayChannel(fChannelNames[id], fChunks[id], loops) == -1) {
                     cerr << "Mix_PlayChannel failed: " << Mix_GetError() << endl;
                     return AudioFileError::CANT_PLAY;
                 }
