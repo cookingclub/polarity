@@ -65,7 +65,9 @@ int main() {
     srand(time(NULL));
     Polarity::loadAssets();
     Polarity::World::init();
+    b2BodyDef bodyDef;
+    bodyDef.type = b2_dynamicBody;
+    bodyDef.position.Set(0.0f, 40.0f);
+    Polarity::world->addObject(bodyDef);
     Polarity::mainloop();
 }
-
-
