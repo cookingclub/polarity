@@ -30,6 +30,12 @@ void loadAssets() {
     } else {
         audioPlayer->setChannelVolume("woowoo", 1.0);
     }
+    if (audioPlayer->addChannel("step-stone", "assets/audio/step_stone.wav", 4) != AudioFileError::OK) {
+        std::cerr << "Couldn't load step_stone audio" << std::endl;
+    } else {
+        audioPlayer->setChannelVolume("step-stone", 0.15);
+    }
+
 }
 
 bool loopIter(SDL_Surface *screen) {
@@ -67,9 +73,13 @@ bool loopIter(SDL_Surface *screen) {
                         audioPlayer->stopChannel("woowoo");
                     }
                     woowooing = !woowooing;
-                }            
+                } else if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_LEFT) {
+                    audioPlayer->playChannel("step-stone", -1);
+                }
+
             } else {
                 keyUps.push_back(event.key.keysym.sym);
+                audioPlayer->stopChannel("step-stone");
             }
         }
     }
