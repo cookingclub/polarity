@@ -5,13 +5,11 @@
 
 namespace Polarity {
 
-SDL_Surface *test_image;
 AudioFile *audioTest;
 
 bool loaded = false;
 
 void loadAssets() {
-    test_image = loadImage("assets/helloworld.png");
     audioTest = new AudioFile("assets/bathed_in_the_light.mp3", 1);
     if (audioTest->validateMusicLoaded()) {
         std::cerr << "Couldn't load audio" << std::endl;
@@ -21,7 +19,6 @@ void loadAssets() {
 }
 
 bool loopIter(SDL_Surface *screen) {
-    SDL_BlitSurface(test_image, NULL, screen, NULL );
     SDL_Event event;
     std::vector<int> keyUps;
     while (SDL_PollEvent(&event)) {
