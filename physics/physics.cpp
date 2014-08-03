@@ -4,4 +4,7 @@ namespace Polarity {
   GameObject::GameObject(b2World *world, const b2BodyDef &bdef) {
     groundBody = world->CreateBody(&bdef);
   }
+  void GameObject::tick(World *world) {
+    behavior->tick(world, this);
+  }
 }

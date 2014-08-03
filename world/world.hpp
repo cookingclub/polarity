@@ -6,12 +6,15 @@
 namespace Polarity {
 class World {
   b2World physics;
+  std::vector<bool> keyState;
   std::vector<std::unique_ptr<GameObject> > objects;
 public:
   static void init();
   World();
-  void addObject(const b2BodyDef&);
+  GameObject* addObject(const b2BodyDef&);
   void tick();
+  void keyEvent(int keyCode, bool pressed);
+  bool isKeyDown(int keyCode);
 };
 extern World *world;
 }

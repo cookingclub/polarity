@@ -24,6 +24,8 @@ bool loopIter(SDL_Surface *screen) {
     SDL_BlitSurface(test_image, NULL, screen, NULL );
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
+        world->keyEvent(event.key.keysym.sym, event.type == SDL_KEYDOWN);
         if (event.key.keysym.sym == SDLK_SPACE) {
             std::cout << "Playing!" << std::endl;
             audioTest->startAudioPlayback();
@@ -34,6 +36,7 @@ bool loopIter(SDL_Surface *screen) {
             std::cout << "Pausing!" << std::endl;
             audioTest->pauseAudioPlayback();            
         }
+      }
     }
     world->tick();
     return true;
