@@ -36,7 +36,7 @@ public:
 
     int width() { return surf->w; }
     int height() { return surf->h; }
-private:
+protected:
     SDL_Surface *surf;
 };
 
@@ -44,6 +44,7 @@ class Animation : public Image{
     Animation()=delete;
     Animation(const Animation&x) = delete;
     Animation &operator=(const Animation&x) = delete;
+    explicit Animation(const std::string &single_frame);
     explicit Animation(const std::string &pattern, const std::string &ext, int numFrames);
     std::vector<std::shared_ptr<Image> > images;
     size_t getFrame();

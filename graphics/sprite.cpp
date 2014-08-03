@@ -34,7 +34,9 @@ std::shared_ptr<Image> Image::get(const std::string& filename) {
 }
 
 Image::~Image() {
-    SDL_FreeSurface(surf);
+    if (surf != nullptr) {
+        SDL_FreeSurface(surf);
+    }
 }
 
 void Image::draw(SDL_Surface *screen, SDL_Rect *src, int x, int y) {
@@ -56,8 +58,6 @@ void Image::draw(SDL_Surface *screen, int x, int y) {
 }
 
 
-
-
 Animation::Animation(const std::string& filename, const std::string &ext, int numFrames) {
     frame = 0;
     lastTime = SDL_GetTicks();
@@ -71,17 +71,21 @@ Animation::Animation(const std::string& filename, const std::string &ext, int nu
     char * mdata = strdup(filename.c_str());
     for (int i = 0; i < numFrames; ++i) {
       if (numFrames > 1000) {
-	sprintf(numberTarget, "%d.", i);
+          sprintf(numberTarget, "%d.", i);
       } else if (numFrames > 100) {
-	sprintf(numberTarget, "%03d.", i);
+          sprintf(numberTarget, "%03d.", i);
       }else if (numFrames > 10) {
-	sprintf(numberTarget, "%02d.", i);
+          sprintf(numberTarget, "%02d.", i);
       } else {
-	sprintf(numberTarget, "%02d.", i);
+          sprintf(numberTarget, "%02d.", i);
       }
       std::string mdata = filename + numberTarget + ext;
-      images.emplace_back(new Image(mdata));
+      images.push_back(Image::get(mdata));
     }
+    if (numFrames == 0) {
+      images.push_back(Image::get(filename));
+    }
+    surf = images[0]->surf;
 }
 
 std::shared_ptr<Animation> Animation::get(const std::string& filename) {
@@ -95,16 +99,18 @@ std::shared_ptr<Animation> Animation::get(const std::string& filename) {
        int numFrames = 1;
        sscanf(numFramesStr, "%d", &numFrames);
        return std::shared_ptr<Animation>(new Animation(basename.substr(0,where + 1),
-						       ext,
-						       numFrames));
+                               ext,
+                               numFrames));
     }else {
-      std::cerr << "Animation filename of wrong pattern: no dash " << filename <<std::endl;
+       return std::shared_ptr<Animation>(new Animation(basename,
+                                                       std::string(),
+                                                       0));
     }
-    return std::shared_ptr<Animation>();
 }
 
 Animation::~Animation() {
-    SDL_FreeSurface(surf);
+    // do not double free the surface;
+    surf = nullptr;
 }
 
 void Animation::start() {
@@ -116,33 +122,37 @@ void Animation::pause() {
 }
 
 size_t Animation::getFrame() {
+    if (images.empty()) {
+        std::cerr << "No frames in surface: shouldn't happen." << std::endl;
+        return 0;
+    }
     long long curTime = SDL_GetTicks();
     size_t ticksPerFrame = frameTime * 1000;
     size_t deltaTicks = curTime - lastTime;
     size_t deltaFrames = deltaTicks / ticksPerFrame;
     lastTime += deltaFrames * ticksPerFrame;
     frame += deltaFrames;
-    if (!images.empty()) {
-        frame %= images.size();
-    }
+    frame %= images.size();
     return frame;
 }
 
 void Animation::draw(SDL_Surface *screen, SDL_Rect *src, int x, int y) {
     size_t frame = getFrame();
     if (!images.empty()) {
+        surf = images[frame]->surf;
         images[frame]->draw(screen, src, x, y);
     }else {
-        std::cerr << "Drawing animation empty" << std::endl;
+        std::cerr << "No frames in surface: shouldn't happen." << std::endl;
     }
 }
 
 void Animation::draw(SDL_Surface *screen, int x, int y) {
     size_t frame = getFrame();
     if (!images.empty()) {
+        surf = images[frame]->surf;
         images[frame]->draw(screen, x, y);
     } else {
-        std::cerr << "Drawing animation empty" << std::endl;
+        std::cerr << "No frames in surface: shouldn't happen." << std::endl;
     }
 }
 

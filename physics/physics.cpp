@@ -22,7 +22,7 @@ GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef
 
     auto it = properties.find("animation");
     if (it != properties.end()) {
-        anim = Animation::get("/" + it->second);
+        idle = Animation::get("/" + it->second);
     }
 }
 
@@ -69,8 +69,8 @@ void GameObject::draw(World * world, SDL_Surface* screen) {
     // TODO: set the right color
     SDL_FillRect(screen, &rect, SDL_MapRGB(screen->format, r, g, b));
 
-    if (anim) {
-        anim->draw(screen, actualpos.x - anim->width(), actualpos.y - anim->height());
+    if (idle) {
+        idle->draw(screen, actualpos.x - idle->width(), actualpos.y - idle->height());
     }
 }
 

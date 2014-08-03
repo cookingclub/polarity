@@ -21,13 +21,20 @@ public:
         PLATFORM,
         PLAYER,
     };
+    enum Actions {
+        WALK,
+        RUN,
+        JUMP,
+        NUM_ACTIONS,
+    };
     static Type parseTypeStr(const std::string &str);
 private:
     Behavior * behavior;
     std::string name;
     PropertyMap properties;
     Type type;
-    std::shared_ptr<Animation> anim;
+    std::shared_ptr<Animation> idle;
+    std::map<Actions, std::shared_ptr<Animation> > actions;
 public:
     b2AABB getBounds()const;
     void tick(World*world);
