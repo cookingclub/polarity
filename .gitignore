@@ -3,3 +3,5 @@ polarity.html
 polarity.html.map
 polarity.js
 *.o
+assets/.DS_Store
+assets/audio/.DS_Store
