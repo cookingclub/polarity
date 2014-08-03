@@ -25,26 +25,28 @@ bool loopIter(SDL_Surface *screen) {
     SDL_Event event;
     std::vector<int> keyUps;
     while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-        if (event.type == SDL_KEYDOWN) {
-	  world->keyEvent(event.key.keysym.sym, true);
-	} else {
-	  keyUps.push_back(event.key.keysym.sym);
-	}
-        if (event.key.keysym.sym == SDLK_SPACE) {
-            audioPlayer->playChannel("white");
-            audioPlayer->playChannel("black");
-        } else if (event.key.keysym.sym == SDLK_ESCAPE) {
-            audioPlayer->stopChannel("white");
-            audioPlayer->stopChannel("black");
-        } else if (event.key.keysym.sym == SDLK_w) {
-            audioPlayer->setChannelVolume("white", 1.0);
-            audioPlayer->setChannelVolume("black", 0.0);
-        } else if (event.key.keysym.sym == SDLK_b) {
-            audioPlayer->setChannelVolume("white", 0.0);
-            audioPlayer->setChannelVolume("black", 1.0);
+        if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
+            if (event.type == SDL_KEYDOWN) {
+                world->keyEvent(event.key.keysym.sym, true);
+            } else {
+                keyUps.push_back(event.key.keysym.sym);
+            }
+            if (event.key.keysym.sym == SDLK_SPACE) {
+                audioPlayer->playChannel("white");
+                audioPlayer->playChannel("black");
+            } else if (event.key.keysym.sym == SDLK_ESCAPE) {
+                audioPlayer->stopChannel("white");
+                audioPlayer->stopChannel("black");
+            } else if (event.key.keysym.sym == SDLK_w) {
+                // switch to white track
+                audioPlayer->setChannelVolume("white", 1.0);
+                audioPlayer->setChannelVolume("black", 0.0);
+            } else if (event.key.keysym.sym == SDLK_b) {
+                // switch to black track
+                audioPlayer->setChannelVolume("white", 0.0);
+                audioPlayer->setChannelVolume("black", 1.0);
+            }
         }
-      }
     }
     world->tick();
     // all key up have to happen after key downs so we get a full tick of downs
