@@ -8,6 +8,7 @@ namespace Polarity {
 AudioFile *audioTest;
 AudioChannelPlayer *audioPlayer;
 bool buzzing = false;       // TODO: bring this into a game state! you should buzz if you have the appropriate powerup
+bool woowooing = false;
 
 bool loaded = false;
 
@@ -23,6 +24,11 @@ void loadAssets() {
         std::cerr << "Couldn't load buzz track" << std::endl;
     } else {
         audioPlayer->setChannelVolume("buzz", 1.0);
+    }
+    if (audioPlayer->addChannel("woowoo", "assets/audio/woowoo.mp3", 3) != AudioFileError::OK) {
+        std::cerr << "Couldn't load woowoo track" << std::endl;
+    } else {
+        audioPlayer->setChannelVolume("woowoo", 1.0);
     }
 }
 
@@ -55,7 +61,12 @@ bool loopIter(SDL_Surface *screen) {
                     }
                     buzzing = !buzzing;
                 } else if (event.key.keysym.sym == SDLK_2) {
-                    
+                    if (!woowooing) {
+                        audioPlayer->playChannel("woowoo", -1);
+                    } else {
+                        audioPlayer->stopChannel("woowoo");
+                    }
+                    woowooing = !woowooing;
                 }            
             } else {
                 keyUps.push_back(event.key.keysym.sym);
