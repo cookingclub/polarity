@@ -5,8 +5,6 @@
 
 namespace Polarity {
 
-using namespace std;
-
 AudioFile *audioTest;
 AudioChannelPlayer *audioPlayer;
 bool buzzing = false;       // TODO: bring this into a game state! you should buzz if you have the appropriate powerup
