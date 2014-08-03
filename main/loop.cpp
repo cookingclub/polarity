@@ -20,12 +20,12 @@ void loadAssets() {
         std::cerr << "Audio is loaded: " << audioTest->getState() << std::endl;
     }
 
-    audioPlayer = new AudioChannelPlayer(3);
-    if (audioPlayer->addChannel("forward", "assets/audio/builder.mp3", 1) != AudioFileError::OK) {
-        std::cerr << "Couldn't load forward track" << std::endl;
+    audioPlayer = new AudioChannelPlayer(16);
+    if (audioPlayer->addChannel("white", "assets/audio/frozen_star.mp3", 0) != AudioFileError::OK) {
+        std::cerr << "Couldn't load white track" << std::endl;
     }
-    if (audioPlayer->addChannel("reverse", "assets/audio/builder_rev.mp3", 2) != AudioFileError::OK) {
-        std::cerr << "Couldn't load reverse track" << std::endl;
+    if (audioPlayer->addChannel("black", "assets/audio/lightless_dawn.mp3", 1) != AudioFileError::OK) {
+        std::cerr << "Couldn't load black track" << std::endl;
     }
 }
 
@@ -34,45 +34,17 @@ bool loopIter(SDL_Surface *screen) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.key.keysym.sym == SDLK_SPACE) {
-            std::cout << "Playing!" << std::endl;
-            audioTest->startAudioPlayback();
+            audioPlayer->playChannel("white");
+            audioPlayer->playChannel("black");
         } else if (event.key.keysym.sym == SDLK_ESCAPE) {
-            std::cout << "Stopping!" << std::endl;
-            audioTest->stopAudioPlayback();            
-        } else if (event.key.keysym.sym == SDLK_p) {
-            std::cout << "Pausing!" << std::endl;
-            audioTest->pauseAudioPlayback();            
-        } else if (event.key.keysym.sym == SDLK_1) {
-            audioPlayer->stopChannel("forward");
-            audioPlayer->stopChannel("reverse");
-            audioPlayer->setChannelVolume("forward", 1.0);
-            audioPlayer->setChannelVolume("reverse", 0.0);
-            audioPlayer->playChannel("forward");
-            audioPlayer->playChannel("reverse");
-        } else if (event.key.keysym.sym == SDLK_4) {
-            audioPlayer->stopChannel("forward");
-            audioPlayer->stopChannel("reverse");
-            audioPlayer->setChannelVolume("forward", 0.0);
-            audioPlayer->setChannelVolume("reverse", 0.55);
-            audioPlayer->playChannel("forward");
-            audioPlayer->playChannel("reverse");
-        } else if (event.key.keysym.sym == SDLK_2) {
-            audioPlayer->stopChannel("forward");
-            audioPlayer->stopChannel("reverse");
-            audioPlayer->setChannelVolume("forward", 0.55);
-            audioPlayer->setChannelVolume("reverse", 0.15);
-            audioPlayer->playChannel("forward");
-            audioPlayer->playChannel("reverse");
-        } else if (event.key.keysym.sym == SDLK_3) {
-            audioPlayer->stopChannel("forward");
-            audioPlayer->stopChannel("reverse");
-            audioPlayer->setChannelVolume("forward", 0.15);
-            audioPlayer->setChannelVolume("reverse", 0.55);
-            audioPlayer->playChannel("forward");
-            audioPlayer->playChannel("reverse");
-        } else if (event.key.keysym.sym == SDLK_0) {
-            audioPlayer->stopChannel("forward");
-            audioPlayer->stopChannel("reverse");
+            audioPlayer->stopChannel("white");
+            audioPlayer->stopChannel("black");
+        } else if (event.key.keysym.sym == SDLK_w) {
+            audioPlayer->setChannelVolume("white", 1.0);
+            audioPlayer->setChannelVolume("black", 0.0);
+        } else if (event.key.keysym.sym == SDLK_b) {
+            audioPlayer->setChannelVolume("white", 0.0);
+            audioPlayer->setChannelVolume("black", 1.0);
         }
     }
     world->tick();
