@@ -7,6 +7,7 @@
 
 #include "tmxparser.h"
 
+
 namespace Polarity {
 World *world = nullptr;
 
@@ -61,6 +62,9 @@ void World::draw(SDL_Surface *screen) {
     for (auto& layer : layers->layers) {
         layer->draw(screen, 0, 0);
     }
+    for (auto& object : objects) {
+        object->draw(screen);
+    }
 }
 
 void World::load(const std::string &tmxFile) {
@@ -74,7 +78,6 @@ void World::load(const std::string &tmxFile) {
     tmxparser::TmxReturn error = tmxparser::parseFromFile(tmxFile, &map);
 
     layers = std::unique_ptr<LayerCollection>(new LayerCollection(dir, map));
-
     for (auto &it : map.tilesetCollection) {
         std::cerr << "Found tileset: " << it.name << std::endl;
     }
@@ -83,7 +86,20 @@ void World::load(const std::string &tmxFile) {
     }
     for (auto &it : map.objectGroupCollection) {
         std::cerr << "Found object group: " << it.name << std::endl;
+        for (auto &oit : it.objects) {
+            b2BodyDef body_def;
+            body_def.type = b2_dynamicBody;
+            body_def.position.Set(oit.x, oit.y);
+            b2PolygonShape dynamic_box;
+            dynamic_box.SetAsBox(oit.width, oit.height);
+            b2FixtureDef fixture_def;
+            fixture_def.shape = &dynamic_box;
+            fixture_def.density = 1.0f;
+            fixture_def.friction = 0.3f;
+            GameObject* game_obj = addObject(new Polarity::KeyboardBehavior(), body_def, fixture_def);
 
+            std::cerr << "object name = " << oit.name << std::endl;
+        }
     }
 }
 }
