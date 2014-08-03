@@ -17,6 +17,7 @@ GameObject::Type GameObject::parseTypeStr(const std::string& typeStr) {
 
 GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef, const b2FixtureDef &fixture, const std::string &name, Type type, const PropertyMap &props)
         : behavior(behavior), name(name), properties(props), type(type) {
+    currentAction = IDLE;
     groundBody = world->CreateBody(&bdef);
     groundBody->CreateFixture(&fixture);
 
@@ -54,9 +55,11 @@ b2AABB GameObject::getBounds() const{
     return aabb;
 }
 void GameObject::draw(World * world, SDL_Surface* screen) {
-    b2Vec2 wh = this->getBounds().GetExtents();
-    auto actualpos = this->groundBody->GetPosition() - world->getCamera();
-    auto drawpos = actualpos - 0.5 * wh;
+    b2Vec2 wh = world->physicsToGraphics(this->getBounds().GetExtents(), 1);
+    b2Vec2 actualpos = world->physicsToGraphics(this->groundBody->GetPosition());
+    actualpos -= world->getCamera();
+    b2Vec2 drawpos = actualpos - 0.5 * wh;
+
     SDL_Rect rect;
     rect.x = drawpos.x;
     rect.y = drawpos.y;
@@ -67,10 +70,17 @@ void GameObject::draw(World * world, SDL_Surface* screen) {
     int g = type == DOOR || type == PLATFORM ? 255 : 0;
     int b = type == PLAYER || type == DOOR ? 255 : 0;
     // TODO: set the right color
-    SDL_FillRect(screen, &rect, SDL_MapRGB(screen->format, r, g, b));
+    SDL_FillRect(screen, &rect, SDL_MapRGBA(screen->format, r, g, b, 70));
 
-    if (idle) {
-        idle->draw(screen, actualpos.x - idle->width(), actualpos.y - idle->height());
+    auto actionAnimation = actions.find(currentAction);
+    std::shared_ptr<Animation> actionAnim;
+    if (actionAnimation != actions.end()) {
+        actionAnim = actionAnimation->second;
+    } else if (idle) {
+        actionAnim = idle;
+    }
+    if (actionAnim) {
+        actionAnim->draw(screen, actualpos.x - idle->width() / 2, actualpos.y - idle->height() / 2);
     }
 }
 

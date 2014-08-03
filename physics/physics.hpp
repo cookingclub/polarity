@@ -22,6 +22,7 @@ public:
         PLAYER,
     };
     enum Actions {
+        IDLE,
         WALK,
         RUN,
         JUMP,
@@ -29,6 +30,7 @@ public:
     };
     static Type parseTypeStr(const std::string &str);
 private:
+    Actions currentAction;
     Behavior * behavior;
     std::string name;
     PropertyMap properties;

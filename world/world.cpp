@@ -14,6 +14,7 @@ World *world = nullptr;
 
 World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _audioPlayer)
         : physics(b2Vec2(0.0f, -10.0f)),
+        graphicsScale(b2Vec2(96, 96)),
         camera(0, 300), //FIXME hard coded
         keyState(SDLK_LAST),
         layers(nullptr),
@@ -113,9 +114,19 @@ void World::load(const std::string &tmxFile) {
                 behavior = new Polarity::Behavior();
                 body_def.type = b2_staticBody;
             }
-            body_def.position.Set(oit.x + oit.width / 2, oit.y + oit.height / 2);
+            int y = oit.y;
+            if (oit.referenceGid) {
+                // Possibly bug in the map editor:
+                // Objects with a gid are positioned from bottom left.
+                y -= oit.height / 2;
+            } else {
+                // Normal objects are positioned from top left.
+                y += oit.height / 2;
+            }
+            body_def.position = graphicsToPhysics(b2Vec2(oit.x + oit.width / 2, y));
             b2PolygonShape dynamic_box;
-            dynamic_box.SetAsBox(oit.width, oit.height);
+            b2Vec2 wh = graphicsToPhysics(b2Vec2(oit.width, oit.height), 1);
+            dynamic_box.SetAsBox(wh.x, wh.y);
             b2FixtureDef fixture_def;
             fixture_def.shape = &dynamic_box;
             fixture_def.density = 1.0f;
