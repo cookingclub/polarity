@@ -62,6 +62,9 @@ void World::draw(SDL_Surface *screen) {
     for (auto& layer : layers->layers) {
         layer->draw(screen, 0, 0);
     }
+    for (auto& object : objects) {
+        object->draw(screen);
+    }
 }
 
 void World::load(const std::string &tmxFile) {
@@ -82,65 +85,22 @@ void World::load(const std::string &tmxFile) {
         std::cerr << "Found layer: " << it.name << std::endl;
     }
     for (auto &it : map.objectGroupCollection) {
-    // std::string name;
-    // std::string color;
-    // float opacity;
-    // bool visible;
-    // TmxPropertyMap_t propertyMap;
-    // TmxObjectCollection_t objects;
-
-        // typedef std::vector<TmxObject> TmxObjectCollection_t;
-
-
         std::cerr << "Found object group (name): " << it.name << std::endl;
-        std::cerr << "Found object group (color): " << it.color << std::endl;
-        std::cerr << "Found object group (opacity): " << it.opacity << std::endl;
-        std::cerr << "Found object group (visible): " << it.visible << std::endl;
-        std::cerr << "Found object group (propertyMap): " << it.propertyMap.size() << std::endl;
-        for (auto &pit : it.propertyMap) {
-            std::cerr << "meow " << pit.first << std::endl;
-        }
         std::cerr << "Found object group (objects): " << it.objects.size() << std::endl;
         for (auto &oit : it.objects) {
-            SDL_Surface* surface = SDL_CreateRGBSurface(0, oit.width, oit.height, 32, 0, 0, 0, 0);
-            if(surface == NULL) {
-                fprintf(stderr, "CreateRGBSurface failed: %s\n", SDL_GetError());
-                exit(1);
-            }
-            int err = SDL_FillRect(surface, NULL, 100);
-            std::cerr << "error code = " <<  err << std::endl;
+            b2BodyDef body_def;
+            body_def.type = b2_dynamicBody;
+            body_def.position.Set(oit.x, oit.y);
+            b2PolygonShape dynamic_box;
+            dynamic_box.SetAsBox(oit.width, oit.height);
+            b2FixtureDef fixture_def;
+            fixture_def.shape = &dynamic_box;
+            fixture_def.density = 1.0f;
+            fixture_def.friction = 0.3f;
+            GameObject* game_obj = addObject(new Polarity::KeyboardBehavior(), body_def, fixture_def);
 
             std::cerr << "object name = " << oit.name << std::endl;
-            std::cerr << "object type = " << oit.type << std::endl;
-            std::cerr << "object x = " << oit.x << std::endl;
-            std::cerr << "object y = " << oit.y << std::endl;
-            std::cerr << "object width = " << oit.width << std::endl;
-            std::cerr << "object height = " << oit.height << std::endl;
-            std::cerr << "object rotation = " << oit.rotation << std::endl;
-            std::cerr << "object referenceGid = " << oit.referenceGid << std::endl;
-            std::cerr << "object visible = " << oit.visible << std::endl;
-            std::cerr << "object propertyMap = " << oit.propertyMap.size() << std::endl;
-            std::cerr << "object shapeType = " << oit.shapeType << std::endl;
-            std::cerr << "object shapePoints = " << oit.shapePoints.size() << std::endl;
         }
-// typedef struct
-// {
-//     std::string name;
-//     std::string type;
-//     int x;
-//     int y;
-//     unsigned int width;
-//     unsigned int height;
-//     float rotation;
-//     unsigned int referenceGid;
-//     bool visible;
-//     TmxPropertyMap_t propertyMap;
-//     TmxShapeType shapeType;
-//     TmxShapePointCollection_t shapePoints;
-// } TmxObject;
-
-
-
     }
 }
 }
