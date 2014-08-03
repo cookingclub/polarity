@@ -17,16 +17,21 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
     if (left) {
         phyobj->ApplyForce( b2Vec2(-100,0), phyobj->GetWorldCenter(), true);
         std::cerr << "going left" << std::endl;
+        world->audio()->playChannel("step-stone", -1);
     }
     if (jump) {
         phyobj->ApplyForce( b2Vec2(0,500), phyobj->GetWorldCenter(), true);
         std::cerr << "jumping" << std::endl;
-
     }
     if (right) {
         phyobj->ApplyForce( b2Vec2(100,0), phyobj->GetWorldCenter(), true);
         std::cerr << "going right" << std::endl;
+        world->audio()->playChannel("step-stone", -1);
+    }
 
+    // stop sounds if we're not walking anymore
+    if (!right && !left) {
+        world->audio()->stopChannel("step-stone");
     }
 }
 }

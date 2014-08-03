@@ -6,6 +6,8 @@
 #include <memory>
 #include <vector>
 
+using std::shared_ptr;
+
 namespace Polarity {
 class World {
     b2World physics;
@@ -20,13 +22,16 @@ public:
     b2Vec2 getCamera()const {
         return camera;
     }
-    static void init();
+    static void init(shared_ptr<AudioChannelPlayer> audioPlayer);
     World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> audioPlayer);
     GameObject* addObject(Behavior*behavior, const b2BodyDef&, const b2FixtureDef&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties);
     void tick();
     void draw(SDL_Surface *screen);
     void keyEvent(int keyCode, bool pressed);
     bool isKeyDown(int keyCode);
+    shared_ptr<AudioChannelPlayer> audio() {
+        return player;
+    }
 };
 extern World *world;
 }
