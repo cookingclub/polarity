@@ -29,6 +29,11 @@ namespace Polarity {
     for (auto &obj : objects) {
       obj->tick(this);
     }
+    for(auto &gameObject:objects){
+      std::cerr << gameObject->printPosition() << "\n";
+
+    }
+    
     // Gets called every frame
   }
 }

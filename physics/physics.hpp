@@ -2,6 +2,9 @@
 #include <Box2D/Box2D.h>
 #include "behavior.hpp"
 
+
+
+
 namespace Polarity {
   class Behavior;
   class World;
@@ -12,6 +15,7 @@ namespace Polarity {
   public:
     void tick(World*world);
     b2Body*groundBody;
+    float printPosition();
     GameObject(b2World *world, const b2BodyDef &bdef);
   };
   class Player: public GameObject {
