@@ -16,7 +16,7 @@ namespace Polarity {
     void tick(World*world);
     b2Body*groundBody;
     float printPosition();
-    GameObject(b2World *world, Behavior * behavior, const b2BodyDef &bdef);
+    GameObject(b2World *world, Behavior * behavior, const b2BodyDef &bdef, const b2FixtureDef &fixture);
   };
   class Player: public GameObject {
   };

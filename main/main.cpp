@@ -66,9 +66,24 @@ int main() {
     srand(time(NULL));
     Polarity::loadAssets();
     Polarity::World::init();
+
     b2BodyDef bodyDef;
     bodyDef.type = b2_dynamicBody;
     bodyDef.position.Set(0.0f, 40.0f);
-    Polarity::world->addObject(new Polarity::KeyboardBehavior(), bodyDef);
+    b2PolygonShape dynamicBox;
+    dynamicBox.SetAsBox(2.0f, 2.0f);
+
+    b2FixtureDef fixtureDef;
+    fixtureDef.shape = &dynamicBox;
+    fixtureDef.density = 1.0f;
+    fixtureDef.friction = 0.3f;
+
+    Polarity::world->addObject(new Polarity::KeyboardBehavior(), bodyDef, fixtureDef);
+
+    b2BodyDef bodyDef2;
+    bodyDef2.type = b2_staticBody;
+    bodyDef2.position.Set(0.0f, 10.0f);
+    Polarity::world->addObject(new Polarity::KeyboardBehavior(), bodyDef2, fixtureDef);
+
     Polarity::mainloop();
 }
