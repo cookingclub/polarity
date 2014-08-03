@@ -60,7 +60,7 @@ void World::tick() {
         camera.y -=1;
     }
     // timeStep, velocityIterations, positionIterations
-    physics.Step(0.0166666, 1, 1);
+    physics.Step(0.0166666, 8, 4);
     for (auto &obj : objects) {
         obj->tick(this);
         //std::cerr << obj->printPosition()<<std::endl;
@@ -123,7 +123,7 @@ void World::load(const std::string &tmxFile) {
             }
             body_def.position = graphicsToPhysics(b2Vec2(oit.x + oit.width / 2, y));
             b2PolygonShape dynamic_box;
-            b2Vec2 wh = graphicsToPhysics(b2Vec2(oit.width, oit.height), 1);
+            b2Vec2 wh = graphicsToPhysics(0.5 * b2Vec2(oit.width, oit.height), 1);
             dynamic_box.SetAsBox(wh.x, wh.y);
             b2FixtureDef fixture_def;
             fixture_def.shape = &dynamic_box;

@@ -18,7 +18,7 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
         phyobj->ApplyForce( b2Vec2(-100,0), phyobj->GetWorldCenter(), true);
     }
     if (jump) {
-        phyobj->ApplyForce( b2Vec2(0,500), phyobj->GetWorldCenter(), true);
+        phyobj->ApplyForce( b2Vec2(0,50), phyobj->GetWorldCenter(), true);
     }
     if (right) {
         phyobj->ApplyForce( b2Vec2(100,0), phyobj->GetWorldCenter(), true);
