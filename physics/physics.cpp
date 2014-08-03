@@ -54,11 +54,12 @@ namespace Polarity {
     return aabb;
   }
   void GameObject::draw(World * world, SDL_Surface* screen) {
-    SDL_Rect rect;
-    rect.x = this->groundBody->GetPosition().x - world->getCamera().x;
-    rect.y = this->groundBody->GetPosition().y - world->getCamera().y;
+    auto drawpos = this->groundBody->GetPosition() - world->getCamera();
     b2Vec2 wh = this->getBounds().GetExtents();
-    
+    SDL_Rect rect;
+    rect.x = drawpos.x;
+    rect.y = drawpos.y;
+
     rect.w = wh.x;
     rect.h = wh.y;
     int r = type == TERRAIN ? 255 : 0;
@@ -68,7 +69,7 @@ namespace Polarity {
     SDL_FillRect(screen, &rect, SDL_MapRGB(screen->format, r, g, b));
 
     if (anim) {
-      anim->draw(screen, this->groundBody->GetPosition().x, this->groundBody->GetPosition().y - 300);
+      anim->draw(screen, drawpos.x, drawpos.y);
     }
   }
 
