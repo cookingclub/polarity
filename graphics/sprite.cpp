@@ -54,4 +54,84 @@ void Image::draw(SDL_Surface *screen, int x, int y) {
     src.y = 0;
     draw(screen, &src, x, y);
 }
+
+
+
+
+Animation::Animation(const std::string& filename, int numFrames) {
+    frame = 0;
+    lastTime = SDL_GetTicks();
+    running = true;
+    frameTime = 1.0/60.0;
+    if (numFrames > 999) { // just so we don't get weird behavior
+      numFrames = 999;
+      std::cerr << "Truncating animation to 999 frames" << std::endl;
+    }
+    char numberTarget[64]={0};
+    char * mdata = strdup(filename.c_str());
+    for (int i = 0; i < numFrames; ++i) {
+      sprintf(numberTarget, "%d", i);
+      std::string mdata = filename + numberTarget;
+      images.emplace_back(new Image(mdata));
+    }
+}
+
+std::shared_ptr<Animation> Animation::get(const std::string& filename) {
+    std::string::size_type where = filename.find_last_of("-");
+    if (where !=std::string::npos) {
+       const char * data (filename.c_str());
+       const char * numFramesStr = data + where + 1;
+       int numFrames = 1;
+       sscanf(numFramesStr, "%d", &numFrames);
+       return std::shared_ptr<Animation>(new Animation(filename.substr(0,where + 1),
+						       numFrames));
+    }else {
+      std::cerr << "Animation filename of wrong pattern: no dash " << filename <<std::endl;
+    }
+    return std::shared_ptr<Animation>();
+}
+
+Animation::~Animation() {
+    SDL_FreeSurface(surf);
+}
+
+void Animation::start() {
+    running = true;
+}
+
+void Animation::pause() {
+    running = false;
+}
+
+size_t Animation::getFrame() {
+  long long curTime = SDL_GetTicks();
+  size_t ticksPerFrame = frameTime * 1000;
+  size_t deltaTicks = curTime - lastTime;
+  size_t deltaFrames = deltaTicks / ticksPerFrame;
+  lastTime += deltaFrames * ticksPerFrame;
+  frame += deltaFrames;
+  if (!images.empty()) {
+    frame %= images.size();
+  }
+  return frame;
+}
+
+void Animation::draw(SDL_Surface *screen, SDL_Rect *src, int x, int y) {
+  size_t frame = getFrame();
+  if (!images.empty()) {
+    images[frame]->draw(screen, src, x, y);
+  }else {
+    std::cerr << "Drawing animation empty" << std::endl;
+  }
+}
+
+void Animation::draw(SDL_Surface *screen, int x, int y) {
+  size_t frame = getFrame();
+  if (!images.empty()) {
+    images[frame]->draw(screen, x, y);
+  } else {
+    std::cerr << "Drawing animation empty" << std::endl;
+  }
+}
+
 }

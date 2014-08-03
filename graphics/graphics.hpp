@@ -20,7 +20,9 @@
 namespace Polarity {
 
 class Image {
-    Image() = delete;
+protected:
+  friend class Animation;
+    Image(){surf = nullptr;};
     Image(const Image&x) = delete;
     Image& operator=(const Image&x) = delete;
     explicit Image(const std::string &filename);
@@ -36,6 +38,27 @@ public:
     int height() { return surf->h; }
 private:
     SDL_Surface *surf;
+};
+
+class Animation : public Image{
+  Animation()=delete;
+  Animation(const Animation&x) = delete;
+  Animation &operator=(const Animation&x) = delete;
+  explicit Animation(const std::string &pattern, int numFrames);
+  std::vector<std::shared_ptr<Image> > images;
+  size_t getFrame();
+public:
+  void start();
+  void pause();
+  ~Animation();
+  long long lastTime;
+  bool running;
+  size_t frame;
+  float frameTime;
+  static std::shared_ptr<Animation> get(const std::string &filename);
+
+  void draw(SDL_Surface *surf, int x, int y);
+  void draw(SDL_Surface *screen, SDL_Rect *src, int x, int y);
 };
 
 class Tileset : tmxparser::TmxTileset {
