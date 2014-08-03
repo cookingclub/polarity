@@ -113,6 +113,8 @@ void World::load(const std::string &tmxFile) {
                 body_def.type = b2_staticBody;
             }
             int y = oit.y;
+            body_def.angle = oit.rotation;
+            body_def.fixedRotation = true;
             if (oit.referenceGid) {
                 // Possibly bug in the map editor:
                 // Objects with a gid are positioned from bottom left.
@@ -128,7 +130,7 @@ void World::load(const std::string &tmxFile) {
             b2FixtureDef fixture_def;
             fixture_def.shape = &dynamic_box;
             fixture_def.density = 1.0f;
-            fixture_def.friction = 0.3f;
+            fixture_def.friction = 1.0f;
             GameObject* game_obj = addObject(behavior, body_def, fixture_def, oit.name, type, oit.propertyMap);
 
             std::cerr << "object name = " << oit.name << std::endl;
