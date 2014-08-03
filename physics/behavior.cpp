@@ -15,13 +15,18 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
     bool jump = world->isKeyDown(SDLK_UP);
     b2Body *phyobj = obj->groundBody;
     if (left) {
+        obj->setAction(GameObject::WALK);
         phyobj->ApplyForce( b2Vec2(-100,0), phyobj->GetWorldCenter(), true);
     }
     if (jump) {
         phyobj->ApplyForce( b2Vec2(0,50), phyobj->GetWorldCenter(), true);
     }
     if (right) {
+        obj->setAction(GameObject::WALK);
         phyobj->ApplyForce( b2Vec2(100,0), phyobj->GetWorldCenter(), true);
+    }
+    if (phyobj->GetLinearVelocity().LengthSquared() < .1) { // and contact
+        obj->setAction(GameObject::IDLE);
     }
 }
 }
