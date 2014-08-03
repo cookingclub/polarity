@@ -7,12 +7,16 @@
 namespace Polarity {
 class World {
   b2World physics;
+  b2Vec2 camera;
   std::vector<bool> keyState;
   std::vector<std::unique_ptr<GameObject> > objects;
   std::unique_ptr<LayerCollection> layers;
 
   void load(const std::string& tmxFile);
 public:
+  b2Vec2 getCamera()const {
+    return camera;
+  }
   static void init();
   World(const std::string& tmxFile);
   GameObject* addObject(Behavior*behavior, const b2BodyDef&, const b2FixtureDef&fixture);

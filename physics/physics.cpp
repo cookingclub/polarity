@@ -1,5 +1,4 @@
-#include "physics.hpp"
-
+#include "world/world.hpp"
 using namespace std;
 
 namespace Polarity {
@@ -36,10 +35,10 @@ namespace Polarity {
     }
     return aabb;
   }
-  void GameObject::draw(SDL_Surface* screen) {
+  void GameObject::draw(World * world, SDL_Surface* screen) {
     SDL_Rect rect;
-    rect.x = this->groundBody->GetPosition().x;
-    rect.y = this->groundBody->GetPosition().y - 300;
+    rect.x = this->groundBody->GetPosition().x - world->getCamera().x;
+    rect.y = this->groundBody->GetPosition().y - world->getCamera().y;
     b2Vec2 wh = this->getBounds().GetExtents();
     
     rect.w = wh.x;

@@ -15,7 +15,7 @@ namespace Polarity {
   public:
     b2AABB getBounds()const;
     void tick(World*world);
-    void draw(SDL_Surface* surface);
+    void draw(World * world, SDL_Surface* surface);
     b2Body*groundBody;
     float printPosition();
     GameObject(b2World *world, Behavior * behavior, const b2BodyDef &bdef, const b2FixtureDef &fixture);

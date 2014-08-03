@@ -13,6 +13,7 @@ World *world = nullptr;
 
 World::World(const std::string& tmxFile)
         : physics(b2Vec2(0.0f, -10.0f)),
+        camera(0, 300), //FIXME hard coded
         keyState(SDLK_LAST),
         layers(nullptr) {
     std::cerr << "World has started"<<std::endl;
@@ -60,10 +61,10 @@ void World::tick() {
 
 void World::draw(SDL_Surface *screen) {
     for (auto& layer : layers->layers) {
-        layer->draw(screen, 0, -300);
+        layer->draw(screen, -camera.x, -camera.y);
     }
     for (auto& object : objects) {
-        object->draw(screen);
+      object->draw(this, screen);
     }
 }
 
