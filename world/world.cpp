@@ -111,7 +111,16 @@ void World::load(const std::string &tmxFile) {
                 behavior = new Polarity::Behavior();
                 body_def.type = b2_staticBody;
             }
-            body_def.position.Set(oit.x + oit.width / 2, oit.y + oit.height / 2);
+            int y = oit.y;
+            if (oit.referenceGid) {
+                // Possibly bug in the map editor:
+                // Objects with a gid are positioned from bottom left.
+                y -= oit.height / 2;
+            } else {
+                // Normal objects are positioned from top left.
+                y += oit.height / 2;
+            }
+            body_def.position.Set(oit.x + oit.width / 2, y);
             b2PolygonShape dynamic_box;
             dynamic_box.SetAsBox(oit.width, oit.height);
             b2FixtureDef fixture_def;

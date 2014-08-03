@@ -58,6 +58,9 @@ public:
     float frameTime;
     static std::shared_ptr<Animation> get(const std::string &filename);
 
+    int width() { return images[frame]->width(); }
+    int height() { return images[frame]->height(); }
+
     void draw(SDL_Surface *surf, int x, int y);
     void draw(SDL_Surface *screen, SDL_Rect *src, int x, int y);
 };

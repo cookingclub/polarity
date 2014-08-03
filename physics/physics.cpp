@@ -67,10 +67,11 @@ void GameObject::draw(World * world, SDL_Surface* screen) {
     int g = type == DOOR || type == PLATFORM ? 255 : 0;
     int b = type == PLAYER || type == DOOR ? 255 : 0;
     // TODO: set the right color
-    SDL_FillRect(screen, &rect, SDL_MapRGB(screen->format, r, g, b));
+    SDL_FillRect(screen, &rect, SDL_MapRGBA(screen->format, r, g, b, 70));
 
     if (idle) {
-        idle->draw(screen, actualpos.x - idle->width(), actualpos.y - idle->height());
+        idle->draw(screen, actualpos.x - idle->width() / 2,
+                actualpos.y - idle->height() / 2);
     }
 }
 
