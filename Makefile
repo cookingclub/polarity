@@ -9,7 +9,7 @@ CXX = em++
 #-O2 
 CFLAGS = -pthread -g -Wno-warn-absolute-paths -I $(CURDIR) -I$(CURDIR)/libs/box2d/Box2D/ -I$(CURDIR)/libs/libtmx-parser/libs/tinyxml2 -I$(CURDIR)/libs/libtmx-parser/libs/tinyxml2 -I$(CURDIR)/libs/libtmx-parser/src
 CXXFLAGS = -std=gnu++11 $(CFLAGS)
-LDFLAGS = -s STB_IMAGE=1 --preload-file assets static_libs/libBox2D.a
+LDFLAGS = -s STB_IMAGE=1 --preload-file assets static_libs/libBox2D.a -s TOTAL_MEMORY=134217728
 
 $(EXE): $(OBJS) $(wildcard assets/*)
 	$(CXX) $(OBJS) $(LDFLAGS) -o $@

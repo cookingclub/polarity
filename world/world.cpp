@@ -23,7 +23,7 @@ World::World(const std::string& tmxFile)
 }
 
 void World::init() {
-    world = new World("assets/levels/level1.tmx");
+    world = new World("assets/levels/level3.tmx");
 }
 
   GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef, const b2FixtureDef&fixture) {
