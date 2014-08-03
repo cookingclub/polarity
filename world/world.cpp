@@ -49,7 +49,7 @@ void World::tick() {
     physics.Step(0.0166666, 1, 1);
     for (auto &obj : objects) {
       obj->tick(this);
-      // std::cerr << obj->printPosition()<<std::endl;
+      std::cerr << obj->printPosition()<<std::endl;
     }
     //for(auto &gameObject:objects){
     //  
@@ -85,8 +85,7 @@ void World::load(const std::string &tmxFile) {
         std::cerr << "Found layer: " << it.name << std::endl;
     }
     for (auto &it : map.objectGroupCollection) {
-        std::cerr << "Found object group (name): " << it.name << std::endl;
-        std::cerr << "Found object group (objects): " << it.objects.size() << std::endl;
+        std::cerr << "Found object group: " << it.name << std::endl;
         for (auto &oit : it.objects) {
             b2BodyDef body_def;
             body_def.type = b2_dynamicBody;
