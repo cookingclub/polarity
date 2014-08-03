@@ -27,7 +27,7 @@ void World::init() {
     world = new World("assets/levels/level3.tmx");
 }
 
-  GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef, const b2FixtureDef&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties) {
+GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef, const b2FixtureDef&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties) {
     GameObject * object = new GameObject(&physics, behavior, bdef, fixture, name, type, properties);
     objects.emplace_back(object);
     return objects.back().get();
@@ -46,23 +46,23 @@ void World::keyEvent(int keyCode, bool pressed) {
 }
 
 void World::tick() {
-  if (keyState['a']) {
-    camera.x -=1;
-  }
-  if (keyState['d']) {
-    camera.x +=1;
-  }
-  if (keyState['w']) {
-    camera.y +=1;
-  }
-  if (keyState['s']) {
-    camera.y -=1;
-  }
+    if (keyState['a']) {
+        camera.x -=1;
+    }
+    if (keyState['d']) {
+        camera.x +=1;
+    }
+    if (keyState['w']) {
+        camera.y +=1;
+    }
+    if (keyState['s']) {
+        camera.y -=1;
+    }
     // timeStep, velocityIterations, positionIterations
     physics.Step(0.0166666, 1, 1);
     for (auto &obj : objects) {
-      obj->tick(this);
-      //std::cerr << obj->printPosition()<<std::endl;
+        obj->tick(this);
+        //std::cerr << obj->printPosition()<<std::endl;
     }
     //for(auto &gameObject:objects){
     //  
@@ -76,7 +76,7 @@ void World::draw(SDL_Surface *screen) {
         layer->draw(screen, -camera.x, -camera.y);
     }
     for (auto& object : objects) {
-      object->draw(this, screen);
+        object->draw(this, screen);
     }
 }
 

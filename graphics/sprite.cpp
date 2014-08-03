@@ -116,34 +116,34 @@ void Animation::pause() {
 }
 
 size_t Animation::getFrame() {
-  long long curTime = SDL_GetTicks();
-  size_t ticksPerFrame = frameTime * 1000;
-  size_t deltaTicks = curTime - lastTime;
-  size_t deltaFrames = deltaTicks / ticksPerFrame;
-  lastTime += deltaFrames * ticksPerFrame;
-  frame += deltaFrames;
-  if (!images.empty()) {
-    frame %= images.size();
-  }
-  return frame;
+    long long curTime = SDL_GetTicks();
+    size_t ticksPerFrame = frameTime * 1000;
+    size_t deltaTicks = curTime - lastTime;
+    size_t deltaFrames = deltaTicks / ticksPerFrame;
+    lastTime += deltaFrames * ticksPerFrame;
+    frame += deltaFrames;
+    if (!images.empty()) {
+        frame %= images.size();
+    }
+    return frame;
 }
 
 void Animation::draw(SDL_Surface *screen, SDL_Rect *src, int x, int y) {
-  size_t frame = getFrame();
-  if (!images.empty()) {
-    images[frame]->draw(screen, src, x, y);
-  }else {
-    std::cerr << "Drawing animation empty" << std::endl;
-  }
+    size_t frame = getFrame();
+    if (!images.empty()) {
+        images[frame]->draw(screen, src, x, y);
+    }else {
+        std::cerr << "Drawing animation empty" << std::endl;
+    }
 }
 
 void Animation::draw(SDL_Surface *screen, int x, int y) {
-  size_t frame = getFrame();
-  if (!images.empty()) {
-    images[frame]->draw(screen, x, y);
-  } else {
-    std::cerr << "Drawing animation empty" << std::endl;
-  }
+    size_t frame = getFrame();
+    if (!images.empty()) {
+        images[frame]->draw(screen, x, y);
+    } else {
+        std::cerr << "Drawing animation empty" << std::endl;
+    }
 }
 
 }
