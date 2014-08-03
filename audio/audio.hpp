@@ -198,6 +198,32 @@ public:
         fChannelStates[id] = CurrentAudioState::STOPPED;
         return AudioFileError::OK;
     }
+
+    AudioFileError fadeOutChannel(string id, int durationMilliseconds) {
+        if (!channelExists(id)) {
+            cerr << "Channel " << id << " doesn't exist" << endl;
+            return AudioFileError::NO_SUCH_CHANNEL;
+        }
+
+        Mix_FadeOutChannel(fChannelNames[id], durationMilliseconds);
+        fChannelStates[id] = CurrentAudioState::STOPPED;
+        return AudioFileError::OK;
+    }
+
+    AudioFileError fadeInChannel(string id, int durationMilliseconds) {
+        if (!channelExists(id)) {
+            cerr << "Channel " << id << " doesn't exist" << endl;
+            return AudioFileError::NO_SUCH_CHANNEL;
+        }
+        if (fChannelStates[id] != CurrentAudioState::PLAYING) {
+            if( Mix_FadeInChannel(fChannelNames[id], fChunks[id], 1, durationMilliseconds) == -1) {
+                cerr << "Mix_PlayChannel failed: " << Mix_GetError() << endl;
+                return AudioFileError::CANT_PLAY;
+            }
+        }
+        fChannelStates[id] = CurrentAudioState::PLAYING;
+        return AudioFileError::OK;
+    }
 private:
 
     int fNumChans;

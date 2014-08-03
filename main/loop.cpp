@@ -13,12 +13,12 @@ bool loaded = false;
 
 void loadAssets() {
     test_image = loadImage("assets/helloworld.png");
-    audioTest = new AudioFile("assets/audio/bathed_in_the_light.mp3", 1);
-    if (audioTest->validateMusicLoaded()) {
-        std::cerr << "Couldn't load audio" << std::endl;
-    } else {
-        std::cerr << "Audio is loaded: " << audioTest->getState() << std::endl;
-    }
+//     audioTest = new AudioFile("assets/audio/bathed_in_the_light.mp3", 1);
+//     if (audioTest->validateMusicLoaded()) {
+//         std::cerr << "Couldn't load audio" << std::endl;
+//     } else {
+//         std::cerr << "Audio is loaded: " << audioTest->getState() << std::endl;
+//     }
 
     audioPlayer = new AudioChannelPlayer(16);
     if (audioPlayer->addChannel("white", "assets/audio/frozen_star.mp3", 0) != AudioFileError::OK) {
