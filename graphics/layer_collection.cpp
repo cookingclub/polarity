@@ -25,7 +25,6 @@ void Tileset::positionInImage(int tileindex, SDL_Rect *outRect) {
 }
 
 void Tileset::drawTile(int tileindex, SDL_Surface *surf, int x, int y) {
-    std::cerr << tileindex << " -> " << x << "," << y;
     SDL_Rect srcpos;
     positionInImage(tileindex, &srcpos);
     image->draw(surf, &srcpos, x, y - tileHeight);

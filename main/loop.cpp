@@ -29,6 +29,7 @@ void loadAssets() {
 bool loopIter(SDL_Surface *screen) {
     SDL_Event event;
     std::vector<int> keyUps;
+    SDL_FillRect(screen, NULL, 0xffffffff);
     static std::shared_ptr<Animation> anim = Animation::get("/assets/graphics/walking-15.png");
     anim->draw(screen, 500, 0);
     while (SDL_PollEvent(&event)) {
