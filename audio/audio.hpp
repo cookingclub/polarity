@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <tuple>
 #include <vector>
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>

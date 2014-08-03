@@ -17,6 +17,7 @@ static SDL_Surface *screen;
 
 namespace Polarity {
 
+std::shared_ptr<AudioChannelPlayer> audioPlayer;
 extern void loadAssets();
 
 #ifdef EMSCRIPTEN

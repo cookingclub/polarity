@@ -6,46 +6,47 @@
 namespace Polarity {
 
 AudioFile *audioTest;
-AudioChannelPlayer *audioPlayer;
+extern std::shared_ptr<AudioChannelPlayer> audioPlayer;
 bool buzzing = false;       // TODO: bring this into a game state! you should buzz if you have the appropriate powerup
 bool woowooing = false;
 
 bool loaded = false;
 
-void loadAssets() {
-    audioPlayer = new AudioChannelPlayer(32);
-    if (audioPlayer->addChannel("white", "assets/audio/frozen_star.mp3", 0) != AudioFileError::OK) {
-        std::cerr << "Couldn't load white track" << std::endl;
-    }
-    if (audioPlayer->addChannel("black", "assets/audio/lightless_dawn.mp3", 1) != AudioFileError::OK) {
-        std::cerr << "Couldn't load black track" << std::endl;
-    }
-    if (audioPlayer->addChannel("buzz", "assets/audio/buzz.mp3", 2) != AudioFileError::OK) {
-        std::cerr << "Couldn't load buzz track" << std::endl;
-    } else {
-        audioPlayer->setChannelVolume("buzz", 1.0);
-    }
-    if (audioPlayer->addChannel("woowoo", "assets/audio/woowoo.mp3", 3) != AudioFileError::OK) {
-        std::cerr << "Couldn't load woowoo track" << std::endl;
-    } else {
-        audioPlayer->setChannelVolume("woowoo", 1.0);
-    }
-    if (audioPlayer->addChannel("step-stone", "assets/audio/step_stone.wav", 4) != AudioFileError::OK) {
-        std::cerr << "Couldn't load step_stone audio" << std::endl;
-    } else {
-        audioPlayer->setChannelVolume("step-stone", 0.15);
-    }
-    if (audioPlayer->addChannel("land-stone", "assets/audio/land_stone_weak.wav", 5) != AudioFileError::OK) {
-        std::cerr << "Couldn't load land_stone audio" << std::endl;
-    } else {
-        audioPlayer->setChannelVolume("land-stone", 0.85);
-    }
-    if (audioPlayer->addChannel("jump-grunt", "assets/audio/jump_grunt.wav", 6) != AudioFileError::OK) {
-        std::cerr << "Couldn't load jump-grunt audio" << std::endl;
-    } else {
-        audioPlayer->setChannelVolume("jump-grunt", 0.15);
-    }
+const int NUM_AUDIO_CHANNELS = 64;
+typedef std::tuple<string, string, double> ChannelSpec;
+static ChannelSpec specs[] = {  ChannelSpec("white-music", "assets/audio/frozen_star.mp3", 0.0),
+                                ChannelSpec("black-music", "assets/audio/lightless_dawn.mp3", 0.0),
+                                ChannelSpec("buzz", "assets/audio/buzz.mp3", 1.0),
+                                ChannelSpec("woowoo", "assets/audio/woowoo.mp3", 1.0),
+                                ChannelSpec("step-stone", "assets/audio/step_stone.wav", 0.15),
+                                ChannelSpec("land-soft", "assets/audio/land_stone_weak.wav", 0.85),
+                                ChannelSpec("grunt", "assets/audio/jump_grunt.wav", 0.25)
+                            };
 
+AudioFileError createAudioChannel(std::shared_ptr<AudioChannelPlayer> audioPlayer, string id, string filepath, int num, double initVolume = 0.0) {
+    AudioFileError err = audioPlayer->addChannel(id, filepath, num);
+    if (err != AudioFileError::OK) {
+        cerr << "Couldn't load track for '" << id << "'\n";
+    } else {
+        audioPlayer->setChannelVolume(id, initVolume);
+    }
+    return err;
+}
+
+void loadAudioChannels() {
+    audioPlayer = make_shared<AudioChannelPlayer>(Polarity::NUM_AUDIO_CHANNELS);
+    for (int i = 0; i < 7 && i < Polarity::NUM_AUDIO_CHANNELS; ++i) {
+        double vol;
+        string id;
+        string path;
+        tie(id, path, vol) = Polarity::specs[i];
+        Polarity::createAudioChannel(audioPlayer, id, path, i, vol);
+    }
+}
+
+
+void loadAssets() {
+    loadAudioChannels();
 }
 
 bool loopIter(SDL_Surface *screen) {
@@ -57,19 +58,19 @@ bool loopIter(SDL_Surface *screen) {
             if (event.type == SDL_KEYDOWN) {
                 world->keyEvent(event.key.keysym.sym, true);
                 if (event.key.keysym.sym == SDLK_SPACE) {
-                    audioPlayer->playChannel("white");
-                    audioPlayer->playChannel("black");
+                    audioPlayer->playChannel("white-music");
+                    audioPlayer->playChannel("black-music");
                 } else if (event.key.keysym.sym == SDLK_ESCAPE) {
-                    audioPlayer->stopChannel("white");
-                    audioPlayer->stopChannel("black");
+                    audioPlayer->stopChannel("white-music");
+                    audioPlayer->stopChannel("black-music");
                 } else if (event.key.keysym.sym == SDLK_v) {
                     // switch to white track
-                    audioPlayer->setChannelVolume("white", 1.0);
-                    audioPlayer->setChannelVolume("black", 0.0);
+                    audioPlayer->setChannelVolume("white-music", 1.0);
+                    audioPlayer->setChannelVolume("black-music", 0.0);
                 } else if (event.key.keysym.sym == SDLK_b) {
                     // switch to black track
-                    audioPlayer->setChannelVolume("white", 0.0);
-                    audioPlayer->setChannelVolume("black", 1.0);
+                    audioPlayer->setChannelVolume("white-music", 0.0);
+                    audioPlayer->setChannelVolume("black-music", 1.0);
                 } else if (event.key.keysym.sym == SDLK_1) {
                     if (!buzzing) {
                         audioPlayer->playChannel("buzz", -1);
@@ -87,15 +88,15 @@ bool loopIter(SDL_Surface *screen) {
                 } else if (event.key.keysym.sym == SDLK_d || event.key.keysym.sym == SDLK_a) {
                     audioPlayer->playChannel("step-stone", -1);
                 } else if (event.key.keysym.sym == SDLK_s) {
-                    audioPlayer->playChannel("land-stone", 1);
+                    audioPlayer->playChannel("land-soft", 1);
                 } else if (event.key.keysym.sym == SDLK_w) {
-                    audioPlayer->playChannel("jump-grunt", 1);
+                    audioPlayer->playChannel("grunt", 1);
                 }
             } else {
                 keyUps.push_back(event.key.keysym.sym);
                 audioPlayer->stopChannel("step-stone");
-                audioPlayer->stopChannel("land-stone");
-                audioPlayer->stopChannel("jump-grunt");
+                audioPlayer->stopChannel("land-soft");
+                audioPlayer->stopChannel("grunt");
             }
         }
     }
