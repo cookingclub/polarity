@@ -20,7 +20,7 @@ static ChannelSpec specs[] = {  ChannelSpec("white-music", "assets/audio/frozen_
                                 ChannelSpec("woowoo", "assets/audio/woowoo.mp3", 1.0),
                                 ChannelSpec("step-stone", "assets/audio/step_stone.wav", 0.15),
                                 ChannelSpec("land-soft", "assets/audio/land_stone_weak.wav", 0.85),
-                                ChannelSpec("grunt", "assets/audio/jump_grunt.wav", 0.25)
+                                ChannelSpec("jump", "assets/audio/jump.wav", 0.25)
                             };
 
 AudioFileError createAudioChannel(std::shared_ptr<AudioChannelPlayer> audioPlayer, string id, string filepath, int num, double initVolume = 0.0) {
@@ -94,9 +94,6 @@ bool loopIter(SDL_Surface *screen) {
 //                 }
             } else {
                 keyUps.push_back(event.key.keysym.sym);
-//                 audioPlayer->stopChannel("step-stone");
-//                 audioPlayer->stopChannel("land-soft");
-//                 audioPlayer->stopChannel("grunt");
             }
         }
     }
