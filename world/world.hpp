@@ -15,7 +15,7 @@ class World {
 public:
   static void init();
   World(const std::string& tmxFile);
-  GameObject* addObject(Behavior*behavior, const b2BodyDef&);
+  GameObject* addObject(Behavior*behavior, const b2BodyDef&, const b2FixtureDef&fixture);
   void tick();
   void keyEvent(int keyCode, bool pressed);
   bool isKeyDown(int keyCode);
