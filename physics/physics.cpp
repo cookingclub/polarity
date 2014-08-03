@@ -13,13 +13,37 @@ namespace Polarity {
     behavior->tick(world, this);
   }
 
+  b2AABB GameObject::getBounds() const{
+    b2Transform transform;
+    transform.SetIdentity();
+    b2AABB aabb;
+    aabb.lowerBound = b2Vec2(FLT_MAX,FLT_MAX);
+    aabb.upperBound = b2Vec2(-FLT_MAX,-FLT_MAX); 
+    b2Fixture* fixture = groundBody->GetFixtureList();
+
+    while (fixture != nullptr) {
+      const b2Shape *shape = fixture->GetShape();
+      const int childCount = shape->GetChildCount();
+      for (int child = 0; child < childCount; ++child) {
+	const b2Vec2 r(shape->m_radius, shape->m_radius);
+	b2AABB shapeAABB;
+	shape->ComputeAABB(&shapeAABB, transform, child);
+	shapeAABB.lowerBound = shapeAABB.lowerBound + r;
+	shapeAABB.upperBound = shapeAABB.upperBound - r;
+	aabb.Combine(shapeAABB);
+      }
+      fixture = fixture->GetNext();
+    }
+    return aabb;
+  }
   void GameObject::draw(SDL_Surface* screen) {
     SDL_Rect rect;
     rect.x = this->groundBody->GetPosition().x;
-    rect.y = this->groundBody->GetPosition().y;
-    // TODO: set weight and height
-    rect.w = 10;
-    rect.h = 10;
+    rect.y = this->groundBody->GetPosition().y - 300;
+    b2Vec2 wh = this->getBounds().GetExtents();
+    
+    rect.w = wh.x;
+    rect.h = wh.y;
     // TODO: set the right color
     SDL_FillRect(screen, &rect, SDL_MapRGB(screen->format, 255, 0, 0));
   }

@@ -15,13 +15,13 @@ namespace Polarity {
     bool jump = world->isKeyDown(SDLK_UP);
     b2Body *phyobj = obj->groundBody;
     if (left) {
-        phyobj->ApplyForce( b2Vec2(-10,0), phyobj->GetWorldCenter(), true);
+        phyobj->ApplyForce( b2Vec2(-100,0), phyobj->GetWorldCenter(), true);
     }
     if (jump) {
-        phyobj->ApplyForce( b2Vec2(0,50), phyobj->GetWorldCenter(), true);
+        phyobj->ApplyForce( b2Vec2(0,500), phyobj->GetWorldCenter(), true);
     }
     if (right) {
-        phyobj->ApplyForce( b2Vec2(10,0), phyobj->GetWorldCenter(), true);
+        phyobj->ApplyForce( b2Vec2(100,0), phyobj->GetWorldCenter(), true);
     }
   }
 }

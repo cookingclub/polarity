@@ -60,7 +60,7 @@ void World::tick() {
 
 void World::draw(SDL_Surface *screen) {
     for (auto& layer : layers->layers) {
-        layer->draw(screen, -300, -300);
+        layer->draw(screen, 0, -300);
     }
     for (auto& object : objects) {
         object->draw(screen);
@@ -88,7 +88,12 @@ void World::load(const std::string &tmxFile) {
         std::cerr << "Found object group: " << it.name << std::endl;
         for (auto &oit : it.objects) {
             b2BodyDef body_def;
-            body_def.type = b2_dynamicBody;
+	    if (oit.name == "start") {
+	      std::cerr<<"Making dynamic "<<std::endl;
+	      body_def.type = b2_dynamicBody;
+	    }else {
+	      body_def.type = b2_staticBody;
+	    }
             body_def.position.Set(oit.x, oit.y);
             b2PolygonShape dynamic_box;
             dynamic_box.SetAsBox(oit.width, oit.height);

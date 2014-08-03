@@ -13,6 +13,7 @@ namespace Polarity {
   class GameObject {
     Behavior * behavior;
   public:
+    b2AABB getBounds()const;
     void tick(World*world);
     void draw(SDL_Surface* surface);
     b2Body*groundBody;
