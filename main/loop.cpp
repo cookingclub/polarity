@@ -13,8 +13,6 @@ bool buzzing = false;       // TODO: bring this into a game state! you should bu
 
 bool loaded = false;
 
-shared_ptr<Image> test_image;
-
 void loadAssets() {
     audioPlayer = new AudioChannelPlayer(32);
     if (audioPlayer->addChannel("white", "assets/audio/frozen_star.mp3", 0) != AudioFileError::OK) {
@@ -28,12 +26,9 @@ void loadAssets() {
     } else {
         audioPlayer->setChannelVolume("buzz", 1.0);
     }
-    test_image = Image::get("assets/helloworld.png");
 }
 
 bool loopIter(SDL_Surface *screen) {
-    test_image->draw(screen, 0, 0);
-
     SDL_Event event;
     std::vector<int> keyUps;
     while (SDL_PollEvent(&event)) {
