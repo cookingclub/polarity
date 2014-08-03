@@ -3,7 +3,8 @@
 using namespace std;
 
 namespace Polarity {
-  GameObject::GameObject(b2World *world, const b2BodyDef &bdef) {
+  GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef) {
+    this->behavior = behavior;
     groundBody = world->CreateBody(&bdef);
   }
 

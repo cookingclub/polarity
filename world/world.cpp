@@ -13,10 +13,13 @@ namespace Polarity {
   void World::init() {
       world = new World();
   }
-  GameObject* World::addObject(const b2BodyDef&bdef) {
-      GameObject * object = new GameObject(&physics, bdef);
+  GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef) {
+      GameObject * object = new GameObject(&physics, behavior, bdef);
       objects.emplace_back(object);
       return objects.back().get();
+  }
+  bool World::isKeyDown(int keyCode) {
+    return keyState[keyCode];
   }
   void World::keyEvent(int keyCode, bool pressed) {
     if (keyCode < SDLK_LAST) {
@@ -28,11 +31,11 @@ namespace Polarity {
   void World::tick() {
     for (auto &obj : objects) {
       obj->tick(this);
+      std::cerr << obj->printPosition()<<std::endl;
     }
-    for(auto &gameObject:objects){
-      std::cerr << gameObject->printPosition() << "\n";
-
-    }
+    //for(auto &gameObject:objects){
+    //  
+    //}
     
     // Gets called every frame
   }

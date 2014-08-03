@@ -11,7 +11,7 @@ class World {
 public:
   static void init();
   World();
-  GameObject* addObject(const b2BodyDef&);
+  GameObject* addObject(Behavior*behavior, const b2BodyDef&);
   void tick();
   void keyEvent(int keyCode, bool pressed);
   bool isKeyDown(int keyCode);

@@ -5,6 +5,7 @@
 #include "audio/audio.hpp"
 #include "main/main.hpp"
 #include "world/world.hpp"
+#include "physics/behavior.hpp"
 using namespace std;
 
 const int AUDIO_RATE = 44100; // FIXME: Does this matter?
@@ -68,6 +69,6 @@ int main() {
     b2BodyDef bodyDef;
     bodyDef.type = b2_dynamicBody;
     bodyDef.position.Set(0.0f, 40.0f);
-    Polarity::world->addObject(bodyDef);
+    Polarity::world->addObject(new Polarity::KeyboardBehavior(), bodyDef);
     Polarity::mainloop();
 }
