@@ -33,27 +33,32 @@ bool loopIter(SDL_Surface *screen) {
         if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
             if (event.type == SDL_KEYDOWN) {
                 world->keyEvent(event.key.keysym.sym, true);
+                if (event.key.keysym.sym == SDLK_SPACE) {
+                    audioPlayer->playChannel("white");
+                    audioPlayer->playChannel("black");
+                } else if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    audioPlayer->stopChannel("white");
+                    audioPlayer->stopChannel("black");
+                } else if (event.key.keysym.sym == SDLK_w) {
+                    // switch to white track
+                    audioPlayer->setChannelVolume("white", 1.0);
+                    audioPlayer->setChannelVolume("black", 0.0);
+                } else if (event.key.keysym.sym == SDLK_b) {
+                    // switch to black track
+                    audioPlayer->setChannelVolume("white", 0.0);
+                    audioPlayer->setChannelVolume("black", 1.0);
+                } else if (event.key.keysym.sym == SDLK_1) {
+                    if (!buzzing) {
+                        audioPlayer->playChannel("buzz", -1);
+                    } else {
+                        audioPlayer->stopChannel("buzz");
+                    }
+                    buzzing = !buzzing;
+                } else if (event.key.keysym.sym == SDLK_2) {
+                    
+                }            
             } else {
                 keyUps.push_back(event.key.keysym.sym);
-            }
-            if (event.key.keysym.sym == SDLK_SPACE) {
-                audioPlayer->playChannel("white");
-                audioPlayer->playChannel("black");
-            } else if (event.key.keysym.sym == SDLK_ESCAPE) {
-                audioPlayer->stopChannel("white");
-                audioPlayer->stopChannel("black");
-            } else if (event.key.keysym.sym == SDLK_w) {
-                // switch to white track
-                audioPlayer->setChannelVolume("white", 1.0);
-                audioPlayer->setChannelVolume("black", 0.0);
-            } else if (event.key.keysym.sym == SDLK_b) {
-                // switch to black track
-                audioPlayer->setChannelVolume("white", 0.0);
-                audioPlayer->setChannelVolume("black", 1.0);
-            } else if (event.key.keysym.sym == SDLK_1) {
-                audioPlayer->playChannel("buzz", -1);
-            } else if (event.key.keysym.sym == SDLK_2) {
-                audioPlayer->stopChannel("buzz");
             }
         }
     }
