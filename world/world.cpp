@@ -58,6 +58,12 @@ void World::tick() {
     // Gets called every frame
 }
 
+void World::draw(SDL_Surface *screen) {
+    for (auto& layer : layers->layers) {
+        layer->draw(screen, 0, 0);
+    }
+}
+
 void World::load(const std::string &tmxFile) {
     char *filecpy = new char[tmxFile.length() + 1];
     strncpy(filecpy, tmxFile.c_str(), tmxFile.length() + 1);

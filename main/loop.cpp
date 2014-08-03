@@ -70,6 +70,7 @@ bool loopIter(SDL_Surface *screen) {
         }
     }
     world->tick();
+    world->draw(screen);
     // all key up have to happen after key downs so we get a full tick of downs
     for (auto &key : keyUps) {
       world->keyEvent(key, false);
