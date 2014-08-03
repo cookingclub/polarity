@@ -49,18 +49,25 @@ bool loopIter(SDL_Surface *screen) {
             audioPlayer->setChannelVolume("reverse", 0.0);
             audioPlayer->playChannel("forward");
             audioPlayer->playChannel("reverse");
-        } else if (event.key.keysym.sym == SDLK_9) {
+        } else if (event.key.keysym.sym == SDLK_4) {
             audioPlayer->stopChannel("forward");
             audioPlayer->stopChannel("reverse");
             audioPlayer->setChannelVolume("forward", 0.0);
-            audioPlayer->setChannelVolume("reverse", 1.0);
+            audioPlayer->setChannelVolume("reverse", 0.55);
             audioPlayer->playChannel("forward");
             audioPlayer->playChannel("reverse");
-        } else if (event.key.keysym.sym == SDLK_5) {
+        } else if (event.key.keysym.sym == SDLK_2) {
             audioPlayer->stopChannel("forward");
             audioPlayer->stopChannel("reverse");
-            audioPlayer->setChannelVolume("forward", 0.5);
-            audioPlayer->setChannelVolume("reverse", 0.5);
+            audioPlayer->setChannelVolume("forward", 0.55);
+            audioPlayer->setChannelVolume("reverse", 0.15);
+            audioPlayer->playChannel("forward");
+            audioPlayer->playChannel("reverse");
+        } else if (event.key.keysym.sym == SDLK_3) {
+            audioPlayer->stopChannel("forward");
+            audioPlayer->stopChannel("reverse");
+            audioPlayer->setChannelVolume("forward", 0.15);
+            audioPlayer->setChannelVolume("reverse", 0.55);
             audioPlayer->playChannel("forward");
             audioPlayer->playChannel("reverse");
         } else if (event.key.keysym.sym == SDLK_0) {
