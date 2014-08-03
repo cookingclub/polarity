@@ -58,7 +58,7 @@ void Image::draw(SDL_Surface *screen, int x, int y) {
 
 
 
-Animation::Animation(const std::string& filename, int numFrames) {
+Animation::Animation(const std::string& filename, const std::string &ext, int numFrames) {
     frame = 0;
     lastTime = SDL_GetTicks();
     running = true;
@@ -70,20 +70,24 @@ Animation::Animation(const std::string& filename, int numFrames) {
     char numberTarget[64]={0};
     char * mdata = strdup(filename.c_str());
     for (int i = 0; i < numFrames; ++i) {
-      sprintf(numberTarget, "%d", i);
-      std::string mdata = filename + numberTarget;
+      sprintf(numberTarget, "%d.", i);
+      std::string mdata = filename + numberTarget + ext;
       images.emplace_back(new Image(mdata));
     }
 }
 
 std::shared_ptr<Animation> Animation::get(const std::string& filename) {
-    std::string::size_type where = filename.find_last_of("-");
+  std::string::size_type extwhere = filename.find_last_of(".");
+  std::string ext = filename.substr(extwhere + 1);
+  std::string basename = filename.substr(0, extwhere);
+    std::string::size_type where = basename.find_last_of("-");
     if (where !=std::string::npos) {
-       const char * data (filename.c_str());
+       const char * data (basename.c_str());
        const char * numFramesStr = data + where + 1;
        int numFrames = 1;
        sscanf(numFramesStr, "%d", &numFrames);
-       return std::shared_ptr<Animation>(new Animation(filename.substr(0,where + 1),
+       return std::shared_ptr<Animation>(new Animation(basename.substr(0,where + 1),
+						       ext,
 						       numFrames));
     }else {
       std::cerr << "Animation filename of wrong pattern: no dash " << filename <<std::endl;

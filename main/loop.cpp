@@ -29,6 +29,8 @@ void loadAssets() {
 bool loopIter(SDL_Surface *screen) {
     SDL_Event event;
     std::vector<int> keyUps;
+    //static std::shared_ptr<Animation> anim = Animation::get("/assets/graphics/anim-2.png");
+    //anim->draw(screen, 0, 0);
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
             if (event.type == SDL_KEYDOWN) {

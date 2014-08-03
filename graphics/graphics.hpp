@@ -44,7 +44,7 @@ class Animation : public Image{
   Animation()=delete;
   Animation(const Animation&x) = delete;
   Animation &operator=(const Animation&x) = delete;
-  explicit Animation(const std::string &pattern, int numFrames);
+  explicit Animation(const std::string &pattern, const std::string &ext, int numFrames);
   std::vector<std::shared_ptr<Image> > images;
   size_t getFrame();
 public:
