@@ -25,8 +25,8 @@ void World::init() {
     world = new World("assets/levels/level1.tmx");
 }
 
-GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef) {
-    GameObject * object = new GameObject(&physics, behavior, bdef);
+  GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef, const b2FixtureDef&fixture) {
+    GameObject * object = new GameObject(&physics, behavior, bdef, fixture);
     objects.emplace_back(object);
     return objects.back().get();
 }
@@ -44,8 +44,8 @@ void World::keyEvent(int keyCode, bool pressed) {
 }
 
 void World::tick() {
+    // timeStep, velocityIterations, positionIterations
     physics.Step(0.0166666, 1, 1);
-
     for (auto &obj : objects) {
       obj->tick(this);
       std::cerr << obj->printPosition()<<std::endl;
