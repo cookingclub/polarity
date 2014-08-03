@@ -29,6 +29,7 @@ namespace Polarity {
     }
   }
   void World::tick() {
+    physics.Step(0.0166666, 1, 1);
     for (auto &obj : objects) {
       obj->tick(this);
       std::cerr << obj->printPosition()<<std::endl;
