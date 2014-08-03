@@ -67,9 +67,7 @@ void World::load(const std::string &tmxFile) {
     tmxparser::TmxMap map;
     tmxparser::TmxReturn error = tmxparser::parseFromFile(tmxFile, &map);
 
-    layers = std::unique_ptr<LayerCollection>(new LayerCollection(
-                dir,
-                map.tilesetCollection, map.layerCollection));
+    layers = std::unique_ptr<LayerCollection>(new LayerCollection(dir, map));
 
     for (auto &it : map.tilesetCollection) {
         std::cerr << "Found tileset: " << it.name << std::endl;

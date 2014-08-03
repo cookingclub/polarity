@@ -30,6 +30,7 @@ public:
     static std::shared_ptr<Image> get(const std::string &filename);
 
     void draw(SDL_Surface *surf, int x, int y);
+    void draw(SDL_Surface *screen, SDL_Rect *src, int x, int y);
 private:
     SDL_Surface *surf;
 };
@@ -45,20 +46,29 @@ public:
     std::shared_ptr<Image> image;
 };
 
-class LayerCollection {
+class LayerCollection;
+
+class Layer : public tmxparser::TmxLayer {
+public:
+    explicit Layer(LayerCollection*layers,
+            const tmxparser::TmxLayer &tmxLayer);
+
+    void draw(SDL_Surface* screen, int x, int y);
+
+    LayerCollection *layers;
+};
+
+class LayerCollection : public tmxparser::TmxMap {
     LayerCollection() = delete;
     LayerCollection(const LayerCollection&x) = delete;
     LayerCollection& operator=(const LayerCollection&x) = delete;
 public:
     explicit LayerCollection(
             const std::string& directory,
-            const tmxparser::TmxTilesetCollection_t &tmxTilesets,
-            const tmxparser::TmxLayerCollection_t &tmxLayers);
-
-
-private:
+            const tmxparser::TmxMap &tmxMap);
 
     std::vector<std::unique_ptr<Tileset>> tilesets;
+    std::vector<std::unique_ptr<Layer>> layers;
 };
 
 }
