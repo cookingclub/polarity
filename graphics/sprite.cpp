@@ -62,7 +62,7 @@ Animation::Animation(const std::string& filename, const std::string &ext, int nu
     frame = 0;
     lastTime = SDL_GetTicks();
     running = true;
-    frameTime = 1.0/60.0;
+    frameTime = 1.0/16.0;
     if (numFrames > 999) { // just so we don't get weird behavior
       numFrames = 999;
       std::cerr << "Truncating animation to 999 frames" << std::endl;
@@ -70,7 +70,15 @@ Animation::Animation(const std::string& filename, const std::string &ext, int nu
     char numberTarget[64]={0};
     char * mdata = strdup(filename.c_str());
     for (int i = 0; i < numFrames; ++i) {
-      sprintf(numberTarget, "%d.", i);
+      if (numFrames > 1000) {
+	sprintf(numberTarget, "%d.", i);
+      } else if (numFrames > 100) {
+	sprintf(numberTarget, "%03d.", i);
+      }else if (numFrames > 10) {
+	sprintf(numberTarget, "%02d.", i);
+      } else {
+	sprintf(numberTarget, "%02d.", i);
+      }
       std::string mdata = filename + numberTarget + ext;
       images.emplace_back(new Image(mdata));
     }
