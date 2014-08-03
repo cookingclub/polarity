@@ -7,16 +7,22 @@ namespace Polarity {
 
 AudioFile *audioTest;
 AudioChannelPlayer *audioPlayer;
+bool buzzing = false;       // TODO: bring this into a game state! you should buzz if you have the appropriate powerup
 
 bool loaded = false;
 
 void loadAssets() {
-    audioPlayer = new AudioChannelPlayer(16);
+    audioPlayer = new AudioChannelPlayer(32);
     if (audioPlayer->addChannel("white", "assets/audio/frozen_star.mp3", 0) != AudioFileError::OK) {
         std::cerr << "Couldn't load white track" << std::endl;
     }
     if (audioPlayer->addChannel("black", "assets/audio/lightless_dawn.mp3", 1) != AudioFileError::OK) {
         std::cerr << "Couldn't load black track" << std::endl;
+    }
+    if (audioPlayer->addChannel("buzz", "assets/audio/buzz.mp3", 2) != AudioFileError::OK) {
+        std::cerr << "Couldn't load buzz track" << std::endl;
+    } else {
+        audioPlayer->setChannelVolume("buzz", 1.0);
     }
 }
 
@@ -44,6 +50,10 @@ bool loopIter(SDL_Surface *screen) {
                 // switch to black track
                 audioPlayer->setChannelVolume("white", 0.0);
                 audioPlayer->setChannelVolume("black", 1.0);
+            } else if (event.key.keysym.sym == SDLK_1) {
+                audioPlayer->playChannel("buzz", -1);
+            } else if (event.key.keysym.sym == SDLK_2) {
+                audioPlayer->stopChannel("buzz");
             }
         }
     }
