@@ -26,10 +26,17 @@ DoorTrigger::DoorTrigger() {
 
 void DoorTrigger::onBeginCollision(GameObject* other) {
     if (other->getType() == GameObject::PLAYER) {
-        other->groundBody->SetGravityScale(0);
+        owner->setAction(GameObject::OPEN);
+        //other->groundBody->SetGravityScale(0);
         //other->groundBody->SetLinearVelocity(
         //        (other->groundBody->GetPosition() - owner->groundBody->GetPosition()));
         std::cerr<<"We have CONTACT!"<< std::endl;
+    }
+}
+
+void DoorTrigger::onEndCollision(GameObject* other) {
+    if (other->getType() == GameObject::PLAYER) {
+        owner->setAction(GameObject::IDLE);
     }
 }
 

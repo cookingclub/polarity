@@ -62,6 +62,7 @@ Animation::Animation(const std::string& filename, const std::string &ext, int nu
     frame = 0;
     lastTime = SDL_GetTicks();
     running = true;
+    loop = true;
     frameTime = 1.0/16.0;
     if (numFrames > 999) { // just so we don't get weird behavior
       numFrames = 999;
@@ -113,8 +114,14 @@ Animation::~Animation() {
     surf = nullptr;
 }
 
+void Animation::restart() {
+    frame = 0;
+    start();
+}
+
 void Animation::start() {
     running = true;
+    lastTime = SDL_GetTicks();
 }
 
 void Animation::pause() {
@@ -131,8 +138,16 @@ size_t Animation::getFrame() {
     size_t deltaTicks = curTime - lastTime;
     size_t deltaFrames = deltaTicks / ticksPerFrame;
     lastTime += deltaFrames * ticksPerFrame;
-    frame += deltaFrames;
-    frame %= images.size();
+    if (!running) {
+        return frame;
+    }
+    size_t newFrame = frame + deltaFrames;
+    if (newFrame >= images.size() && !loop) {
+        newFrame = 0;
+        running = false;
+    } else {
+        frame = newFrame % images.size();
+    }
     return frame;
 }
 

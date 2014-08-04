@@ -34,28 +34,45 @@ GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef
     jumpCooldown = -1;
     collidable = true; // deprecated: use b2FixtureDef::isSensor
 
-    auto it = properties.find("idle");
-    if (it != properties.end()) {
-        idle = Animation::get("/" + it->second);
-    }
+    idle = nullptr;
+
     for(int i=0;i<NUM_ACTIONS;++i) {
+        Actions act = (Actions)i;
         std::string stringName;
-        switch (i) {
-          case WALK: stringName = "walk";
+        switch (act) {
+        case IDLE: stringName = "idle";
             break;
-          case RUN: stringName = "run";
+        case WALK: stringName = "walk";
             break;
-          case JUMP: stringName = "jump";
+        case RUN: stringName = "run";
             break;
-          default:
+        case JUMP: stringName = "jump";
+            break;
+        case OPEN: stringName = "open";
+            break;
+        default:
             break;
         }
         if (stringName.length()) {
             auto it = properties.find(stringName);
             if (it != properties.end()) {
-                actionsAnimation[(Actions)i] = Animation::get("/" + it->second);
+                actionsAnimation[act] = Animation::get(it->second);
+                if (act == OPEN) {
+                    actionsAnimation[act]->setLoop(false);
+                }
             }
         }
+    }
+    auto animit = actionsAnimation.find(IDLE);
+    if (animit != actionsAnimation.end()) {
+        idle = animit->second;
+    }
+}
+
+void GameObject::setAction(Actions a) {
+    if (currentAction != a) {
+        currentAction = a;
+        actionsAnimation[a]->restart();
     }
 }
 
@@ -73,7 +90,7 @@ b2AABB GameObject::getBounds() const{
     transform.SetIdentity();
     b2AABB aabb;
     aabb.lowerBound = b2Vec2(FLT_MAX,FLT_MAX);
-    aabb.upperBound = b2Vec2(-FLT_MAX,-FLT_MAX); 
+    aabb.upperBound = b2Vec2(-FLT_MAX,-FLT_MAX);
     b2Fixture* fixture = groundBody->GetFixtureList();
 
     while (fixture != nullptr) {
@@ -118,7 +135,7 @@ void GameObject::draw(World * world, SDL_Surface* screen) {
         actionAnim = idle;
     }
     if (actionAnim) {
-        actionAnim->draw(screen, actualpos.x - idle->width() / 2, actualpos.y - idle->height() / 2);
+        actionAnim->draw(screen, actualpos.x - actionAnim->width() / 2, actualpos.y - actionAnim->height() / 2);
     }
 }
 

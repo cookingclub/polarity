@@ -31,6 +31,7 @@ public:
         WALK,
         RUN,
         JUMP,
+        OPEN,
         NUM_ACTIONS,
     };
     static Type parseTypeStr(const std::string &str);
@@ -45,9 +46,7 @@ private:
     std::shared_ptr<Animation> idle;
     std::map<Actions, std::shared_ptr<Animation> > actionsAnimation;
 public:
-    void setAction(Actions a = Actions::IDLE) {
-        currentAction = a;
-    }
+    void setAction(Actions a);
     b2AABB getBounds()const;
     void tick(World*world);
     void draw(World * world, SDL_Surface* surface);

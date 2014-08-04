@@ -49,10 +49,13 @@ class Animation : public Image{
     std::vector<std::shared_ptr<Image> > images;
     size_t getFrame();
 public:
+    void restart();
     void start();
     void pause();
+    void setLoop(bool loop) { this->loop = loop; }
     ~Animation();
     long long lastTime;
+    bool loop;
     bool running;
     size_t frame;
     float frameTime;

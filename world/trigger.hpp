@@ -28,6 +28,7 @@ public:
     DoorTrigger();
 
     void onBeginCollision(GameObject* other);
+    void onEndCollision(GameObject* other);
 };
 
 class FeetTrigger : public Trigger {
