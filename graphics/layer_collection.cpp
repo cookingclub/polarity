@@ -30,7 +30,8 @@ void Tileset::drawTile(int tileindex, SDL_Surface *surf, int x, int y) {
     image->draw(surf, &srcpos, x, y - tileHeight);
 }
 
-Layer::Layer(LayerCollection* layers,
+Layer::Layer(const std::string& directory,
+            LayerCollection* layers,
             const tmxparser::TmxLayer &tmxLayer)
         : tmxparser::TmxLayer(tmxLayer),
           layers(layers) {
@@ -39,10 +40,15 @@ Layer::Layer(LayerCollection* layers,
     auto whereX = tmxLayer.propertyMap.find("parallax");
     if (whereX != tmxLayer.propertyMap.end()) {
         sscanf(whereX->second.c_str(), "%f", &xparallax);
+        yparallax = xparallax;
     }
     auto whereY = tmxLayer.propertyMap.find("yparallax");
     if (whereY != tmxLayer.propertyMap.end()) {
         sscanf(whereY->second.c_str(), "%f", &yparallax);
+    }
+    if (tmxLayer.isImageLayer) {
+        backgroundImage = Image::get(directory + "/" +
+                tmxLayer.backgroundImage.source);
     }
     std::cerr<< "Found the parallax "<<xparallax <<","<<yparallax<<std::endl;
 }
@@ -68,10 +74,14 @@ Layer::Layer(LayerCollection* layers,
 
 
 void Layer::draw(SDL_Surface* screen, int startx, int starty) {
+    startx *= xparallax;
+    starty *= yparallax;
+    if (backgroundImage) {
+        backgroundImage->draw(screen, startx, starty);
+        return;
+    }
     int layerWidth = (int)width * layers->tileWidth;
     int layerHeight = (int)height * layers->tileHeight;
-    startx *= xparallax;
-    startx *= yparallax;
     int tileid = 0;
     for (int layerY = 0; layerY < layerHeight; layerY += layers->tileHeight) {
         for (int layerX = 0; layerX < layerWidth; layerX += layers->tileWidth, ++tileid) {
@@ -107,7 +117,7 @@ LayerCollection::LayerCollection(
     }
     for (auto &it : tmxMap.layerCollection) {
         std::cerr << "layercol Found layer: " << it.name << std::endl;
-        layers.push_back(std::unique_ptr<Layer>(new Layer(this, it)));
+        layers.push_back(std::unique_ptr<Layer>(new Layer(directory, this, it)));
     }
 }
 

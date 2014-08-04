@@ -35,7 +35,7 @@ World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _au
 }
 
 void World::init(shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState) {
-    world = new World("assets/levels/level3.tmx", audioPlayer, playerState, gameState);
+    world = new World("assets/levels/level2.tmx", audioPlayer, playerState, gameState);
 
     // based on current game state, start music and sound effects
     world->fAudioPlayer->playChannel("white-music");

@@ -149,8 +149,11 @@ TmxReturn _parseMapNode(tinyxml2::XMLElement* element, TmxMap* outMap)
 		outMap->tilesetCollection.push_back(set);
 	}
 
-	for (tinyxml2::XMLElement* child = element->FirstChildElement("layer"); child != NULL; child = child->NextSiblingElement("layer"))
+	for (tinyxml2::XMLElement* child = element->FirstChildElement(); child != NULL; child = child->NextSiblingElement())
 	{
+		if (strcmp(child->Name(), "layer") != 0 && strcmp(child->Name(), "imagelayer") != 0) {
+			continue;
+		}
 		TmxLayer layer;
 		error = _parseLayerNode(child, outMap->tilesetCollection, &layer);
 		if (error)
@@ -295,16 +298,30 @@ TmxReturn _parseLayerNode(tinyxml2::XMLElement* element, const TmxTilesetCollect
 		return error;
 	}
 
-	// check data node and type
-	tinyxml2::XMLElement* dataElement = element->FirstChildElement("data");
-	if (dataElement != NULL)
+	if (strcmp(element->Name(), "imagelayer") == 0)
 	{
-		error = _parseLayerXmlDataNode(dataElement, tilesets, &outLayer->tiles);
+		outLayer->isImageLayer = true;
+		TmxReturn error = _parseImageNode(element->FirstChildElement("image"), &outLayer->backgroundImage);
+		if (error)
+		{
+			LOGE("Error parsing image node...");
+			return error;
+		}
 	}
 	else
 	{
-		LOGE("Layer missing data node...");
-		return TmxReturn::kMissingDataNode;
+		outLayer->isImageLayer = false;
+		// check data node and type
+		tinyxml2::XMLElement* dataElement = element->FirstChildElement("data");
+		if (dataElement != NULL)
+		{
+			error = _parseLayerXmlDataNode(dataElement, tilesets, &outLayer->tiles);
+		}
+		else
+		{
+			LOGE("Layer missing data node...");
+			return TmxReturn::kMissingDataNode;
+		}
 	}
 
 	return error;
@@ -330,6 +347,8 @@ TmxReturn _parseLayerXmlTileNode(tinyxml2::XMLElement* element, const TmxTileset
 	TmxReturn error = TmxReturn::kSuccess;
 
 	outTile->gid = element->UnsignedAttribute("gid");
+    unsigned int rotateBits = outTile->gid >> 29;
+    outTile->gid = outTile->gid & ((1 << 29) - 1);
 
 	outTile->tilesetIndex = 0;
 	outTile->tileInTilesetIndex = 0;

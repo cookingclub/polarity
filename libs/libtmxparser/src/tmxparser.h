@@ -128,11 +128,24 @@ typedef struct
 typedef std::vector<TmxTileset> TmxTilesetCollection_t;
 
 
+enum TmxRotation {
+    NORMAL,
+    ROTATE90,
+    ROTATE180,
+    ROTATE270,
+    FLIPPED_NORMAL,
+    FLIPPED_ROTATE90,
+    FLIPPED_ROTATE180,
+    FLIPPED_ROTATE270,
+};
+
+
 typedef struct
 {
 	unsigned int gid;
 	unsigned int tilesetIndex;
 	unsigned int tileInTilesetIndex;
+    TmxRotation rotation;
 } TmxLayerTile;
 
 
@@ -146,6 +159,8 @@ typedef struct
 	unsigned int height;
 	float opacity;
 	bool visible;
+    bool isImageLayer;
+    TmxImage backgroundImage;
 	TmxPropertyMap_t propertyMap;
 	TmxLayerTileCollection_t tiles;
 } TmxLayer;

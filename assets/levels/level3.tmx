@@ -22,6 +22,10 @@
   <image source="../graphics/edges.png" width="160" height="96"/>
  </tileset>
  <imagelayer name="background" width="50" height="28">
+  <properties>
+   <property name="parallax" value="0.25"/>
+   <property name="yparallax" value="0.5"/>
+  </properties>
   <image source="../graphics/background.png"/>
  </imagelayer>
  <layer name="Static" width="50" height="28">
@@ -2839,6 +2843,7 @@
    </properties>
   </object>
   <object x="0" y="736" width="448" height="160"/>
+  <object x="576" y="736" width="352" height="160"/>
   <object x="928" y="800" width="192" height="96"/>
   <object x="1120" y="576" width="448" height="320"/>
   <object name="door" type="door" x="1312" y="416" width="128" height="160">

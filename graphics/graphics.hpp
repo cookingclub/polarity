@@ -80,13 +80,16 @@ class LayerCollection;
 
 class Layer : public tmxparser::TmxLayer {
 public:
-    explicit Layer(LayerCollection*layers,
+    explicit Layer(const std::string& directory,
+            LayerCollection*layers,
             const tmxparser::TmxLayer &tmxLayer);
 
     void draw(SDL_Surface* screen, int x, int y);
     float xparallax;
     float yparallax;
     LayerCollection *layers;
+
+    std::shared_ptr<Image> backgroundImage;
 };
 
 class LayerCollection : public tmxparser::TmxMap {
