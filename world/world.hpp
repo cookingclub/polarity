@@ -1,6 +1,10 @@
+#ifndef POLARITY_WORLD_HPP__
+#define POLARITY_WORLD_HPP__
+
 #include <Box2D/Box2D.h>
 #include "physics/vector.hpp"
 #include "physics/physics.hpp"
+#include "physics/contact.hpp"
 #include "graphics/graphics.hpp"
 #include "audio/audio.hpp"
 #include "player.hpp"
@@ -16,6 +20,8 @@ class World {
     b2World physics;
     b2Vec2 graphicsScale;
     b2Vec2 camera;
+    ContactListener contactListener;
+    b2Vec2 screenDimensions;
     vector<bool> keyState;
     vector<bool> keyPressedThisTick;
     vector< unique_ptr<GameObject> > objects;
@@ -29,6 +35,7 @@ public:
     b2Vec2 getCamera()const {
         return camera;
     }
+    void updateCamera(GameObject *obj, b2Vec2 player);
     static void init(shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState);
     World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> _playerState, shared_ptr<GameState> _gameState);
     GameObject* addObject(Behavior*behavior, const b2BodyDef&, const b2FixtureDef&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties);
@@ -66,3 +73,4 @@ public:
 };
 extern World *world;
 }
+#endif

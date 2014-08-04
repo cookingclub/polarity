@@ -37,16 +37,29 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
     b2Body *phyobj = obj->groundBody;
     if (left) {
         obj->setAction(GameObject::WALK);
-        phyobj->ApplyForce( b2Vec2(-100,0), phyobj->GetWorldCenter(), true);
+        phyobj->ApplyForce( b2Vec2(-50,0), phyobj->GetWorldCenter(), true);
         world->audio()->playChannel("step-stone", -1);
     }
-    if (jump) {
-        phyobj->ApplyForce( b2Vec2(0,50), phyobj->GetWorldCenter(), true);
-        world->audio()->playChannel("jump", 0);
-    }
+
+	
+   if (jump) {
+//      phyobj->ApplyForce( b2Vec2(0,50), phyobj->GetWorldCenter(), true);
+		b2ContactEdge* contact = phyobj->GetContactList();
+//		b2Contact* contact = phyobj->GetContactList();
+//		for (b2ContactEdge* contact = phyobj->GetContactList(); contact; contact = contact->next())
+		
+		if (contact){
+			phyobj->ApplyLinearImpulse( b2Vec2(0,1), phyobj->GetWorldCenter(), true);
+			world->audio()->playChannel("jump", 0);
+			std:: cerr<< contact <<std:: endl;
+		}	
+
+
+
+		}
     if (right) {
         obj->setAction(GameObject::WALK);
-        phyobj->ApplyForce( b2Vec2(100,0), phyobj->GetWorldCenter(), true);
+        phyobj->ApplyForce( b2Vec2(50,0), phyobj->GetWorldCenter(), true);
         world->audio()->playChannel("step-stone", -1);
     }
     if (phyobj->GetLinearVelocity().LengthSquared() < .1) { // and contact
@@ -76,7 +89,7 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
     if (!jump) {
         world->audio()->stopChannel("jump");
     }
-
+    world->updateCamera(obj, phyobj->GetWorldCenter());
     world->clearJustPressedStates();
 }
 

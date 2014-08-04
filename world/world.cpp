@@ -17,6 +17,8 @@ World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _au
         : physics(b2Vec2(0.0f, -10.0f)),
         graphicsScale(b2Vec2(96, 96)),
         camera(0, 300), //FIXME hard coded
+        contactListener(this),
+        screenDimensions(1, 1),
         keyState(SDLK_LAST),
         keyPressedThisTick(SDLK_LAST, false),
         layers(nullptr),
@@ -28,6 +30,7 @@ World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _au
       keyState[i] = false;
     }
     load(tmxFile);
+    physics.SetContactListener(&contactListener);
 }
 
 void World::init(shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState) {
@@ -78,6 +81,21 @@ void World::clearJustPressedStates() {
     keyPressedThisTick = vector<bool>(keyState.size(), false);
 }
 
+void World::updateCamera(GameObject *obj, b2Vec2 player) {
+    b2Vec2 delta = physicsToGraphics(player) - camera - 0.5f * screenDimensions;
+    float lenY = delta.y > 0.0 ? delta.y : -delta.y;
+    float lenX = delta.x > 0.0 ? delta.x : -delta.x;
+    float maxMovementX = 32.0;
+    float maxMovementY = 1.0;
+    if (lenY > maxMovementY) {
+        delta.y *= maxMovementY / lenY;
+    }
+    if (lenX > maxMovementX) {
+        delta.x *= maxMovementX / lenX;
+    }
+    camera += delta;
+}
+
 void World::tick() {
     if (keyState['a']) {
         camera.x -=1;
@@ -111,6 +129,8 @@ void World::draw(SDL_Surface *screen) {
     for (auto& object : objects) {
         object->draw(this, screen);
     }
+    screenDimensions.x = screen->w;
+    screenDimensions.y = screen->h;
 }
 
 void World::load(const std::string &tmxFile) {
