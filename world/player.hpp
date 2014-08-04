@@ -5,13 +5,13 @@ namespace Polarity {
 enum PlayerColor {
     WHITE = 0,
     BLACK = 1
-}
+};
 
 struct PlayerState {
 
     PlayerColor color;
     bool hasBuzzPowerup;        // placeholder for powerup 1 (makes buzzing noise)
-    bool tasWoowooPowerup;      // placeholder for powerup 2 (makes woowoo noise)
+    bool hasWoowooPowerup;      // placeholder for powerup 2 (makes woowoo noise)
     int timesDiedThisLevel;
     bool isFalling;
 
@@ -41,7 +41,7 @@ struct GameState {
         musicMaxVolume(1.0),
         timesDiedTotal(0),
         currentLevel(0),
-        isPause(false)
+        isPaused(false)
     {
     }
 };

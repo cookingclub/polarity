@@ -201,32 +201,6 @@ public:
         fChannelStates[id] = Polarity::CurrentAudioState::STOPPED;
         return Polarity::AudioFileError::OK;
     }
-
-//     Polarity::AudioFileError fadeOutChannel(string id, int durationMilliseconds) {
-//         if (!channelExists(id)) {
-//             cerr << "Channel " << id << " doesn't exist" << endl;
-//             return Polarity::AudioFileError::NO_SUCH_CHANNEL;
-//         }
-// 
-//         Mix_FadeOutChannel(fChannelNames[id], durationMilliseconds);
-//         fChannelStates[id] = Polarity::CurrentAudioState::STOPPED;
-//         return Polarity::AudioFileError::OK;
-//     }
-// 
-//     Polarity::AudioFileError fadeInChannel(string id, int durationMilliseconds) {
-//         if (!channelExists(id)) {
-//             cerr << "Channel " << id << " doesn't exist" << endl;
-//             return Polarity::AudioFileError::NO_SUCH_CHANNEL;
-//         }
-//         if (fChannelStates[id] != Polarity::CurrentAudioState::PLAYING) {
-//             if( Mix_FadeInChannel(fChannelNames[id], fChunks[id], 1, durationMilliseconds) == -1) {
-//                 cerr << "Mix_PlayChannel failed: " << Mix_GetError() << endl;
-//                 return Polarity::AudioFileError::CANT_PLAY;
-//             }
-//         }
-//         fChannelStates[id] = Polarity::CurrentAudioState::PLAYING;
-//         return Polarity::AudioFileError::OK;
-//     }
 private:
 
     int fNumChans;

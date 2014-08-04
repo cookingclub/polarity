@@ -17,6 +17,7 @@ class KeyboardBehavior : public Behavior{
 public:
     KeyboardBehavior() {
     }
+    virtual void handleMusicByPlayerColor(World *world);
     virtual void tick(World * world, GameObject *obj);
 };
 }

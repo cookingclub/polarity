@@ -18,6 +18,9 @@ static SDL_Surface *screen;
 namespace Polarity {
 
 std::shared_ptr<AudioChannelPlayer> audioPlayer;
+std::shared_ptr<PlayerState> playerState;
+std::shared_ptr<GameState> gameState;
+
 extern void loadAssets();
 
 #ifdef EMSCRIPTEN
@@ -66,7 +69,7 @@ int main() {
     SDL_MapRGB(screen->format, 65, 65, 65);
     srand(time(NULL));
     Polarity::loadAssets();
-    Polarity::World::init(Polarity::audioPlayer);
+    Polarity::World::init(Polarity::audioPlayer, Polarity::playerState, Polarity::gameState);
 /*
     b2BodyDef bodyDef;
     bodyDef.type = b2_dynamicBody;
