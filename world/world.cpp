@@ -17,6 +17,7 @@ World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _au
         graphicsScale(b2Vec2(96, 96)),
         camera(0, 300), //FIXME hard coded
         contactListener(this),
+        screenDimensions(1, 1),
         keyState(SDLK_LAST),
         layers(nullptr),
         player(_audioPlayer) {
@@ -48,6 +49,16 @@ void World::keyEvent(int keyCode, bool pressed) {
     }else {
         std::cerr << "Key code out of range "<<keyCode<<"\n";
     }
+}
+
+void World::updateCamera(GameObject *obj, b2Vec2 player) {
+    b2Vec2 delta = physicsToGraphics(player) - camera - 0.5f * screenDimensions;
+    float len = delta.Length();
+    float maxMovement = 1.0;
+    if (len > maxMovement) {
+        delta *= maxMovement / len;
+    }
+    camera += delta;
 }
 
 void World::tick() {
@@ -83,6 +94,8 @@ void World::draw(SDL_Surface *screen) {
     for (auto& object : objects) {
         object->draw(this, screen);
     }
+    screenDimensions.x = screen->w;
+    screenDimensions.y = screen->h;
 }
 
 void World::load(const std::string &tmxFile) {

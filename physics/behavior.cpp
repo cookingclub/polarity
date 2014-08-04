@@ -39,5 +39,6 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
     if (!jump) {
         world->audio()->stopChannel("jump");
     }
+    world->updateCamera(obj, phyobj->GetWorldCenter());
 }
 }

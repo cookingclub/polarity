@@ -18,6 +18,7 @@ class World {
     b2Vec2 graphicsScale;
     b2Vec2 camera;
     ContactListener contactListener;
+    b2Vec2 screenDimensions;
     std::vector<bool> keyState;
     std::vector<std::unique_ptr<GameObject> > objects;
     std::unique_ptr<LayerCollection> layers;
@@ -28,6 +29,7 @@ public:
     b2Vec2 getCamera()const {
         return camera;
     }
+    void updateCamera(GameObject *obj, b2Vec2 player);
     static void init(shared_ptr<AudioChannelPlayer> audioPlayer);
     World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> audioPlayer);
     GameObject* addObject(Behavior*behavior, const b2BodyDef&, const b2FixtureDef&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties);
