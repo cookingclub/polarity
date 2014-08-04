@@ -51,6 +51,10 @@ GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef, const b2F
     return objects.back().get();
 }
 
+bool World::isKeyPressed(int keyCode) {
+    return keyPressedState[keyCode];
+}
+
 bool World::isKeyDown(int keyCode) {
     return keyState[keyCode];
 }

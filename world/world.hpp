@@ -36,6 +36,7 @@ public:
     void keyEvent(int keyCode, bool pressed);
     void keyPressedEvent(int keyCode, bool isPressed);
     bool isKeyDown(int keyCode);
+    bool isKeyPressed(int keyCode);
     shared_ptr<AudioChannelPlayer> audio() {
         return fAudioPlayer;
     }
