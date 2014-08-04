@@ -1,10 +1,14 @@
 #include "world/world.hpp"
+#include "world/trigger.hpp"
+
 using namespace std;
 
 namespace Polarity {
 GameObject::Type GameObject::parseTypeStr(const std::string& typeStr) {
     if (typeStr == "start") {
       return PLAYER;
+    } else if (typeStr == "trigger") {
+      return TRIGGER;
     } else if (typeStr == "door") {
       return DOOR;
     } else if (typeStr == "platform") {
@@ -16,13 +20,25 @@ GameObject::Type GameObject::parseTypeStr(const std::string& typeStr) {
 }
 
 GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef, const b2FixtureDef &fixture, const std::string &name, Type type, const PropertyMap &props)
-        : behavior(behavior), name(name), properties(props), type(type) {
+        : behavior(behavior), trigger(NULL), name(name), properties(props), type(type) {
     currentAction = IDLE;
     groundBody = world->CreateBody(&bdef);
     groundBody->SetUserData(this);
     groundBody->CreateFixture(&fixture);
+    if (type == GameObject::DOOR || type == GameObject::TRIGGER) {
+        collidable = false;
+    } else {
+        collidable = true;
+    }
+    auto it = properties.find("trigger");
+    if (it != properties.end()) {
+        trigger = Trigger::create(it->second, properties);
+    } else if (type == GameObject::DOOR) {
+        // FIXME: Make this a property so it is not implicit.
+        trigger = Trigger::create("door", properties);
+    }
 
-    auto it = properties.find("idle");
+    it = properties.find("idle");
     if (it != properties.end()) {
         idle = Animation::get("/" + it->second);
     }
@@ -48,7 +64,9 @@ GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef
 }
 
 void GameObject::tick(World *world) {
-    behavior->tick(world, this);
+    if (behavior) {
+        behavior->tick(world, this);
+    }
 }
 
 b2AABB GameObject::getBounds() const{

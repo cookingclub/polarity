@@ -13,6 +13,7 @@
 namespace Polarity {
 class Behavior;
 class World;
+class Trigger;
 
 typedef std::unordered_map<std::string, std::string> PropertyMap;
 
@@ -22,6 +23,7 @@ public:
         TERRAIN,
         DOOR,
         PLATFORM,
+        TRIGGER,
         PLAYER,
     };
     enum Actions {
@@ -35,9 +37,11 @@ public:
 private:
     Actions currentAction;
     Behavior * behavior;
+    Trigger* trigger;
     std::string name;
     PropertyMap properties;
     Type type;
+    bool collidable;
     std::shared_ptr<Animation> idle;
     std::map<Actions, std::shared_ptr<Animation> > actionsAnimation;
 public:
@@ -48,13 +52,12 @@ public:
     void tick(World*world);
     void draw(World * world, SDL_Surface* surface);
     Type getType() { return type; }
+    bool isCollidable() { return collidable; }
     const std::string& getName() { return name; }
+    Trigger* getTrigger() { return trigger; }
     b2Body*groundBody;
     float printPosition();
     GameObject(b2World *world, Behavior * behavior, const b2BodyDef &bdef, const b2FixtureDef &fixture, const std::string &name, Type type, const PropertyMap &properties);
-};
-
-class Player: public GameObject {
 };
 
 }
