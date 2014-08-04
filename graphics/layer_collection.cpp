@@ -70,7 +70,8 @@ Layer::Layer(LayerCollection* layers,
 void Layer::draw(SDL_Surface* screen, int startx, int starty) {
     int layerWidth = (int)width * layers->tileWidth;
     int layerHeight = (int)height * layers->tileHeight;
-
+    startx *= xparallax;
+    startx *= yparallax;
     int tileid = 0;
     for (int layerY = 0; layerY < layerHeight; layerY += layers->tileHeight) {
         for (int layerX = 0; layerX < layerWidth; layerX += layers->tileWidth, ++tileid) {
