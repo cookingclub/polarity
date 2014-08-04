@@ -31,8 +31,8 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
     bool left = world->isKeyDown(SDLK_LEFT);
     bool right = world->isKeyDown(SDLK_RIGHT);
     bool jump = world->isKeyDown(SDLK_UP);
-    bool toggleMute = world->isKeyDown(SDLK_m);
-    bool toggleBlackWhite = world->isKeyDown(SDLK_RSHIFT) || world->isKeyDown(SDLK_LSHIFT);
+    bool toggleMute = world->wasKeyJustPressed(SDLK_m);
+    bool toggleBlackWhite = world->wasKeyJustPressed(SDLK_RSHIFT) || world->wasKeyJustPressed(SDLK_LSHIFT);
 
     b2Body *phyobj = obj->groundBody;
     if (left) {
@@ -53,6 +53,7 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
         obj->setAction(GameObject::IDLE);
     }
     if (toggleMute) {
+        cerr << "Toggling music mute" << endl;
         world->gameState()->musicOn = !world->gameState()->musicOn;
         if (!world->gameState()->musicOn) {
             world->audio()->stopChannel("white-music");
@@ -63,6 +64,7 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
         }
     }
     if (toggleBlackWhite) {
+        cerr << "Toggling player color" << endl;
         world->playerState()->color = (world->playerState()->color == Polarity::PlayerColor::WHITE ? Polarity::PlayerColor::BLACK : Polarity::PlayerColor::WHITE);
         KeyboardBehavior::handleMusicByPlayerColor(world);
     }
@@ -74,6 +76,8 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
     if (!jump) {
         world->audio()->stopChannel("jump");
     }
+
+    world->clearJustPressedStates();
 }
 
 }

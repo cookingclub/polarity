@@ -9,15 +9,16 @@
 
 using std::shared_ptr;
 using std::unique_ptr;
+using std::vector;
 
 namespace Polarity {
 class World {
     b2World physics;
     b2Vec2 graphicsScale;
     b2Vec2 camera;
-    std::vector<bool> keyState;
-    std::vector<bool> keyPressedState;
-    std::vector<std::unique_ptr<GameObject> > objects;
+    vector<bool> keyState;
+    vector<bool> keyPressedThisTick;
+    vector< unique_ptr<GameObject> > objects;
     unique_ptr<LayerCollection> layers;
     shared_ptr<AudioChannelPlayer> fAudioPlayer;
     shared_ptr<PlayerState> fPlayerState;
@@ -34,21 +35,31 @@ public:
     void tick();
     void draw(SDL_Surface *screen);
     void keyEvent(int keyCode, bool pressed);
-    void keyPressedEvent(int keyCode, bool isPressed);
+    void findKeysJustPressed(const vector<bool> &prevStates);
+    void clearJustPressedStates();
     bool isKeyDown(int keyCode);
-    bool isKeyPressed(int keyCode);
+    bool wasKeyJustPressed(int keyCode);
+
+    vector<bool> getKeyState() const {
+        return keyState;
+    }
+
     shared_ptr<AudioChannelPlayer> audio() {
         return fAudioPlayer;
     }
+
     shared_ptr<GameState> gameState() {
         return fGameState;
     }
+
     shared_ptr<PlayerState> playerState() {
         return fPlayerState;
     }
+
     b2Vec2 graphicsToPhysics(const b2Vec2 &vec, float isBounds=-1) {
         return b2Vec2(vec.x / graphicsScale.x, vec.y / graphicsScale.y * isBounds);
     }
+
     b2Vec2 physicsToGraphics(const b2Vec2 &vec, float isBounds=-1) {
         return b2Vec2(vec.x * graphicsScale.x, vec.y * graphicsScale.y * isBounds);
     }

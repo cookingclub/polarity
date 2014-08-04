@@ -18,7 +18,7 @@ World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _au
         graphicsScale(b2Vec2(96, 96)),
         camera(0, 300), //FIXME hard coded
         keyState(SDLK_LAST),
-        keyPressedState(SDLK_LAST),
+        keyPressedThisTick(SDLK_LAST, false),
         layers(nullptr),
         fAudioPlayer(_audioPlayer),
         fPlayerState(_playerState),
@@ -51,8 +51,8 @@ GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef, const b2F
     return objects.back().get();
 }
 
-bool World::isKeyPressed(int keyCode) {
-    return keyPressedState[keyCode];
+bool World::wasKeyJustPressed(int keyCode) {
+    return keyPressedThisTick[keyCode];
 }
 
 bool World::isKeyDown(int keyCode) {
@@ -67,13 +67,15 @@ void World::keyEvent(int keyCode, bool pressed) {
     }
 }
 
-void World::keyPressedEvent(int keyCode, bool isPressed) {
-    if (keyCode < SDLK_LAST) {
-        keyPressedState[keyCode] = isPressed;
-    }else {
-        std::cerr << "Key code out of range "<<keyCode<<"\n";
+void World::findKeysJustPressed(const vector<bool> &prevStates) {
+    assert(prevStates.size() == keyState.size());
+    for (size_t k = 0; k < prevStates.size(); k++) {
+        keyPressedThisTick[k] = (prevStates[k] != keyState[k]) && keyState[k];
     }
+}
 
+void World::clearJustPressedStates() {
+    keyPressedThisTick = vector<bool>(keyState.size(), false);
 }
 
 void World::tick() {

@@ -55,17 +55,13 @@ bool loopIter(SDL_Surface *screen) {
     SDL_FillRect(screen, NULL, 0xffffffff);
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
+            vector<bool> lastKeyState = world->getKeyState();
             if (event.type == SDL_KEYDOWN) {
                 world->keyEvent(event.key.keysym.sym, true);
             } else {
                 keyUps.push_back(event.key.keysym.sym);
             }
-            if (event.key.state == SDL_PRESSED) {
-                world->keyPressedEvent(event.key.keysym.sym, true);
-            } else {
-                world->keyPressedEvent(event.key.keysym.sym, false);
-            }
-
+            world->findKeysJustPressed(lastKeyState);
         }
     }
     world->tick();
