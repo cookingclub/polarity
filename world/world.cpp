@@ -86,7 +86,7 @@ void World::updateCamera(GameObject *obj, b2Vec2 player) {
     float lenY = delta.y > 0.0 ? delta.y : -delta.y;
     float lenX = delta.x > 0.0 ? delta.x : -delta.x;
     float maxMovementX = 32.0;
-    float maxMovementY = 1.0;
+    float maxMovementY = 2.0;
     if (lenY > maxMovementY) {
         delta.y *= maxMovementY / lenY;
     }
@@ -94,6 +94,18 @@ void World::updateCamera(GameObject *obj, b2Vec2 player) {
         delta.x *= maxMovementX / lenX;
     }
     camera += delta;
+    if (camera.x + screenDimensions.x > mapDimensions.x) {
+        camera.x = mapDimensions.x - screenDimensions.x;
+    }
+    if (camera.y + screenDimensions.y > mapDimensions.y) {
+        camera.y = mapDimensions.y - screenDimensions.y;
+    }
+    if (camera.y < 0) {
+        camera.y = 0;
+    }
+    if (camera.x < 0) {
+        camera.x = 0;
+    }
 }
 
 void World::tick() {
@@ -142,6 +154,8 @@ void World::load(const std::string &tmxFile) {
     std::cerr << "Loading: " << tmxFile << " from directory " << dir << std::endl;
     tmxparser::TmxMap map;
     tmxparser::TmxReturn error = tmxparser::parseFromFile(tmxFile, &map);
+    mapDimensions.x = map.width * map.tileWidth;
+    mapDimensions.y = map.height * map.tileHeight;
 
     layers = std::unique_ptr<LayerCollection>(new LayerCollection(dir, map));
     for (auto &it : map.tilesetCollection) {

@@ -22,6 +22,7 @@ class World {
     b2Vec2 camera;
     ContactListener contactListener;
     b2Vec2 screenDimensions;
+    b2Vec2 mapDimensions;
     vector<bool> keyState;
     vector<bool> keyPressedThisTick;
     vector< unique_ptr<GameObject> > objects;
