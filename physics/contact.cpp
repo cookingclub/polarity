@@ -30,13 +30,15 @@ void ContactListener::BeginContact(b2Contact* contact) {
     GameObject* objectB = static_cast<GameObject*>(contact->GetFixtureB()->GetBody()->GetUserData());
     Trigger* triggerA = static_cast<Trigger*>(contact->GetFixtureA()->GetUserData());
     Trigger* triggerB = static_cast<Trigger*>(contact->GetFixtureB()->GetUserData());
+    bool sensorA = contact->GetFixtureA()->IsSensor();
+    bool sensorB = contact->GetFixtureB()->IsSensor();
     if (!objectB || !objectA) {
         return;
     }
-    if (triggerA) {
+    if (triggerA && !sensorB) {
         triggerA->onBeginCollision(objectB);
     }
-    if (triggerB) {
+    if (triggerB && !sensorA) {
         triggerB->onBeginCollision(objectA);
     }
 }
@@ -46,13 +48,15 @@ void ContactListener::EndContact(b2Contact* contact) {
     GameObject* objectB = static_cast<GameObject*>(contact->GetFixtureB()->GetBody()->GetUserData());
     Trigger* triggerA = static_cast<Trigger*>(contact->GetFixtureA()->GetUserData());
     Trigger* triggerB = static_cast<Trigger*>(contact->GetFixtureB()->GetUserData());
+    bool sensorA = contact->GetFixtureA()->IsSensor();
+    bool sensorB = contact->GetFixtureB()->IsSensor();
     if (!objectB || !objectA) {
         return;
     }
-    if (triggerA) {
+    if (triggerA && !sensorB) {
         triggerA->onEndCollision(objectB);
     }
-    if (triggerB) {
+    if (triggerB && !sensorA) {
         triggerB->onEndCollision(objectA);
     }
 }
