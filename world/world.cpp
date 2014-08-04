@@ -53,10 +53,15 @@ void World::keyEvent(int keyCode, bool pressed) {
 
 void World::updateCamera(GameObject *obj, b2Vec2 player) {
     b2Vec2 delta = physicsToGraphics(player) - camera - 0.5f * screenDimensions;
-    float len = delta.Length();
-    float maxMovement = 1.0;
-    if (len > maxMovement) {
-        delta *= maxMovement / len;
+    float lenY = delta.y > 0.0 ? delta.y : -delta.y;
+    float lenX = delta.x > 0.0 ? delta.x : -delta.x;
+    float maxMovementX = 32.0;
+    float maxMovementY = 1.0;
+    if (lenY > maxMovementY) {
+        delta.y *= maxMovementY / lenY;
+    }
+    if (lenX > maxMovementX) {
+        delta.x *= maxMovementX / lenX;
     }
     camera += delta;
 }
