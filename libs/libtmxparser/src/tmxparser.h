@@ -129,14 +129,14 @@ typedef std::vector<TmxTileset> TmxTilesetCollection_t;
 
 
 enum TmxRotation {
-    NORMAL,
-    ROTATE90,
-    ROTATE180,
-    ROTATE270,
-    FLIPPED_NORMAL,
-    FLIPPED_ROTATE90,
-    FLIPPED_ROTATE180,
-    FLIPPED_ROTATE270,
+    kNormal,
+    kRotate90,
+    kRotate180,
+    kRotate270,
+    kFlippedNormal,
+    kFlippedRotate90,
+    kFlippedRotate180,
+    kFlippedRotate270,
 };
 
 

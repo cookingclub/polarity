@@ -341,14 +341,47 @@ TmxReturn _parseLayerXmlDataNode(tinyxml2::XMLElement* element, const TmxTileset
 }
 
 
+const int ROTATE_BITS = 29;
+const unsigned int FLIPPED_HORIZONTALLY_FLAG = 0x80000000 >> ROTATE_BITS;
+const unsigned int FLIPPED_VERTICALLY_FLAG = 0x40000000 >> ROTATE_BITS;
+const unsigned int FLIPPED_DIAGONALLY_FLAG = 0x20000000 >> ROTATE_BITS;
+
+const unsigned int GID_MASK = ((1 << ROTATE_BITS) - 1);
 
 TmxReturn _parseLayerXmlTileNode(tinyxml2::XMLElement* element, const TmxTilesetCollection_t& tilesets, TmxLayerTile* outTile)
 {
 	TmxReturn error = TmxReturn::kSuccess;
 
 	outTile->gid = element->UnsignedAttribute("gid");
-    unsigned int rotateBits = outTile->gid >> 29;
-    outTile->gid = outTile->gid & ((1 << 29) - 1);
+	unsigned int rotateBits = outTile->gid >> ROTATE_BITS;
+	outTile->gid = outTile->gid & GID_MASK;
+
+	switch (rotateBits) {
+	case 0:
+		outTile->rotation = kNormal;
+		break;
+	case FLIPPED_DIAGONALLY_FLAG | FLIPPED_VERTICALLY_FLAG:
+		outTile->rotation = kRotate90;
+		break;
+	case FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG:
+		outTile->rotation = kRotate180;
+		break;
+	case FLIPPED_DIAGONALLY_FLAG | FLIPPED_HORIZONTALLY_FLAG:
+		outTile->rotation = kRotate270;
+		break;
+	case FLIPPED_HORIZONTALLY_FLAG:
+		outTile->rotation = kFlippedNormal;
+		break;
+	case FLIPPED_DIAGONALLY_FLAG | FLIPPED_VERTICALLY_FLAG | FLIPPED_HORIZONTALLY_FLAG:
+		outTile->rotation = kFlippedRotate90;
+		break;
+	case FLIPPED_VERTICALLY_FLAG:
+		outTile->rotation = kFlippedRotate180;
+		break;
+	case FLIPPED_DIAGONALLY_FLAG:
+		outTile->rotation = kFlippedRotate270;
+		break;
+	}
 
 	outTile->tilesetIndex = 0;
 	outTile->tileInTilesetIndex = 0;
