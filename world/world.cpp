@@ -28,7 +28,7 @@ World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _au
         fGameState(_gameState) {
     std::cerr << "World has started"<<std::endl;
     for (int i=0; i< SDLK_LAST; ++i) {
-      keyState[i] = false;
+        keyState[i] = false;
     }
     load(tmxFile);
     physics.SetContactListener(&contactListener);
@@ -86,8 +86,8 @@ void World::updateCamera(GameObject *obj, b2Vec2 player) {
     b2Vec2 delta = physicsToGraphics(player) - camera - 0.5f * screenDimensions;
     float lenY = delta.y > 0.0 ? delta.y : -delta.y;
     float lenX = delta.x > 0.0 ? delta.x : -delta.x;
-    float maxMovementX = 32.0;
-    float maxMovementY = 2.0;
+    float maxMovementX = 64.0;
+    float maxMovementY = 32.0;
     if (lenY > maxMovementY) {
         delta.y *= maxMovementY / lenY;
     }
