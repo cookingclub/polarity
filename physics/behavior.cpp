@@ -21,6 +21,8 @@ void KeyboardBehavior::handleMusicByPlayerColor(World *world) {
 }
 
 
+const float MAX_VELOCITY = 5;
+
 /**
     Current controls:   left/right arrows:  move left/right
                         up arrow:           jump
@@ -37,7 +39,7 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
     b2Body *phyobj = obj->groundBody;
     if (left) {
         obj->setAction(GameObject::WALK);
-        phyobj->ApplyForce( b2Vec2(-50,0), phyobj->GetWorldCenter(), true);
+        phyobj->ApplyLinearImpulse( b2Vec2(-1,0), phyobj->GetWorldCenter(), true);
         world->audio()->playChannel("step-stone", -1);
     }
 
@@ -57,11 +59,15 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
     }
     if (right) {
         obj->setAction(GameObject::WALK);
-        phyobj->ApplyForce( b2Vec2(50,0), phyobj->GetWorldCenter(), true);
+        phyobj->ApplyLinearImpulse( b2Vec2(1,0), phyobj->GetWorldCenter(), true);
         world->audio()->playChannel("step-stone", -1);
     }
-    if (phyobj->GetLinearVelocity().LengthSquared() < .1) { // and contact
+    b2Vec2 vel = phyobj->GetLinearVelocity();
+    if (vel.LengthSquared() < .1) { // and contact
         obj->setAction(GameObject::IDLE);
+    }
+    if (abs(vel.x) > MAX_VELOCITY) {
+        phyobj->SetLinearVelocity(b2Vec2(MAX_VELOCITY * vel.x / abs(vel.x), vel.y));
     }
     if (toggleMute) {
         cerr << "Toggling music mute" << endl;
