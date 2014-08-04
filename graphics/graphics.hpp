@@ -84,7 +84,8 @@ public:
             const tmxparser::TmxLayer &tmxLayer);
 
     void draw(SDL_Surface* screen, int x, int y);
-
+    float xparallax;
+    float yparallax;
     LayerCollection *layers;
 };
 

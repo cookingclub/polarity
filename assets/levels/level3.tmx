@@ -4268,6 +4268,10 @@
   </data>
  </layer>
  <layer name="grass" width="50" height="28">
+   <properties>
+    <property name="parallax" value="1.0"/>
+   </properties>
+
   <data>
    <tile gid="0"/>
    <tile gid="0"/>

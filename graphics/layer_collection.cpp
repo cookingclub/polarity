@@ -34,6 +34,17 @@ Layer::Layer(LayerCollection* layers,
             const tmxparser::TmxLayer &tmxLayer)
         : tmxparser::TmxLayer(tmxLayer),
           layers(layers) {
+    xparallax = 1.0f;
+    yparallax = 1.0f;
+    auto whereX = tmxLayer.propertyMap.find("parallax");
+    if (whereX != tmxLayer.propertyMap.end()) {
+        sscanf(whereX->second.c_str(), "%f", &xparallax);
+    }
+    auto whereY = tmxLayer.propertyMap.find("yparallax");
+    if (whereY != tmxLayer.propertyMap.end()) {
+        sscanf(whereY->second.c_str(), "%f", &yparallax);
+    }
+    std::cerr<< "Found the parallax "<<xparallax <<","<<yparallax<<std::endl;
 }
 
 /*
