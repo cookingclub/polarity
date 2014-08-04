@@ -12,13 +12,16 @@ using std::shared_ptr;
 namespace Polarity {
 World *world = nullptr;
 
-World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _audioPlayer)
+World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _audioPlayer,
+            shared_ptr<PlayerState> _playerState, shared_ptr<GameState> _gameState)
         : physics(b2Vec2(0.0f, -10.0f)),
         graphicsScale(b2Vec2(96, 96)),
         camera(0, 300), //FIXME hard coded
         keyState(SDLK_LAST),
         layers(nullptr),
-        player(_audioPlayer) {
+        fAudioPlayer(_audioPlayer),
+        fPlayerState(_playerState),
+        fGameState(_gameState) {
     std::cerr << "World has started"<<std::endl;
     for (int i=0; i< SDLK_LAST; ++i) {
       keyState[i] = false;
@@ -26,8 +29,19 @@ World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _au
     load(tmxFile);
 }
 
-void World::init(shared_ptr<AudioChannelPlayer> audioPlayer) {
-    world = new World("assets/levels/level3.tmx", audioPlayer);
+void World::init(shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState) {
+    world = new World("assets/levels/level3.tmx", audioPlayer, playerState, gameState);
+
+    // based on current game state, start music and sound effects
+    world->fAudioPlayer->playChannel("white-music");
+    world->fAudioPlayer->playChannel("black-music");
+    if (world->playerState()->color == Polarity::PlayerColor::WHITE) {
+        world->audio()->setChannelVolume("white-music", 1.0);
+        world->audio()->setChannelVolume("black-music", 0.0);
+    } else {
+        world->audio()->setChannelVolume("white-music", 0.0);
+        world->audio()->setChannelVolume("black-music", 1.0);
+    }
 }
 
 GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef, const b2FixtureDef&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties) {

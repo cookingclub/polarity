@@ -57,41 +57,6 @@ bool loopIter(SDL_Surface *screen) {
         if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
             if (event.type == SDL_KEYDOWN) {
                 world->keyEvent(event.key.keysym.sym, true);
-//                 if (event.key.keysym.sym == SDLK_SPACE) {
-//                     audioPlayer->playChannel("white-music");
-//                     audioPlayer->playChannel("black-music");
-//                 } else if (event.key.keysym.sym == SDLK_ESCAPE) {
-//                     audioPlayer->stopChannel("white-music");
-//                     audioPlayer->stopChannel("black-music");
-//                 } else if (event.key.keysym.sym == SDLK_v) {
-//                     // switch to white track
-//                     audioPlayer->setChannelVolume("white-music", 1.0);
-//                     audioPlayer->setChannelVolume("black-music", 0.0);
-//                 } else if (event.key.keysym.sym == SDLK_b) {
-//                     // switch to black track
-//                     audioPlayer->setChannelVolume("white-music", 0.0);
-//                     audioPlayer->setChannelVolume("black-music", 1.0);
-//                 } else if (event.key.keysym.sym == SDLK_1) {
-//                     if (!buzzing) {
-//                         audioPlayer->playChannel("buzz", -1);
-//                     } else {
-//                         audioPlayer->stopChannel("buzz");
-//                     }
-//                     buzzing = !buzzing;
-//                 } else if (event.key.keysym.sym == SDLK_2) {
-//                     if (!woowooing) {
-//                         audioPlayer->playChannel("woowoo", -1);
-//                     } else {
-//                         audioPlayer->stopChannel("woowoo");
-//                     }
-//                     woowooing = !woowooing;
-//                 } else if (event.key.keysym.sym == SDLK_d || event.key.keysym.sym == SDLK_a) {
-//                     audioPlayer->playChannel("step-stone", -1);
-//                 } else if (event.key.keysym.sym == SDLK_s) {
-//                     audioPlayer->playChannel("land-soft", 1);
-//                 } else if (event.key.keysym.sym == SDLK_w) {
-//                     audioPlayer->playChannel("grunt", 1);
-//                 }
             } else {
                 keyUps.push_back(event.key.keysym.sym);
             }
