@@ -16,6 +16,7 @@ class World {
     b2Vec2 graphicsScale;
     b2Vec2 camera;
     std::vector<bool> keyState;
+    std::vector<bool> keyPressedState;
     std::vector<std::unique_ptr<GameObject> > objects;
     unique_ptr<LayerCollection> layers;
     shared_ptr<AudioChannelPlayer> fAudioPlayer;
@@ -33,6 +34,7 @@ public:
     void tick();
     void draw(SDL_Surface *screen);
     void keyEvent(int keyCode, bool pressed);
+    void keyPressedEvent(int keyCode, bool isPressed);
     bool isKeyDown(int keyCode);
     shared_ptr<AudioChannelPlayer> audio() {
         return fAudioPlayer;

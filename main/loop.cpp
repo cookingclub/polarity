@@ -60,6 +60,12 @@ bool loopIter(SDL_Surface *screen) {
             } else {
                 keyUps.push_back(event.key.keysym.sym);
             }
+            if (event.key.state == SDL_PRESSED) {
+                world->keyPressedEvent(event.key.keysym.sym, true);
+            } else {
+                world->keyPressedEvent(event.key.keysym.sym, false);
+            }
+
         }
     }
     world->tick();
