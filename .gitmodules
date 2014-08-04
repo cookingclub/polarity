@@ -4,3 +4,6 @@
 [submodule "libs/box2d"]
 	path = libs/box2d
 	url = https://github.com/ansman/box2d.git
+[submodule "libs/tinyxml2"]
+	path = libs/tinyxml2
+	url = https://github.com/cookingclub/tinyxml2.git
