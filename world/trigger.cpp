@@ -3,12 +3,25 @@
 #include "physics/physics.hpp"
 
 namespace Polarity {
+Trigger::Trigger()
+    : owner(nullptr) {
+}
+
+void Trigger::setOwner(GameObject* newOwner) {
+    owner = newOwner;
+}
+
 Trigger* Trigger::create(const std::string& name,
         const PropertyMap& properties) {
     if (name == "door") {
-        return new DoorTrigger;
+        return new DoorTrigger();
+    } else if (name == "feet") {
+        return new FeetTrigger();
     }
     return nullptr;
+}
+
+DoorTrigger::DoorTrigger() {
 }
 
 void DoorTrigger::onBeginCollision(GameObject* other) {
@@ -19,4 +32,27 @@ void DoorTrigger::onBeginCollision(GameObject* other) {
         std::cerr<<"We have CONTACT!"<< std::endl;
     }
 }
+
+FeetTrigger::FeetTrigger()
+    : numCollidingSurfaces(0) {
+}
+
+void FeetTrigger::onBeginCollision(GameObject* other) {
+    if (numCollidingSurfaces == 0) {
+        owner->setJumpable(true);
+    }
+    if (other->isCollidable()) {
+        numCollidingSurfaces++;
+    }
+}
+
+void FeetTrigger::onEndCollision(GameObject* other) {
+    if (other->isCollidable()) {
+        numCollidingSurfaces--;
+    }
+    if (numCollidingSurfaces == 0) {
+        owner->setJumpable(false);
+    }
+}
+
 }

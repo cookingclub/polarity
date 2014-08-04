@@ -19,26 +19,22 @@ GameObject::Type GameObject::parseTypeStr(const std::string& typeStr) {
     return TERRAIN;
 }
 
-GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef, const b2FixtureDef &fixture, const std::string &name, Type type, const PropertyMap &props)
-        : behavior(behavior), trigger(NULL), name(name), properties(props), type(type) {
+GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef, const std::vector<b2FixtureDef> &fixtures, const std::string &name, Type type, const PropertyMap &props)
+        : behavior(behavior), name(name), properties(props), type(type) {
     currentAction = IDLE;
     groundBody = world->CreateBody(&bdef);
     groundBody->SetUserData(this);
-    groundBody->CreateFixture(&fixture);
-    if (type == GameObject::DOOR || type == GameObject::TRIGGER) {
-        collidable = false;
-    } else {
-        collidable = true;
+    for (auto& fixture : fixtures) {
+        Trigger* trig = static_cast<Trigger*const>(fixture.userData);
+        if (trig) {
+            trig->setOwner(this);
+        }
+        groundBody->CreateFixture(&fixture);
     }
-    auto it = properties.find("trigger");
-    if (it != properties.end()) {
-        trigger = Trigger::create(it->second, properties);
-    } else if (type == GameObject::DOOR) {
-        // FIXME: Make this a property so it is not implicit.
-        trigger = Trigger::create("door", properties);
-    }
+    jumpCooldown = -1;
+    collidable = true; // deprecated: use b2FixtureDef::isSensor
 
-    it = properties.find("idle");
+    auto it = properties.find("idle");
     if (it != properties.end()) {
         idle = Animation::get("/" + it->second);
     }
@@ -64,6 +60,9 @@ GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef
 }
 
 void GameObject::tick(World *world) {
+    if (jumpCooldown > 0) {
+        jumpCooldown--;
+    }
     if (behavior) {
         behavior->tick(world, this);
     }

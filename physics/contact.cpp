@@ -14,9 +14,7 @@ ContactListener::ContactListener(World* world) {
 void ContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold) {
     GameObject* objectA = static_cast<GameObject*>(contact->GetFixtureA()->GetBody()->GetUserData());
     GameObject* objectB = static_cast<GameObject*>(contact->GetFixtureB()->GetBody()->GetUserData());
-    assert(objectA && objectB);
     if (!objectB || !objectA) {
-        std::cerr << "NULLITY!!!" << std::endl;
         return;
     }
     if (!objectA->isCollidable() || !objectB->isCollidable()) {
@@ -30,32 +28,32 @@ void ContactListener::PostSolve(b2Contact* contact, const b2ContactImpulse* impu
 void ContactListener::BeginContact(b2Contact* contact) {
     GameObject* objectA = static_cast<GameObject*>(contact->GetFixtureA()->GetBody()->GetUserData());
     GameObject* objectB = static_cast<GameObject*>(contact->GetFixtureB()->GetBody()->GetUserData());
-    assert(objectA && objectB);
+    Trigger* triggerA = static_cast<Trigger*>(contact->GetFixtureA()->GetUserData());
+    Trigger* triggerB = static_cast<Trigger*>(contact->GetFixtureB()->GetUserData());
     if (!objectB || !objectA) {
-        std::cerr << "NULLITY!!!" << std::endl;
         return;
     }
-    if (objectA->getTrigger()) {
-        objectA->getTrigger()->onBeginCollision(objectB);
+    if (triggerA) {
+        triggerA->onBeginCollision(objectB);
     }
-    if (objectB->getTrigger()) {
-        objectB->getTrigger()->onBeginCollision(objectA);
+    if (triggerB) {
+        triggerB->onBeginCollision(objectA);
     }
 }
 
 void ContactListener::EndContact(b2Contact* contact) {
     GameObject* objectA = static_cast<GameObject*>(contact->GetFixtureA()->GetBody()->GetUserData());
     GameObject* objectB = static_cast<GameObject*>(contact->GetFixtureB()->GetBody()->GetUserData());
-    assert(objectA && objectB);
+    Trigger* triggerA = static_cast<Trigger*>(contact->GetFixtureA()->GetUserData());
+    Trigger* triggerB = static_cast<Trigger*>(contact->GetFixtureB()->GetUserData());
     if (!objectB || !objectA) {
-        std::cerr << "NULLITY!!!" << std::endl;
         return;
     }
-    if (objectA->getTrigger()) {
-        objectA->getTrigger()->onEndCollision(objectB);
+    if (triggerA) {
+        triggerA->onEndCollision(objectB);
     }
-    if (objectB->getTrigger()) {
-        objectB->getTrigger()->onEndCollision(objectA);
+    if (triggerB) {
+        triggerB->onEndCollision(objectA);
     }
 }
 

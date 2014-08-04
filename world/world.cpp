@@ -3,6 +3,7 @@
 #include <libgen.h>
 #include "SDL/SDL.h"
 #include "world.hpp"
+#include "world/trigger.hpp"
 #include "graphics/graphics.hpp"
 
 #include "tmxparser.h"
@@ -48,7 +49,7 @@ void World::init(shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerSt
     }
 }
 
-GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef, const b2FixtureDef&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties) {
+GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef, const std::vector<b2FixtureDef>&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties) {
     GameObject * object = new GameObject(&physics, behavior, bdef, fixture, name, type, properties);
     objects.emplace_back(object);
     return objects.back().get();
@@ -170,6 +171,7 @@ void World::load(const std::string &tmxFile) {
             b2BodyDef body_def;
             GameObject::Type type = GameObject::parseTypeStr(oit.type);
             Behavior *behavior = NULL;
+            std::vector<b2FixtureDef> fixtures;
             if (type == GameObject::PLAYER) {
                 behavior = new Polarity::KeyboardBehavior();
                 std::cerr<<"Making dynamic "<<std::endl;
@@ -193,11 +195,30 @@ void World::load(const std::string &tmxFile) {
             b2PolygonShape dynamic_box;
             b2Vec2 wh = graphicsToPhysics(0.5 * b2Vec2(oit.width, oit.height), 1);
             dynamic_box.SetAsBox(wh.x, wh.y);
-            b2FixtureDef fixture_def;
-            fixture_def.shape = &dynamic_box;
-            fixture_def.density = 1.0f;
-            fixture_def.friction = 1.0f;
-            GameObject* game_obj = addObject(behavior, body_def, fixture_def, oit.name, type, oit.propertyMap);
+            fixtures.push_back(b2FixtureDef());
+            fixtures.back().shape = &dynamic_box;
+            fixtures.back().density = 1.0f;
+            fixtures.back().friction = 1.0f;
+            if (type == GameObject::DOOR || type == GameObject::TRIGGER) {
+                auto it = oit.propertyMap.find("trigger");
+                if (it != oit.propertyMap.end()) {
+                    fixtures.back().userData = Trigger::create(
+                            it->second, oit.propertyMap);
+                } else if (type == GameObject::DOOR) {
+                    fixtures.back().userData = Trigger::create(
+                            "door", oit.propertyMap);
+                }
+            }
+            if (type == GameObject::PLAYER) {
+                b2PolygonShape polygon_box;
+                polygon_box.SetAsBox(0.25, 0.25, b2Vec2(0, -wh.y + 0.125), 0);
+                fixtures.push_back(b2FixtureDef());
+                fixtures.back().isSensor = true;
+                fixtures.back().userData = Trigger::create("feet");
+                fixtures.back().shape = &polygon_box;
+            }
+
+            GameObject* game_obj = addObject(behavior, body_def, fixtures, oit.name, type, oit.propertyMap);
 
             std::cerr << "object name = " << oit.name << std::endl;
         }

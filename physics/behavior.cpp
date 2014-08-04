@@ -41,22 +41,20 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
         world->audio()->playChannel("step-stone", -1);
     }
 
-	
-   if (jump) {
+    
+   if (jump && obj->isJumpable()) {
 //      phyobj->ApplyForce( b2Vec2(0,50), phyobj->GetWorldCenter(), true);
-		b2ContactEdge* contact = phyobj->GetContactList();
-//		b2Contact* contact = phyobj->GetContactList();
-//		for (b2ContactEdge* contact = phyobj->GetContactList(); contact; contact = contact->next())
-		
-		if (contact){
-			phyobj->ApplyLinearImpulse( b2Vec2(0,1), phyobj->GetWorldCenter(), true);
-			world->audio()->playChannel("jump", 0);
-			std:: cerr<< contact <<std:: endl;
-		}	
+//      b2ContactEdge* contact = phyobj->GetContactList();
+//      b2Contact* contact = phyobj->GetContactList();
+//      for (b2ContactEdge* contact = phyobj->GetContactList(); contact; contact = contact->next())
 
-
-
-		}
+//        if (contact){
+//          std:: cerr<< contact <<std:: endl;
+        phyobj->ApplyLinearImpulse( b2Vec2(0,2), phyobj->GetWorldCenter(), true);
+        obj->setJumpCooldown(15);
+        world->audio()->playChannel("jump", 0);
+//        }
+    }
     if (right) {
         obj->setAction(GameObject::WALK);
         phyobj->ApplyForce( b2Vec2(50,0), phyobj->GetWorldCenter(), true);
