@@ -90,8 +90,9 @@ void GameObject::draw(World * world, SDL_Surface* screen) {
     int g = type == DOOR || type == PLATFORM ? 255 : 0;
     int b = type == PLAYER || type == DOOR ? 255 : 0;
     // TODO: set the right color
-    SDL_FillRect(screen, &rect, SDL_MapRGBA(screen->format, r, g, b, 70));
-
+    if (world->isKeyDown('b')) {
+        SDL_FillRect(screen, &rect, SDL_MapRGBA(screen->format, r, g, b, 70));
+    }
     auto actionAnimationIter = actionsAnimation.find(currentAction);
     std::shared_ptr<Animation> actionAnim;
     if (actionAnimationIter != actionsAnimation.end()) {

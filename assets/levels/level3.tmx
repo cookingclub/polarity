@@ -2856,7 +2856,7 @@
     <property name="color" value="white"/>
    </properties>
   </object>
-  <object name="start" type="start" gid="5" x="95" y="730" width="64" height="192">
+  <object name="start" type="start" gid="5" x="95" y="730" width="64" height="160">
    <properties>
     <property name="idle" value="assets/graphics/resting-06.png"/>
     <property name="walk" value="assets/graphics/walking-15.png"/>
