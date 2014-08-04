@@ -17,6 +17,7 @@ World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _au
         graphicsScale(b2Vec2(96, 96)),
         camera(0, 300), //FIXME hard coded
         keyState(SDLK_LAST),
+        keyPressedState(SDLK_LAST),
         layers(nullptr),
         player(_audioPlayer) {
     std::cerr << "World has started"<<std::endl;
@@ -46,6 +47,15 @@ void World::keyEvent(int keyCode, bool pressed) {
     }else {
         std::cerr << "Key code out of range "<<keyCode<<"\n";
     }
+}
+
+void World::keyPressedEvent(int keyCode, bool isPressed) {
+    if (keyCode < SDLK_LAST) {
+        keyPressedState[keyCode] = isPressed;
+    }else {
+        std::cerr << "Key code out of range "<<keyCode<<"\n";
+    }
+
 }
 
 void World::tick() {
