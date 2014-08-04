@@ -200,6 +200,7 @@ void World::load(const std::string &tmxFile) {
             fixtures.back().density = 1.0f;
             fixtures.back().friction = 1.0f;
             if (type == GameObject::DOOR || type == GameObject::TRIGGER) {
+                fixtures.back().isSensor = true;
                 auto it = oit.propertyMap.find("trigger");
                 if (it != oit.propertyMap.end()) {
                     fixtures.back().userData = Trigger::create(
