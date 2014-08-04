@@ -19,6 +19,7 @@ GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef
         : behavior(behavior), name(name), properties(props), type(type) {
     currentAction = IDLE;
     groundBody = world->CreateBody(&bdef);
+    groundBody->SetUserData(this);
     groundBody->CreateFixture(&fixture);
 
     auto it = properties.find("idle");

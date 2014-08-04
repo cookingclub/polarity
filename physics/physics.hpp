@@ -1,3 +1,6 @@
+#ifndef POLARITY_PHYSICS_PHYSICS_HPP__
+#define POLARITY_PHYSICS_PHYSICS_HPP__
+
 #include <vector>
 #include <map>
 #include <Box2D/Box2D.h>
@@ -44,6 +47,8 @@ public:
     b2AABB getBounds()const;
     void tick(World*world);
     void draw(World * world, SDL_Surface* surface);
+    Type getType() { return type; }
+    const std::string& getName() { return name; }
     b2Body*groundBody;
     float printPosition();
     GameObject(b2World *world, Behavior * behavior, const b2BodyDef &bdef, const b2FixtureDef &fixture, const std::string &name, Type type, const PropertyMap &properties);
@@ -53,3 +58,5 @@ class Player: public GameObject {
 };
 
 }
+
+#endif

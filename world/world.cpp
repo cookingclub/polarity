@@ -16,6 +16,7 @@ World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _au
         : physics(b2Vec2(0.0f, -10.0f)),
         graphicsScale(b2Vec2(96, 96)),
         camera(0, 300), //FIXME hard coded
+        contactListener(this),
         keyState(SDLK_LAST),
         layers(nullptr),
         player(_audioPlayer) {
@@ -24,6 +25,7 @@ World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _au
       keyState[i] = false;
     }
     load(tmxFile);
+    physics.SetContactListener(&contactListener);
 }
 
 void World::init(shared_ptr<AudioChannelPlayer> audioPlayer) {

@@ -1,6 +1,10 @@
+#ifndef POLARITY_WORLD_HPP__
+#define POLARITY_WORLD_HPP__
+
 #include <Box2D/Box2D.h>
 #include "physics/vector.hpp"
 #include "physics/physics.hpp"
+#include "physics/contact.hpp"
 #include "graphics/graphics.hpp"
 #include "audio/audio.hpp"
 #include <memory>
@@ -13,6 +17,7 @@ class World {
     b2World physics;
     b2Vec2 graphicsScale;
     b2Vec2 camera;
+    ContactListener contactListener;
     std::vector<bool> keyState;
     std::vector<std::unique_ptr<GameObject> > objects;
     std::unique_ptr<LayerCollection> layers;
@@ -42,3 +47,4 @@ public:
 };
 extern World *world;
 }
+#endif
