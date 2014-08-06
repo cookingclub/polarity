@@ -4246,7 +4246,7 @@
     <property name="open" value="assets/graphics/door_frame-13.png"/>
    </properties>
   </object>
-  <object type="start" x="128" y="416" width="64" height="192">
+  <object type="start" x="128" y="416" width="64" height="160">
    <properties>
     <property name="idle" value="assets/graphics/resting-06.png"/>
     <property name="walk" value="assets/graphics/walking-15.png"/>
