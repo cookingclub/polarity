@@ -18,7 +18,7 @@ static SDL_Surface *screen;
 namespace Polarity {
 
 std::shared_ptr<AudioChannelPlayer> audioPlayer;
-std::shared_ptr<PlayerState> playerState;
+std::shared_ptr<PlayerState> playerState (new PlayerState());
 std::shared_ptr<GameState> gameState;
 
 extern void loadAssets();

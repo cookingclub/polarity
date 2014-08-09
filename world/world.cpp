@@ -192,6 +192,7 @@ void World::load(const std::string &tmxFile) {
                 y += oit.height / 2;
             }
             body_def.position = graphicsToPhysics(b2Vec2(oit.x + oit.width / 2, y));
+            b2PolygonShape polygon_box; // this needs to be in scope long enough for it to be passed to the addObject function
             b2PolygonShape dynamic_box;
             b2Vec2 wh = graphicsToPhysics(0.5 * b2Vec2(oit.width, oit.height), 1);
             dynamic_box.SetAsBox(wh.x, wh.y);
@@ -211,7 +212,6 @@ void World::load(const std::string &tmxFile) {
                 }
             }
             if (type == GameObject::PLAYER) {
-                b2PolygonShape polygon_box;
                 polygon_box.SetAsBox(0.25, 0.25, b2Vec2(0, -wh.y + 0.125), 0);
                 fixtures.push_back(b2FixtureDef());
                 fixtures.back().isSensor = true;

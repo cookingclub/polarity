@@ -24,7 +24,7 @@ GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef
     currentAction = IDLE;
     groundBody = world->CreateBody(&bdef);
     groundBody->SetUserData(this);
-    for (auto& fixture : fixtures) {
+    for (auto &fixture : fixtures) {
         Trigger* trig = static_cast<Trigger*const>(fixture.userData);
         if (trig) {
             trig->setOwner(this);
