@@ -4,6 +4,6 @@ polarity.html
 polarity.html.map
 polarity.js
 libs/libext.a
-libs/*.o
+*.o
 assets/.DS_Store
 assets/audio/.DS_Store
