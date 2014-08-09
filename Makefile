@@ -1,21 +1,29 @@
 EXE = polarity.html
-EXTERNALS = libext.a
+EXTERNALS = libs/libext.a
 INCLUDES =  $(wildcard graphics/*.hpp audio/*.hpp physics/*.hpp main/*.hpp)
 ARSRCS = $(wildcard libs/box2d/Box2D/Box2D/Collision/Shapes/*.cpp libs/box2d/Box2D/Box2D/Dynamics/*.cpp libs/box2d/Box2D/Box2D/Common/*.cpp  libs/box2d/Box2D/Box2D/Rope/*.cpp libs/box2d/Box2D/Box2D/Dynamics/Contacts/*.cpp libs/box2d/Box2D/Box2D/Dynamics/Joints/*.cpp libs/box2d/Box2D/Box2D/Collision/*.cpp)
-AROBJS = $(patsubst %.cpp, %.o, $(ARSRCS)) libs/tinyxml2/tinyxml2.o 
-
+AROBJS = $(addprefix libs/,$(subst /,___,$(patsubst %.cpp, %.o, $(ARSRCS)) libs/tinyxml2/tinyxml2.o))
+OBJS = $(addprefix libs/,$(subst /,___,$(patsubst %.cpp, %.o, $(SRCS))))
+%.o :
+	$(CXX) $(CXXFLAGS) -c  $(subst ___,/,$(subst libs/,,$(patsubst %.o, %.cpp, $@))) -o $@ 
 
 SRCS = $(wildcard graphics/*.cpp physics/*.cpp main/*.cpp world/*.cpp libs/libtmxparser/src/*.cpp )
-OBJS = $(patsubst %.cpp, %.o, $(SRCS))
 # audio/*.cpp
+ifdef NATIVE
+CC = gcc
+CXX = g++
+AR = ar
+LDFLAGS = -lSDL -lSDL_mixer -lSDL_gfx -lSDL_image -lSDL_ttf $(EXTERNALS)
+else
 CC = emcc
 CXX = em++
 AR = emar
+LDFLAGS = -s STB_IMAGE=1 --preload-file assets -s TOTAL_MEMORY=134217728 $(EXTERNALS)
+endif
 #-O2 
 
 CFLAGS = -pthread -g -Wno-warn-absolute-paths -I $(CURDIR) -I$(CURDIR)/libs/box2d/Box2D/ -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/libtmxparser/src
 CXXFLAGS = -std=gnu++11 $(CFLAGS)
-LDFLAGS = -s STB_IMAGE=1 --preload-file assets -s TOTAL_MEMORY=134217728 $(EXTERNALS)
 
 
 $(EXE): $(OBJS) $(wildcard assets/*) $(EXTERNALS)
@@ -27,7 +35,7 @@ $(EXTERNALS): $(AROBJS)
 $(OBJS): $(INCLUDES) Makefile
 
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(AROBJS)
 	rm -f $(EXTERNALS)
 	rm -f polarity.*
 
