@@ -40,6 +40,8 @@ void mainloop() {
     while (true) {
         if (!loopIter(screen)) {
             break;
+        } else {
+            SDL_Flip(screen);
         }
     }
 }
