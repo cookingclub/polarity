@@ -1,12 +1,13 @@
 EXE = polarity.html
-EXTERNALS = libext.a
+EXTERNALS = libs/libext.a
 INCLUDES =  $(wildcard graphics/*.hpp audio/*.hpp physics/*.hpp main/*.hpp)
 ARSRCS = $(wildcard libs/box2d/Box2D/Box2D/Collision/Shapes/*.cpp libs/box2d/Box2D/Box2D/Dynamics/*.cpp libs/box2d/Box2D/Box2D/Common/*.cpp  libs/box2d/Box2D/Box2D/Rope/*.cpp libs/box2d/Box2D/Box2D/Dynamics/Contacts/*.cpp libs/box2d/Box2D/Box2D/Dynamics/Joints/*.cpp libs/box2d/Box2D/Box2D/Collision/*.cpp)
-AROBJS = $(patsubst %.cpp, %.o, $(ARSRCS)) libs/tinyxml2/tinyxml2.o 
+AROBJS = $(addprefix libs/,$(subst /,___,$(patsubst %.cpp, %.o, $(ARSRCS)) libs/tinyxml2/tinyxml2.o))
 
-
+%.o :
+	$(CXX) $(CXXFLAGS) -c  $(subst ___,/,$(subst libs/,,$(patsubst %.o, %.cpp, $@))) -o $@ 
 SRCS = $(wildcard graphics/*.cpp physics/*.cpp main/*.cpp world/*.cpp libs/libtmxparser/src/*.cpp )
-OBJS = $(patsubst %.cpp, %.o, $(SRCS))
+OBJS = $(addprefix libs/,$(subst /,___,$(patsubst %.cpp, %.o, $(SRCS))))
 # audio/*.cpp
 CC = cc
 CXX = g++-4.8
