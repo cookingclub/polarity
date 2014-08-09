@@ -1,5 +1,5 @@
 EXE = polarity.html
-EXTERNALS = libs/libext.a
+EXTERNALS = objs/libext.a
 INCLUDES =  $(wildcard graphics/*.hpp audio/*.hpp physics/*.hpp main/*.hpp)
 ARSRCS = $(wildcard libs/box2d/Box2D/Box2D/Collision/Shapes/*.cpp libs/box2d/Box2D/Box2D/Dynamics/*.cpp libs/box2d/Box2D/Box2D/Common/*.cpp  libs/box2d/Box2D/Box2D/Rope/*.cpp libs/box2d/Box2D/Box2D/Dynamics/Contacts/*.cpp libs/box2d/Box2D/Box2D/Dynamics/Joints/*.cpp libs/box2d/Box2D/Box2D/Collision/*.cpp)
 AROBJS = $(addprefix objs/,$(patsubst %.cpp, %.o, $(ARSRCS)) libs/tinyxml2/tinyxml2.o)
@@ -30,6 +30,7 @@ $(EXE): $(OBJS) $(wildcard assets/*) $(EXTERNALS)
 	$(CXX) $(OBJS) $(LDFLAGS) -o $@
 
 $(EXTERNALS): $(AROBJS)
+	mkdir -p objs
 	$(AR) cru $@ $(AROBJS)
 
 $(OBJS): $(INCLUDES) Makefile

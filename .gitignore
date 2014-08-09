@@ -3,7 +3,7 @@ polarity.data
 polarity.html
 polarity.html.map
 polarity.js
-libs/libext.a
+objs/libext.a
 *.o
 assets/.DS_Store
 assets/audio/.DS_Store
