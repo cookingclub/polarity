@@ -35,7 +35,7 @@ World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _au
 }
 
 void World::init(shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState) {
-    world = new World("assets/levels/level2.tmx", audioPlayer, playerState, gameState);
+    world = new World("assets/levels/level3a.tmx", audioPlayer, playerState, gameState);
 
     // based on current game state, start music and sound effects
     world->fAudioPlayer->playChannel("white-music");
@@ -50,8 +50,21 @@ void World::init(shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerSt
 }
 
 GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef, const std::vector<b2FixtureDef>&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties) {
+
+    auto it=properties.find("color");
+    if (it != properties.end()){
+    GameObjectMag * object = new GameObjectMag(&physics, behavior, bdef, fixture, name, type, properties);
+    objects.emplace_back(object);
+    objectsMag.emplace_back(object);
+    }
+    else{
     GameObject * object = new GameObject(&physics, behavior, bdef, fixture, name, type, properties);
     objects.emplace_back(object);
+    
+    if (type == GameObject::PLAYER){
+        player = object;
+        }
+    }
     return objects.back().get();
 }
 
@@ -122,12 +135,21 @@ void World::tick() {
     if (keyState['s']) {
         camera.y -=1;
     }
+    
     // timeStep, velocityIterations, positionIterations
     physics.Step(0.0166666, 8, 4);
     for (auto &obj : objects) {
         obj->tick(this);
         //std::cerr << obj->printPosition()<<std::endl;
     }
+    
+    /*
+    for (auto &obj : objectsMag) {
+        obj->tick(this);
+        //std::cerr << obj->printPosition()<<std::endl;
+    }
+    */
+    
     //for(auto &gameObject:objects){
     //  
     //}

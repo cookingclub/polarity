@@ -26,6 +26,7 @@ class World {
     vector<bool> keyState;
     vector<bool> keyPressedThisTick;
     vector< unique_ptr<GameObject> > objects;
+    vector< GameObjectMag* > objectsMag;
     unique_ptr<LayerCollection> layers;
     shared_ptr<AudioChannelPlayer> fAudioPlayer;
     shared_ptr<PlayerState> fPlayerState;
@@ -33,6 +34,9 @@ class World {
 
     void load(const std::string& tmxFile);
 public:
+    //int pn = 1; //player polarity, this should prob be set in player state
+    //int EMoff = 1; //EM force ON or OFF
+    GameObject*player;
     b2Vec2 getCamera()const {
         return camera;
     }
@@ -47,7 +51,7 @@ public:
     void clearJustPressedStates();
     bool isKeyDown(int keyCode);
     bool wasKeyJustPressed(int keyCode);
-
+    
     vector<bool> getKeyState() const {
         return keyState;
     }

@@ -24,7 +24,7 @@ void KeyboardBehavior::handleMusicByPlayerColor(World *world) {
 const float MAX_VELOCITY = 5;
 
 /**
-    Current controls:   left/right arrows:  move left/right
+    Current controls:   left/right arrows:  move forward/backwards
                         up arrow:           jump
                         m key:              mute/unmute music
                         Shift key:          toggle black/white
@@ -35,11 +35,18 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
     bool jump = world->isKeyDown(SDLK_UP);
     bool toggleMute = world->wasKeyJustPressed(SDLK_m);
     bool toggleBlackWhite = world->wasKeyJustPressed(SDLK_RSHIFT) || world->wasKeyJustPressed(SDLK_LSHIFT);
-
+    
     b2Body *phyobj = obj->groundBody;
+    
+    // get the vectors for L, R, U (this is 3x redundant but easy)
+    b2Vec2 forceDirectionR = phyobj->GetWorldVector( b2Vec2(1,0) );
+    b2Vec2 forceDirectionL = phyobj->GetWorldVector( b2Vec2(-1,0) );
+    b2Vec2 forceDirectionU = phyobj->GetWorldVector( b2Vec2(0,1) );
+    
     if (left) {
         obj->setAction(GameObject::WALK);
-        phyobj->ApplyLinearImpulse( b2Vec2(-1,0), phyobj->GetWorldCenter(), true);
+        phyobj->ApplyLinearImpulse( forceDirectionL, phyobj->GetWorldCenter(), true); // moves backwards
+        //phyobj->ApplyLinearImpulse( b2Vec2(-1,0), phyobj->GetWorldCenter(), true);
         world->audio()->playChannel("step-stone", -1);
     }
 
@@ -52,14 +59,16 @@ void KeyboardBehavior::tick(World *world, GameObject *obj) {
 
 //        if (contact){
 //          std:: cerr<< contact <<std:: endl;
-        phyobj->ApplyLinearImpulse( b2Vec2(0,2), phyobj->GetWorldCenter(), true);
+        phyobj->ApplyLinearImpulse( forceDirectionU, phyobj->GetWorldCenter(), true);
+        //phyobj->ApplyLinearImpulse( b2Vec2(0,1), phyobj->GetWorldCenter(), true);
         obj->setJumpCooldown(15);
         world->audio()->playChannel("jump", 0);
 //        }
     }
     if (right) {
         obj->setAction(GameObject::WALK);
-        phyobj->ApplyLinearImpulse( b2Vec2(1,0), phyobj->GetWorldCenter(), true);
+        phyobj->ApplyLinearImpulse( forceDirectionR, phyobj->GetWorldCenter(), true);
+        //phyobj->ApplyLinearImpulse( b2Vec2(1,0), phyobj->GetWorldCenter(), true);
         world->audio()->playChannel("step-stone", -1);
     }
     b2Vec2 vel = phyobj->GetLinearVelocity();

@@ -48,7 +48,7 @@ private:
 public:
     void setAction(Actions a);
     b2AABB getBounds()const;
-    void tick(World*world);
+    virtual void tick(World*world);
     void draw(World * world, SDL_Surface* surface);
     Type getType() { return type; }
     bool isJumpable() { return jumpCooldown == 0; }
@@ -59,8 +59,17 @@ public:
     b2Body*groundBody;
     float printPosition();
     GameObject(b2World *world, Behavior * behavior, const b2BodyDef &bdef, const std::vector<b2FixtureDef> &fixtures, const std::string &name, Type type, const PropertyMap &properties);
+    
+    virtual ~GameObject(){}
 };
-
+class GameObjectMag:public GameObject{
+    int bwcolor;
+    
+    public: 
+        void tick(World*world);
+        GameObjectMag(b2World *world, Behavior * behavior, const b2BodyDef &bdef, const std::vector<b2FixtureDef> &fixtures, const std::string &name, Type type, const PropertyMap &properties);
+  
+};
 }
 
 #endif
