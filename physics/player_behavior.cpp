@@ -1,9 +1,3 @@
-#include "SDL/SDL.h"
-#include "SDL/SDL_video.h"
-#include "SDL/SDL_image.h"
-#include "SDL/SDL_ttf.h"
-#include "SDL/SDL_mixer.h"
-#include "SDL/SDL_rotozoom.h"
 #include <iostream>
 #include "player_behavior.hpp"
 #include "world/world.hpp"

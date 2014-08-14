@@ -126,6 +126,7 @@ void GameObject::draw(World * world, SDL_Surface* screen) {
     actualpos -= world->getCamera();
     b2Vec2 drawpos = actualpos - 0.5 * wh;
 
+    /*
     SDL_Rect rect;
     rect.x = drawpos.x;
     rect.y = drawpos.y;
@@ -139,6 +140,7 @@ void GameObject::draw(World * world, SDL_Surface* screen) {
     if (world->isKeyDown('b')) {
         SDL_FillRect(screen, &rect, SDL_MapRGBA(screen->format, r, g, b, 70));
     }
+    */
     auto actionAnimationIter = actionsAnimation.find(currentAction);
     std::shared_ptr<Animation> actionAnim;
     if (actionAnimationIter != actionsAnimation.end()) {

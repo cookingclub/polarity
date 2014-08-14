@@ -39,22 +39,28 @@ Image::~Image() {
     }
 }
 
-void Image::draw(SDL_Surface *screen, SDL_Rect *src, int x, int y) {
+SDL_Rect rectToSDL(const Rect& rect) {
+    SDL_Rect out;
+    out.x = rect.x;
+    out.y = rect.y;
+    out.w = rect.w;
+    out.h = rect.h;
+    return out;
+}
+
+void Image::draw(SDL_Surface *screen, const Rect& src, int x, int y) {
     SDL_Rect dst;
     dst.w = surf->w;
     dst.h = surf->h;
     dst.x = x;
     dst.y = y;
-    SDL_BlitSurface(surf, src, screen, &dst);
+    SDL_Rect sdlsrc (rectToSDL(src));
+    SDL_BlitSurface(surf, &sdlsrc, screen, &dst);
 }
 
 void Image::draw(SDL_Surface *screen, int x, int y) {
-    SDL_Rect src;
-    src.w = surf->w;
-    src.h = surf->h;
-    src.x = 0;
-    src.y = 0;
-    draw(screen, &src, x, y);
+    Rect src (0, 0, surf->w, surf->h);
+    draw(screen, src, x, y);
 }
 
 }

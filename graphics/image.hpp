@@ -8,6 +8,8 @@
 #include <cstdlib>
 #include <memory>
 
+#include "rect.hpp"
+
 #include "SDL/SDL.h"
 #include "SDL/SDL_video.h"
 #include "SDL/SDL_image.h"
@@ -30,7 +32,7 @@ public:
     static std::shared_ptr<Image> get(const std::string &filename);
 
     void draw(SDL_Surface *screen, int x, int y);
-    void draw(SDL_Surface *screen, SDL_Rect *src, int x, int y);
+    void draw(SDL_Surface *screen, const Rect& src, int x, int y);
 
     int width() { return surf->w; }
     int height() { return surf->h; }

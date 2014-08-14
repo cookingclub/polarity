@@ -9,15 +9,9 @@
 #include <memory>
 
 #include "animation.hpp"
+#include "rect.hpp"
 
 #include "tmxparser.h"
-
-#include "SDL/SDL.h"
-#include "SDL/SDL_video.h"
-#include "SDL/SDL_image.h"
-#include "SDL/SDL_ttf.h"
-#include "SDL/SDL_mixer.h"
-#include "SDL/SDL_rotozoom.h"
 
 namespace Polarity {
 
@@ -29,7 +23,7 @@ public:
     Tileset(const std::string& directory,
             const tmxparser::TmxTileset& tileset);
 
-    void positionInImage(int tileindex, SDL_Rect *outRect);
+    Rect positionInImage(int tileindex);
     void drawTile(int tileindex, SDL_Surface *surf, int x, int y);
 
     std::shared_ptr<Image> image;
