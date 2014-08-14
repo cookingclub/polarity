@@ -26,7 +26,6 @@ class World {
     vector<bool> keyState;
     vector<bool> keyPressedThisTick;
     vector< unique_ptr<GameObject> > objects;
-    vector< GameObjectMag* > objectsMag;
     unique_ptr<LayerCollection> layers;
     shared_ptr<AudioChannelPlayer> fAudioPlayer;
     shared_ptr<PlayerState> fPlayerState;

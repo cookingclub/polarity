@@ -8,17 +8,36 @@ class Behavior {
 public:
     Behavior() {
     }
+    Behavior(const Behavior&x) = delete;
+    Behavior& operator=(const Behavior&x) = delete;
+    virtual ~Behavior() {
+    }
+
+    virtual void addedToWorld(World *world, GameObject *obj) {
+    }
+
     virtual void tick(World *world, GameObject *obj){
     }
 };
 
- 
-class KeyboardBehavior : public Behavior{
+class CombiningBehavior : public Behavior {
+    std::unique_ptr<Behavior> first;
+    std::unique_ptr<Behavior> second;
 public:
-    KeyboardBehavior() {
+    CombiningBehavior(Behavior* first, Behavior *second)
+        : first(first), second(second) {
     }
-    virtual void handleMusicByPlayerColor(World *world);
-    virtual void tick(World * world, GameObject *obj);
+
+    virtual void addedToWorld(World *world, GameObject *obj) {
+        first->addedToWorld(world, obj);
+        second->addedToWorld(world, obj);
+    }
+
+    virtual void tick(World *world, GameObject *obj){
+        first->tick(world, obj);
+        second->tick(world, obj);
+    }
 };
+
 }
 #endif

@@ -9,14 +9,12 @@ enum PlayerColor {
 
 struct PlayerState {
 
-    PlayerColor color;
     bool hasBuzzPowerup;        // placeholder for powerup 1 (makes buzzing noise)
     bool hasWoowooPowerup;      // placeholder for powerup 2 (makes woowoo noise)
     int timesDiedThisLevel;
     bool isFalling;
 
     PlayerState() :
-        color(WHITE),
         hasBuzzPowerup(false),
         hasWoowooPowerup(false),
         timesDiedThisLevel(0),

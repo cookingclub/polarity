@@ -34,8 +34,15 @@ public:
         OPEN,
         NUM_ACTIONS,
     };
+    enum Charge {
+		BLACK=-1,
+		COLORLESS=0,
+		WHITE=1
+	};
     static Type parseTypeStr(const std::string &str);
+    static float polarityForceMultiplier(Charge a, Charge b);
 private:
+    Charge polarityCharge;
     Actions currentAction;
     Behavior * behavior;
     std::string name;
@@ -46,30 +53,26 @@ private:
     std::shared_ptr<Animation> idle;
     std::map<Actions, std::shared_ptr<Animation> > actionsAnimation;
 public:
+    Charge getPolarity() const { return polarityCharge; }
+    void setPolarity(Charge polarity) { polarityCharge = polarity; }
+    void flipPolarity() { setPolarity((Charge)-getPolarity()); }
     void setAction(Actions a);
     b2AABB getBounds()const;
     virtual void tick(World*world);
     void draw(World * world, SDL_Surface* surface);
-    Type getType() { return type; }
-    bool isJumpable() { return jumpCooldown == 0; }
+    Type getType() const { return type; }
+    bool isJumpable() const { return jumpCooldown == 0; }
     void setJumpable(bool canJump) { jumpCooldown = canJump ? 0 : -1; }
     void setJumpCooldown(bool canJump) { jumpCooldown = canJump; }
-    bool isCollidable() { return collidable; }
-    const std::string& getName() { return name; }
+    bool isCollidable() const { return collidable; }
+    const std::string& getName() const { return name; }
     b2Body*groundBody;
     float printPosition();
     GameObject(b2World *world, Behavior * behavior, const b2BodyDef &bdef, const std::vector<b2FixtureDef> &fixtures, const std::string &name, Type type, const PropertyMap &properties);
     
     virtual ~GameObject(){}
 };
-class GameObjectMag:public GameObject{
-    int bwcolor;
-    
-    public: 
-        void tick(World*world);
-        GameObjectMag(b2World *world, Behavior * behavior, const b2BodyDef &bdef, const std::vector<b2FixtureDef> &fixtures, const std::string &name, Type type, const PropertyMap &properties);
-  
-};
+
 }
 
 #endif

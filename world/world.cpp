@@ -4,6 +4,8 @@
 #include "SDL/SDL.h"
 #include "world.hpp"
 #include "world/trigger.hpp"
+#include "physics/player_behavior.hpp"
+#include "physics/magnetic_behavior.hpp"
 
 #include "tmxparser.h"
 
@@ -35,35 +37,26 @@ World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _au
 
 void World::init(shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState) {
     world = new World("assets/levels/level3a.tmx", audioPlayer, playerState, gameState);
-
-    // based on current game state, start music and sound effects
-    world->fAudioPlayer->playChannel("white-music");
-    world->fAudioPlayer->playChannel("black-music");
-    if (world->playerState()->color == Polarity::PlayerColor::WHITE) {
-        world->audio()->setChannelVolume("white-music", 1.0);
-        world->audio()->setChannelVolume("black-music", 0.0);
-    } else {
-        world->audio()->setChannelVolume("white-music", 0.0);
-        world->audio()->setChannelVolume("black-music", 1.0);
-    }
 }
 
 GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef, const std::vector<b2FixtureDef>&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties) {
 
     auto it=properties.find("color");
-    if (it != properties.end()){
-    GameObjectMag * object = new GameObjectMag(&physics, behavior, bdef, fixture, name, type, properties);
-    objects.emplace_back(object);
-    objectsMag.emplace_back(object);
+    if (it != properties.end() && type == GameObject::PLATFORM) {
+        Behavior* magnetism = new MagneticBehavior();
+        behavior = behavior ? new CombiningBehavior(behavior, magnetism) : magnetism;
     }
-    else{
+    if (behavior == nullptr) {
+        behavior = new Behavior();
+    }
     GameObject * object = new GameObject(&physics, behavior, bdef, fixture, name, type, properties);
     objects.emplace_back(object);
+    behavior->addedToWorld(this, object);
     
     if (type == GameObject::PLAYER){
         player = object;
-        }
     }
+
     return objects.back().get();
 }
 
@@ -191,14 +184,13 @@ void World::load(const std::string &tmxFile) {
         for (auto &oit : it.objects) {
             b2BodyDef body_def;
             GameObject::Type type = GameObject::parseTypeStr(oit.type);
-            Behavior *behavior = NULL;
+            Behavior *behavior = nullptr;
             std::vector<b2FixtureDef> fixtures;
             if (type == GameObject::PLAYER) {
-                behavior = new Polarity::KeyboardBehavior();
+                behavior = new Polarity::PlayerBehavior();
                 std::cerr<<"Making dynamic "<<std::endl;
                 body_def.type = b2_dynamicBody;
             } else {
-                behavior = new Polarity::Behavior();
                 body_def.type = b2_staticBody;
             }
             int y = oit.y;

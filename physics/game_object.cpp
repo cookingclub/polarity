@@ -37,6 +37,17 @@ GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef
 
     idle = nullptr;
 
+	polarityCharge = COLORLESS;
+	auto it=properties.find("color");
+    if (it != properties.end()){
+        if (it -> second == "black") {
+            polarityCharge = BLACK;
+        }
+        else if (it->second == "white") {
+            polarityCharge = WHITE;
+        }
+	}
+
     for(int i=0;i<NUM_ACTIONS;++i) {
         Actions act = (Actions)i;
         std::string stringName;
@@ -144,46 +155,17 @@ float GameObject::printPosition(){
     return groundBody->GetPosition().y;
 }
 
-GameObjectMag::GameObjectMag(b2World *world, Behavior * behavior, const b2BodyDef &bdef, const std::vector<b2FixtureDef> &fixtures, const std::string &name, Type type, const PropertyMap &properties):GameObject(world, behavior, bdef, fixtures, name, type, properties){
-
-auto it=properties.find("color");
-    if (it != properties.end()){
-        if (it -> second == "black") {
-            bwcolor = 1;
-        }
-        else {
-            bwcolor = -1;
-        }
-}
-}
-
-void GameObjectMag::tick(World * world){
-    //logic for this 
-    b2Vec2 pos = world->player->groundBody->GetPosition();
-    b2Vec2 posK = groundBody->GetPosition();
-    
-    float r1[] = {pos.x-posK.x, pos.y-posK.y};
-    float r1m = sqrtf(r1[0]*r1[0]+r1[1]*r1[1]);
-                      
-    // apply force
-    int pn; // check if player is black or white
-    if (world->playerState()->color == Polarity::PlayerColor::WHITE) {
-        pn = 1;
-    }
-    else{
-        pn = -1;
-    }
-    
-    b2Body *player1 = world->player->groundBody;
-    
-    int blockbw = 1; //not yet implemented -- check if block is black or white
-    if (r1m < 20) {
-        float forcemag = -pn*15/r1m/r1m*blockbw;
-        player1->ApplyForce(b2Vec2(forcemag*r1[0]/r1m,forcemag*r1[1]/r1m), 
-                              player1->GetWorldPoint( b2Vec2(0,-1) ) , true);
-    }
-    
-                      
+float GameObject::polarityForceMultiplier(Charge a, Charge b) {
+	if (a == 0 || b == 0) {
+		return 0;
+	}
+	if (a == b) {
+		return 1;
+	} else if (a == -b) {
+		return -1;
+	} else {
+		return 0;
+	}
 }
 
 }

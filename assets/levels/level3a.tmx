@@ -2837,9 +2837,9 @@
   </data>
  </layer>
  <objectgroup name="Solid" width="50" height="28">
-  <object x="928" y="736" width="192" height="64">
+  <object type="platform" x="928" y="736" width="192" height="64">
    <properties>
-    <property name="color" value="black"/>
+    <property name="color" value="white"/>
    </properties>
   </object>
   <object x="0" y="736" width="448" height="160"/>
@@ -2858,12 +2858,13 @@
   </object>
   <object name="start" type="start" gid="5" x="95" y="730" width="64" height="160">
    <properties>
+    <property name="color" value="black"/>
     <property name="idle" value="assets/graphics/resting-06.png"/>
     <property name="walk" value="assets/graphics/walking-15.png"/>
    </properties>
   </object>
   <object x="608" y="736" width="320" height="160"/>
-  <object name="white" x="928" y="736" width="352" height="64">
+  <object name="white" type="platform" x="928" y="736" width="352" height="64">
    <properties>
     <property name="color" value="white"/>
    </properties>
