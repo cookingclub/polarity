@@ -6,6 +6,7 @@
 #include "world/trigger.hpp"
 #include "physics/player_behavior.hpp"
 #include "physics/magnetic_behavior.hpp"
+#include "graphics/canvas.hpp"
 
 #include "tmxparser.h"
 
@@ -149,15 +150,15 @@ void World::tick() {
     // Gets called every frame
 }
 
-void World::draw(SDL_Surface *screen) {
+void World::draw(Canvas *screen) {
     for (auto& layer : layers->layers) {
         layer->draw(screen, -camera.x, -camera.y);
     }
     for (auto& object : objects) {
         object->draw(this, screen);
     }
-    screenDimensions.x = screen->w;
-    screenDimensions.y = screen->h;
+    screenDimensions.x = screen->width();
+    screenDimensions.y = screen->height();
 }
 
 void World::load(const std::string &tmxFile) {

@@ -24,7 +24,7 @@ public:
             const tmxparser::TmxTileset& tileset);
 
     Rect positionInImage(int tileindex);
-    void drawTile(int tileindex, SDL_Surface *surf, int x, int y);
+    void drawTile(int tileindex, Canvas *surf, int x, int y);
 
     std::shared_ptr<Image> image;
 };
@@ -37,7 +37,7 @@ public:
             LayerCollection*layers,
             const tmxparser::TmxLayer &tmxLayer);
 
-    void draw(SDL_Surface* screen, int x, int y);
+    void draw(Canvas* screen, int x, int y);
     float xparallax;
     float yparallax;
     LayerCollection *layers;

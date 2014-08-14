@@ -9,15 +9,9 @@
 #include <memory>
 
 #include "image.hpp"
+#include "canvas.hpp"
 
 #include "tmxparser.h"
-
-#include "SDL/SDL.h"
-#include "SDL/SDL_video.h"
-#include "SDL/SDL_image.h"
-#include "SDL/SDL_ttf.h"
-#include "SDL/SDL_mixer.h"
-#include "SDL/SDL_rotozoom.h"
 
 namespace Polarity {
 
@@ -42,8 +36,8 @@ public:
     float frameTime;
     static std::shared_ptr<Animation> get(const std::string &filename);
 
-    void draw(SDL_Surface *surf, int x, int y);
-    void draw(SDL_Surface *screen, const Rect& src, int x, int y);
+    void draw(Canvas* canvas, int x, int y);
+    void draw(Canvas* canvas, const Rect& src, int x, int y);
 };
 
 }

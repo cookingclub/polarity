@@ -97,7 +97,7 @@ size_t Animation::getFrame() {
     return frame;
 }
 
-void Animation::draw(SDL_Surface *screen, const Rect &src, int x, int y) {
+void Animation::draw(Canvas *screen, const Rect &src, int x, int y) {
     size_t frame = getFrame();
     if (!images.empty()) {
         surf = images[frame]->surf;
@@ -107,7 +107,7 @@ void Animation::draw(SDL_Surface *screen, const Rect &src, int x, int y) {
     }
 }
 
-void Animation::draw(SDL_Surface *screen, int x, int y) {
+void Animation::draw(Canvas *screen, int x, int y) {
     size_t frame = getFrame();
     if (!images.empty()) {
         surf = images[frame]->surf;

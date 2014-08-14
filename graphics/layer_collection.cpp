@@ -23,7 +23,7 @@ Rect Tileset::positionInImage(int tileindex) {
     return Rect(img_xoff, img_yoff, tileWidth, tileHeight);
 }
 
-void Tileset::drawTile(int tileindex, SDL_Surface *surf, int x, int y) {
+void Tileset::drawTile(int tileindex, Canvas *surf, int x, int y) {
     Rect srcpos = positionInImage(tileindex);
     image->draw(surf, srcpos, x, y - tileHeight);
 }
@@ -71,7 +71,7 @@ Layer::Layer(const std::string& directory,
  */
 
 
-void Layer::draw(SDL_Surface* screen, int startx, int starty) {
+void Layer::draw(Canvas *screen, int startx, int starty) {
     startx *= xparallax;
     starty *= yparallax;
     if (backgroundImage) {

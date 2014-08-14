@@ -2,6 +2,7 @@
 #include "emscripten.h"
 #endif
 
+#include "graphics/canvas.hpp"
 #include "audio/audio.hpp"
 #include "main/main.hpp"
 #include "world/world.hpp"
@@ -13,9 +14,9 @@ const int CANVAS_WIDTH = 1280;
 const int CANVAS_HEIGHT = 720;
 
 
-static SDL_Surface *screen;
-
 namespace Polarity {
+
+static Canvas *screen;
 
 std::shared_ptr<AudioChannelPlayer> audioPlayer;
 std::shared_ptr<PlayerState> playerState (new PlayerState());
@@ -28,6 +29,7 @@ void emLoopIter() {
     if (!loopIter(screen)) {
         SDL_Quit();
     }
+    screen->swapBuffers();
 }
 
 void mainloop() {
@@ -41,7 +43,7 @@ void mainloop() {
         if (!loopIter(screen)) {
             break;
         } else {
-            SDL_Flip(screen);
+            screen->swapBuffers();
         }
     }
 }
@@ -64,11 +66,10 @@ int main() {
         cerr << "Failed to init Audio" << endl;
         return 1;
     }
-    screen = SDL_SetVideoMode(
-            CANVAS_WIDTH, CANVAS_HEIGHT, 0,
-            SDL_HWSURFACE | SDL_RESIZABLE);
 
-    SDL_MapRGB(screen->format, 65, 65, 65);
+    Polarity::screen = new Polarity::Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    // SDL_MapRGB(screen->format, 65, 65, 65);
     srand(time(NULL));
     Polarity::loadAssets();
     Polarity::World::init(Polarity::audioPlayer, Polarity::playerState, Polarity::gameState);

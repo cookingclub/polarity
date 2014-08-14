@@ -16,6 +16,8 @@ using std::unique_ptr;
 using std::vector;
 
 namespace Polarity {
+class Canvas;
+
 class World {
     b2World physics;
     b2Vec2 graphicsScale;
@@ -44,7 +46,7 @@ public:
     World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> _playerState, shared_ptr<GameState> _gameState);
     GameObject* addObject(Behavior*behavior, const b2BodyDef&, const std::vector<b2FixtureDef>&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties);
     void tick();
-    void draw(SDL_Surface *screen);
+    void draw(Canvas *screen);
     void keyEvent(int keyCode, bool pressed);
     void findKeysJustPressed(const vector<bool> &prevStates);
     void clearJustPressedStates();

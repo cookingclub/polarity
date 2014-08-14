@@ -14,6 +14,7 @@ namespace Polarity {
 class Behavior;
 class World;
 class Trigger;
+class Canvas;
 
 typedef std::unordered_map<std::string, std::string> PropertyMap;
 
@@ -59,7 +60,7 @@ public:
     void setAction(Actions a);
     b2AABB getBounds()const;
     virtual void tick(World*world);
-    void draw(World * world, SDL_Surface* surface);
+    void draw(World * world, Canvas* surface);
     Type getType() const { return type; }
     bool isJumpable() const { return jumpCooldown == 0; }
     void setJumpable(bool canJump) { jumpCooldown = canJump ? 0 : -1; }

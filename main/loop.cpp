@@ -48,10 +48,10 @@ void loadAssets() {
     loadAudioChannels();
 }
 
-bool loopIter(SDL_Surface *screen) {
+bool loopIter(Canvas *screen) {
     SDL_Event event;
     std::vector<int> keyUps;
-    SDL_FillRect(screen, NULL, 0xffffffff);
+    // SDL_FillRect(screen, NULL, 0xffffffff);
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
             vector<bool> lastKeyState = world->getKeyState();

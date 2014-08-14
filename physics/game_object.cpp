@@ -120,7 +120,7 @@ b2AABB GameObject::getBounds() const{
     }
     return aabb;
 }
-void GameObject::draw(World * world, SDL_Surface* screen) {
+void GameObject::draw(World * world, Canvas* screen) {
     b2Vec2 wh = 2. * world->physicsToGraphics(this->getBounds().GetExtents(), 1);
     b2Vec2 actualpos = world->physicsToGraphics(this->groundBody->GetPosition());
     actualpos -= world->getCamera();
