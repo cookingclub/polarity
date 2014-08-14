@@ -1,5 +1,6 @@
 #include "world/world.hpp"
 #include "world/trigger.hpp"
+#include "graphics/animation.hpp"
 
 using namespace std;
 

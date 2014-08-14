@@ -4,7 +4,6 @@
 #include "SDL/SDL.h"
 #include "world.hpp"
 #include "world/trigger.hpp"
-#include "graphics/graphics.hpp"
 
 #include "tmxparser.h"
 
@@ -237,7 +236,7 @@ void World::load(const std::string &tmxFile) {
                 polygon_box.SetAsBox(0.25, 0.25, b2Vec2(0, -wh.y + 0.125), 0);
                 fixtures.push_back(b2FixtureDef());
                 fixtures.back().isSensor = true;
-                fixtures.back().userData = Trigger::create("feet");
+                fixtures.back().userData = Trigger::create("feet", std::unordered_map<std::string,std::string>());
                 fixtures.back().shape = &polygon_box;
             }
 

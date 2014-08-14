@@ -1,7 +1,6 @@
 #include "audio/audio.hpp"
 #include "main/main.hpp"
 #include "world/world.hpp"
-#include "graphics/graphics.hpp"
 
 namespace Polarity {
 

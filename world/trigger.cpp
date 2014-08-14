@@ -1,6 +1,6 @@
 #include "world/trigger.hpp"
 #include "world/world.hpp"
-#include "physics/physics.hpp"
+#include "physics/game_object.hpp"
 
 namespace Polarity {
 Trigger::Trigger()
@@ -12,7 +12,7 @@ void Trigger::setOwner(GameObject* newOwner) {
 }
 
 Trigger* Trigger::create(const std::string& name,
-        const PropertyMap& properties) {
+						 const std::unordered_map<std::string, std::string>& properties) {
     if (name == "door") {
         return new DoorTrigger();
     } else if (name == "feet") {

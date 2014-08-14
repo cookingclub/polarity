@@ -2,7 +2,7 @@
 #include <assert.h>
 
 #include "physics/contact.hpp"
-#include "physics/physics.hpp"
+#include "physics/game_object.hpp"
 #include "world/trigger.hpp"
 #include "world/world.hpp"
 

@@ -1,7 +1,8 @@
 #ifndef POLARITY_WORLD_TRIGGER_HPP__
 #define POLARITY_WORLD_TRIGGER_HPP__
 
-#include "physics/physics.hpp"
+#include <string>
+#include <unordered_map>
 
 namespace Polarity {
 class GameObject;
@@ -13,7 +14,7 @@ public:
     Trigger();
 
     static Trigger* create(const std::string& name,
-            const PropertyMap& properties=PropertyMap());
+            const std::unordered_map<std::string, std::string>& properties);
 
     GameObject* getOwner() { return owner; }
     virtual void setOwner(GameObject* owner);

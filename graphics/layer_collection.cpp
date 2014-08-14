@@ -1,4 +1,6 @@
-#include "graphics/graphics.hpp"
+#include "graphics/image.hpp"
+#include "graphics/animation.hpp"
+#include "graphics/layer_collection.hpp"
 
 #include <algorithm>
 

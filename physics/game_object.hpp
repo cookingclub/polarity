@@ -1,11 +1,11 @@
-#ifndef POLARITY_PHYSICS_PHYSICS_HPP__
-#define POLARITY_PHYSICS_PHYSICS_HPP__
+#ifndef POLARITY_PHYSICS_GAME_OBJECT_HPP__
+#define POLARITY_PHYSICS_GAME_OBJECT_HPP__
 
 #include <vector>
 #include <map>
 #include <Box2D/Box2D.h>
 #include "behavior.hpp"
-#include "graphics/graphics.hpp"
+#include "graphics/animation.hpp"
 
 #include "SDL/SDL.h"
 

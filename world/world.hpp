@@ -3,9 +3,9 @@
 
 #include <Box2D/Box2D.h>
 #include "physics/vector.hpp"
-#include "physics/physics.hpp"
+#include "physics/game_object.hpp"
 #include "physics/contact.hpp"
-#include "graphics/graphics.hpp"
+#include "graphics/layer_collection.hpp"
 #include "audio/audio.hpp"
 #include "player.hpp"
 #include <memory>
