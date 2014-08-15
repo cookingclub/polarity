@@ -10,10 +10,6 @@
 
 #include "rect.hpp"
 
-#include "SDL/SDL.h"
-#include "SDL/SDL_video.h"
-#include "SDL/SDL_image.h"
-
 namespace Polarity {
 
 class Canvas;
@@ -21,24 +17,20 @@ class Canvas;
 class Image {
 protected:
     friend class Animation;
-    friend class Canvas;
 
-    Image(){surf = nullptr;};
     Image(const Image&x) = delete;
     Image& operator=(const Image&x) = delete;
-    explicit Image(SDL_Surface* surf) : surf(surf) {}
 public:
-    ~Image();
+    Image() {}
 
-    static std::shared_ptr<Image> get(const std::string &filename);
+    virtual ~Image() {}
 
-    void draw(Canvas *screen, int x, int y);
-    void draw(Canvas *screen, const Rect& src, int x, int y);
+    static std::shared_ptr<Image> get(Canvas *canvas, const std::string &filename);
 
-    int width() { return surf->w; }
-    int height() { return surf->h; }
-private:
-    SDL_Surface *surf;
+    virtual void draw(Canvas *screen, int x, int y);
+    virtual void drawSubimage(Canvas *screen, const Rect& src, int x, int y);
+    virtual int width() = 0;
+    virtual int height() = 0;
 };
 
 }

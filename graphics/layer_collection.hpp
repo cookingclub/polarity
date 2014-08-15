@@ -14,13 +14,15 @@
 #include "tmxparser.h"
 
 namespace Polarity {
+class Canvas;
 
 class Tileset : tmxparser::TmxTileset {
     Tileset() = delete;
     Tileset(const Tileset&x) = delete;
     Tileset& operator=(const Tileset&x) = delete;
 public:
-    Tileset(const std::string& directory,
+    Tileset(Canvas *canvas,
+            const std::string& directory,
             const tmxparser::TmxTileset& tileset);
 
     Rect positionInImage(int tileindex);
@@ -33,7 +35,8 @@ class LayerCollection;
 
 class Layer : public tmxparser::TmxLayer {
 public:
-    explicit Layer(const std::string& directory,
+    explicit Layer(Canvas *canvas,
+            const std::string& directory,
             LayerCollection*layers,
             const tmxparser::TmxLayer &tmxLayer);
 
@@ -51,6 +54,7 @@ class LayerCollection : public tmxparser::TmxMap {
     LayerCollection& operator=(const LayerCollection&x) = delete;
 public:
     explicit LayerCollection(
+            Canvas *canvas,
             const std::string& directory,
             const tmxparser::TmxMap &tmxMap);
 

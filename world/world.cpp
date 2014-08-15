@@ -15,19 +15,20 @@ using std::shared_ptr;
 namespace Polarity {
 World *world = nullptr;
 
-World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _audioPlayer,
+World::World(const shared_ptr<Canvas> &canvas, const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _audioPlayer,
             shared_ptr<PlayerState> _playerState, shared_ptr<GameState> _gameState)
         : physics(b2Vec2(0.0f, -10.0f)),
         graphicsScale(b2Vec2(96, 96)),
         camera(0, 300), //FIXME hard coded
         contactListener(this),
-        screenDimensions(1, 1),
+        screenDimensions(canvas->width(), canvas->height()),
         keyState(SDLK_LAST),
         keyPressedThisTick(SDLK_LAST, false),
         layers(nullptr),
         fAudioPlayer(_audioPlayer),
         fPlayerState(_playerState),
-        fGameState(_gameState) {
+        fGameState(_gameState),
+        graphicsContext(canvas) {
     std::cerr << "World has started"<<std::endl;
     for (int i=0; i< SDLK_LAST; ++i) {
         keyState[i] = false;
@@ -36,8 +37,8 @@ World::World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _au
     physics.SetContactListener(&contactListener);
 }
 
-void World::init(shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState) {
-    world = new World("assets/levels/level3a.tmx", audioPlayer, playerState, gameState);
+void World::init(const shared_ptr<Canvas> &canvas, shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState) {
+    world = new World(canvas, "assets/levels/level3a.tmx", audioPlayer, playerState, gameState);
 }
 
 GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef, const std::vector<b2FixtureDef>&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties) {
@@ -50,7 +51,7 @@ GameObject* World::addObject(Behavior *behavior, const b2BodyDef&bdef, const std
     if (behavior == nullptr) {
         behavior = new Behavior();
     }
-    GameObject * object = new GameObject(&physics, behavior, bdef, fixture, name, type, properties);
+    GameObject * object = new GameObject(getGraphicsContext(), &physics, behavior, bdef, fixture, name, type, properties);
     objects.emplace_back(object);
     behavior->addedToWorld(this, object);
     
@@ -173,7 +174,7 @@ void World::load(const std::string &tmxFile) {
     mapDimensions.x = map.width * map.tileWidth;
     mapDimensions.y = map.height * map.tileHeight;
 
-    layers = std::unique_ptr<LayerCollection>(new LayerCollection(dir, map));
+    layers = std::unique_ptr<LayerCollection>(new LayerCollection(graphicsContext.get(), dir, map));
     for (auto &it : map.tilesetCollection) {
         std::cerr << "Found tileset: " << it.name << std::endl;
     }

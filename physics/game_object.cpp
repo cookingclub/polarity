@@ -20,7 +20,7 @@ GameObject::Type GameObject::parseTypeStr(const std::string& typeStr) {
     return TERRAIN;
 }
 
-GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef, const std::vector<b2FixtureDef> &fixtures, const std::string &name, Type type, const PropertyMap &props)
+GameObject::GameObject(const std::shared_ptr<Canvas> &canvas, b2World *world, Behavior *behavior, const b2BodyDef &bdef, const std::vector<b2FixtureDef> &fixtures, const std::string &name, Type type, const PropertyMap &props)
         : behavior(behavior), name(name), properties(props), type(type) {
     currentAction = IDLE;
     groundBody = world->CreateBody(&bdef);
@@ -68,7 +68,7 @@ GameObject::GameObject(b2World *world, Behavior *behavior, const b2BodyDef &bdef
         if (stringName.length()) {
             auto it = properties.find(stringName);
             if (it != properties.end()) {
-                actionsAnimation[act] = Animation::get(it->second);
+                actionsAnimation[act] = Animation::get(canvas.get(), it->second);
                 if (act == OPEN) {
                     actionsAnimation[act]->setLoop(false);
                 }

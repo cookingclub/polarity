@@ -6,10 +6,11 @@
 
 namespace Polarity {
 
-Tileset::Tileset(const std::string& directory,
+Tileset::Tileset(Canvas *canvas,
+        const std::string& directory,
         const tmxparser::TmxTileset& tileset)
         : tmxparser::TmxTileset(tileset) {
-    image = Image::get(directory + "/" + tileset.image.source);
+    image = Image::get(canvas, directory + "/" + tileset.image.source);
 }
 
 Rect Tileset::positionInImage(int tileindex) {
@@ -25,10 +26,11 @@ Rect Tileset::positionInImage(int tileindex) {
 
 void Tileset::drawTile(int tileindex, Canvas *surf, int x, int y) {
     Rect srcpos = positionInImage(tileindex);
-    image->draw(surf, srcpos, x, y - tileHeight);
+    image->drawSubimage(surf, srcpos, x, y - tileHeight);
 }
 
-Layer::Layer(const std::string& directory,
+Layer::Layer(Canvas *canvas,
+            const std::string& directory,
             LayerCollection* layers,
             const tmxparser::TmxLayer &tmxLayer)
         : tmxparser::TmxLayer(tmxLayer),
@@ -45,7 +47,7 @@ Layer::Layer(const std::string& directory,
         sscanf(whereY->second.c_str(), "%f", &yparallax);
     }
     if (tmxLayer.isImageLayer) {
-        backgroundImage = Image::get(directory + "/" +
+        backgroundImage = Image::get(canvas, directory + "/" +
                 tmxLayer.backgroundImage.source);
     }
     std::cerr<< "Found the parallax "<<xparallax <<","<<yparallax<<std::endl;
@@ -95,6 +97,7 @@ void Layer::draw(Canvas *screen, int startx, int starty) {
 }
 
 LayerCollection::LayerCollection(
+            Canvas* canvas,
             const std::string& directory,
             const tmxparser::TmxMap &tmxMap)
         : tmxparser::TmxMap(tmxMap) {
@@ -102,11 +105,11 @@ LayerCollection::LayerCollection(
     for (auto &it : tmxMap.tilesetCollection) {
         std::cerr << "layercol Found tileset: " << it.name << std::endl;
         tilesets.push_back(std::unique_ptr<Tileset>(
-                    new Tileset(directory, it)));
+                    new Tileset(canvas, directory, it)));
     }
     for (auto &it : tmxMap.layerCollection) {
         std::cerr << "layercol Found layer: " << it.name << std::endl;
-        layers.push_back(std::unique_ptr<Layer>(new Layer(directory, this, it)));
+        layers.push_back(std::unique_ptr<Layer>(new Layer(canvas, directory, this, it)));
     }
 }
 

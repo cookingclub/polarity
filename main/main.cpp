@@ -2,7 +2,7 @@
 #include "emscripten.h"
 #endif
 
-#include "graphics/canvas.hpp"
+#include "graphics/sdl_canvas.hpp"
 #include "audio/audio.hpp"
 #include "main/main.hpp"
 #include "world/world.hpp"
@@ -16,7 +16,7 @@ const int CANVAS_HEIGHT = 720;
 
 namespace Polarity {
 
-static Canvas *screen;
+static std::shared_ptr<Canvas> screen;
 
 std::shared_ptr<AudioChannelPlayer> audioPlayer;
 std::shared_ptr<PlayerState> playerState (new PlayerState());
@@ -26,7 +26,7 @@ extern void loadAssets();
 
 #ifdef EMSCRIPTEN
 void emLoopIter() {
-    if (!loopIter(screen)) {
+    if (!loopIter(screen.get())) {
         SDL_Quit();
     }
     screen->swapBuffers();
@@ -57,6 +57,7 @@ int main() {
         cerr << "Failed to init SDL" << endl;
         return 1;
     }
+
     if (TTF_Init()) {
         cerr << "Failed to init TTF" << endl;
         return 1;
@@ -67,12 +68,12 @@ int main() {
         return 1;
     }
 
-    Polarity::screen = new Polarity::Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+    Polarity::screen.reset(new Polarity::SDLCanvas(CANVAS_WIDTH, CANVAS_HEIGHT));
 
     // SDL_MapRGB(screen->format, 65, 65, 65);
     srand(time(NULL));
     Polarity::loadAssets();
-    Polarity::World::init(Polarity::audioPlayer, Polarity::playerState, Polarity::gameState);
+    Polarity::World::init(Polarity::screen, Polarity::audioPlayer, Polarity::playerState, Polarity::gameState);
 /*
     b2BodyDef bodyDef;
     bodyDef.type = b2_dynamicBody;

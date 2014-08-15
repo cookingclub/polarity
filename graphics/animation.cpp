@@ -2,9 +2,11 @@
 #include "graphics/animation.hpp"
 #include <unordered_map>
 
+#include "SDL/SDL.h" // SDL_GetTicks()
+
 namespace Polarity {
 
-Animation::Animation(const std::string& filename, const std::string &ext, int numFrames) {
+Animation::Animation(Canvas *canvas, const std::string& filename, const std::string &ext, int numFrames) {
     frame = 0;
     lastTime = SDL_GetTicks();
     running = true;
@@ -27,15 +29,14 @@ Animation::Animation(const std::string& filename, const std::string &ext, int nu
           sprintf(numberTarget, "%02d.", i);
       }
       std::string mdata = filename + numberTarget + ext;
-      images.push_back(Image::get(mdata));
+      images.push_back(Image::get(canvas, mdata));
     }
     if (numFrames == 0) {
-      images.push_back(Image::get(filename));
+      images.push_back(Image::get(canvas, filename));
     }
-    surf = images[0]->surf;
 }
 
-std::shared_ptr<Animation> Animation::get(const std::string& filename) {
+std::shared_ptr<Animation> Animation::get(Canvas *canvas, const std::string& filename) {
   std::string::size_type extwhere = filename.find_last_of(".");
   std::string ext = filename.substr(extwhere + 1);
   std::string basename = filename.substr(0, extwhere);
@@ -45,19 +46,18 @@ std::shared_ptr<Animation> Animation::get(const std::string& filename) {
        const char * numFramesStr = data + where + 1;
        int numFrames = 1;
        sscanf(numFramesStr, "%d", &numFrames);
-       return std::shared_ptr<Animation>(new Animation(basename.substr(0,where + 1),
+       return std::shared_ptr<Animation>(new Animation(canvas,
+                               basename.substr(0,where + 1),
                                ext,
                                numFrames));
     }else {
-       return std::shared_ptr<Animation>(new Animation(basename,
+        return std::shared_ptr<Animation>(new Animation(canvas, basename,
                                                        std::string(),
                                                        0));
     }
 }
 
 Animation::~Animation() {
-    // do not double free the surface;
-    surf = nullptr;
 }
 
 void Animation::restart() {
@@ -97,24 +97,27 @@ size_t Animation::getFrame() {
     return frame;
 }
 
-void Animation::draw(Canvas *screen, const Rect &src, int x, int y) {
+void Animation::drawSubimage(Canvas *screen, const Rect &src, int x, int y) {
     size_t frame = getFrame();
     if (!images.empty()) {
-        surf = images[frame]->surf;
-        images[frame]->draw(screen, src, x, y);
+        images[frame]->drawSubimage(screen, src, x, y);
     }else {
         std::cerr << "No frames in surface: shouldn't happen." << std::endl;
     }
 }
 
-void Animation::draw(Canvas *screen, int x, int y) {
-    size_t frame = getFrame();
-    if (!images.empty()) {
-        surf = images[frame]->surf;
-        images[frame]->draw(screen, x, y);
-    } else {
-        std::cerr << "No frames in surface: shouldn't happen." << std::endl;
+int Animation::width() {
+    if (images.empty()) {
+        return 0;
     }
+    return images[frame]->width();
+}
+
+int Animation::height() {
+    if (images.empty()) {
+        return 0;
+    }
+    return images[frame]->height();
 }
 
 }

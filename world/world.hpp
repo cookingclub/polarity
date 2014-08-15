@@ -33,6 +33,8 @@ class World {
     shared_ptr<PlayerState> fPlayerState;
     shared_ptr<GameState> fGameState;
 
+    shared_ptr<Canvas> graphicsContext;
+
     void load(const std::string& tmxFile);
 public:
     //int pn = 1; //player polarity, this should prob be set in player state
@@ -42,8 +44,8 @@ public:
         return camera;
     }
     void updateCamera(GameObject *obj, b2Vec2 player);
-    static void init(shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState);
-    World(const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> _playerState, shared_ptr<GameState> _gameState);
+    static void init(const shared_ptr<Canvas> &canvas, shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState);
+    World(const shared_ptr<Canvas> &canvas, const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> _playerState, shared_ptr<GameState> _gameState);
     GameObject* addObject(Behavior*behavior, const b2BodyDef&, const std::vector<b2FixtureDef>&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties);
     void tick();
     void draw(Canvas *screen);
@@ -52,7 +54,11 @@ public:
     void clearJustPressedStates();
     bool isKeyDown(int keyCode);
     bool wasKeyJustPressed(int keyCode);
-    
+
+    const shared_ptr<Canvas> &getGraphicsContext() const {
+        return graphicsContext;
+    }
+
     vector<bool> getKeyState() const {
         return keyState;
     }

@@ -69,8 +69,8 @@ public:
     const std::string& getName() const { return name; }
     b2Body*groundBody;
     float printPosition();
-    GameObject(b2World *world, Behavior * behavior, const b2BodyDef &bdef, const std::vector<b2FixtureDef> &fixtures, const std::string &name, Type type, const PropertyMap &properties);
-    
+    GameObject(const std::shared_ptr<Canvas> &canvas, b2World *world, Behavior * behavior, const b2BodyDef &bdef, const std::vector<b2FixtureDef> &fixtures, const std::string &name, Type type, const PropertyMap &properties);
+
     virtual ~GameObject(){}
 };
 
