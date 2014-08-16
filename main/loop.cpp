@@ -64,6 +64,7 @@ bool loopIter(Canvas *screen) {
         }
     }
     world->tick();
+    completeAllPendingCallbacksFromMainThread();
     world->draw(screen);
     // all key up have to happen after key downs so we get a full tick of downs
     for (auto &key : keyUps) {

@@ -9,6 +9,10 @@
 
 namespace Polarity {
     class Canvas;
+    void completeAllPendingCallbacksFromMainThread();
+    void mainThreadCallback(const std::function<void()>&&);
+    void asyncFileLoad(const std::string&fname,
+                       const std::function<void(const char * data, int size)>&callback);
     bool loopIter(Canvas *screen);
 }
 

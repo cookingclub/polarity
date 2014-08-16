@@ -23,6 +23,77 @@ std::shared_ptr<PlayerState> playerState (new PlayerState());
 std::shared_ptr<GameState> gameState;
 
 extern void loadAssets();
+#ifdef EMSCRIPTEN
+#define LOCK_MAIN_THREAD_CALLBACK_MUTEX()
+#else
+namespace {
+std::mutex mainThreadCallbackMutex;
+}
+#define LOCK_MAIN_THREAD_CALLBACK_MUTEX() std::lock_guard(mainThreadCallbackMutex)
+#endif
+namespace {
+std::vector<std::function<void()> > functionsToCallOnMainThread;
+}
+void completeAllPendingCallbacksFromMainThread(){
+    std::vector<std::function<void()> > savedFunctionsToCallOnMainThread;
+    {   // keep the function lock as short as possible
+        LOCK_MAIN_THREAD_CALLBACK_MUTEX();
+        functionsToCallOnMainThread.swap(savedFunctionsToCallOnMainThread);
+    }
+    for (auto &func : savedFunctionsToCallOnMainThread) {
+        func();
+    }
+    savedFunctionsToCallOnMainThread.resize(0);
+    {   // keep the function lock as short as possible
+        LOCK_MAIN_THREAD_CALLBACK_MUTEX();
+        functionsToCallOnMainThread.swap(savedFunctionsToCallOnMainThread);
+    }
+    for (auto &func : savedFunctionsToCallOnMainThread) {
+        func();
+    }
+}
+
+#if 0//def EMSCRIPTEN
+static void asyncFileLoadOnLoad(void*ctx, void *data, unsigned*size){
+    auto cb = static_cast<std::function<void(const char * data, int size)>*>(ctx);
+    *cb(data, *size);
+}
+static void asyncFileLoadOnError(void*ctx, int, const char*){
+    auto cb = static_cast<std::function<void(const char * data, int size)>*>(ctx);
+    *cb(nullptr, -1);
+}
+static void asyncFileLoadOnProgress(void*, int, int){
+}
+void asyncFileLoad(const std::string fileName,
+                   const std::function<void(const char * data, int size)>&callback) {
+    auto cb = new std::function<void(const char * data, int size)>(callback);
+    emscripten_async_wget2_data(fileName, "GET", "", cb, true, asyncFileLoadOnLoad, asyncFileLoadOnError, asyncFileLoadOnProgress);
+}
+#else
+
+//FIXME: USE PTHREAD so that the disk load and the async processing happen on a worker thread
+void asyncFileLoad(const std::string &fileName,
+                   const std::function<void(const char * data, int size)>&callback) {
+    FILE * fp = fopen(fileName.c_str(), "rb");
+    if (fp) {
+        fseek(fp, 0, SEEK_END);
+        size_t size = ftell(fp);
+        fseek(fp, 0, SEEK_SET);
+        char *data = (char*)malloc(size);
+        callback(data, size);
+        free(data);
+    }else {
+        callback(NULL, -1);
+    }
+}
+#endif
+void mainThreadCallback(const std::function<void()>&&function) {
+    LOCK_MAIN_THREAD_CALLBACK_MUTEX();
+    functionsToCallOnMainThread.push_back(std::move(function));
+}
+
+
+
 
 #ifdef EMSCRIPTEN
 void emLoopIter() {

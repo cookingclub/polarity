@@ -35,6 +35,7 @@ class World {
 
     shared_ptr<Canvas> graphicsContext;
 
+    std::weak_ptr<World> wthis;
     void load(const std::string& tmxFile);
 public:
     //int pn = 1; //player polarity, this should prob be set in player state
@@ -46,7 +47,7 @@ public:
     void updateCamera(GameObject *obj, b2Vec2 player);
     static void init(const shared_ptr<Canvas> &canvas, shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState);
     World(const shared_ptr<Canvas> &canvas, const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> _playerState, shared_ptr<GameState> _gameState);
-    GameObject* addObject(Behavior*behavior, const b2BodyDef&, const std::vector<b2FixtureDef>&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties);
+    void addObject(Behavior*behavior, const b2BodyDef&, const std::vector<b2FixtureDef>&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties);
     void tick();
     void draw(Canvas *screen);
     void keyEvent(int keyCode, bool pressed);
@@ -58,6 +59,12 @@ public:
     const shared_ptr<Canvas> &getGraphicsContext() const {
         return graphicsContext;
     }
+    class TmxMapWrapper;
+    static void load_async(const std::weak_ptr<World> &weakThis, const std::string &tmxFile,
+                           const char * data, int size);
+    static void finalizeLoad(const std::weak_ptr<World> &weakThis,
+                             const std::string &tmxFile,
+                             TmxMapWrapper *data);
 
     vector<bool> getKeyState() const {
         return keyState;
@@ -83,6 +90,6 @@ public:
         return b2Vec2(vec.x * graphicsScale.x, vec.y * graphicsScale.y * isBounds);
     }
 };
-extern World *world;
+extern std::shared_ptr<World> world;
 }
 #endif
