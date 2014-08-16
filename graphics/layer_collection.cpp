@@ -46,6 +46,7 @@ Layer::Layer(Canvas *canvas,
     if (whereY != tmxLayer.propertyMap.end()) {
         sscanf(whereY->second.c_str(), "%f", &yparallax);
     }
+    backgroundImage = nullptr;
     if (tmxLayer.isImageLayer) {
         backgroundImage = Image::get(canvas, directory + "/" +
                 tmxLayer.backgroundImage.source);

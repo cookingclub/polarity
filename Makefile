@@ -20,7 +20,7 @@ LDFLAGS = -s STB_IMAGE=1 --preload-file assets -s TOTAL_MEMORY=134217728 $(EXTER
 endif
 #-O2 
 
-CFLAGS = -fno-exceptions -pthread -g -Wno-warn-absolute-paths -I $(CURDIR) -I$(CURDIR)/libs/box2d/Box2D/ -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/libtmxparser/src
+CFLAGS = -fno-exceptions -pthread -g -Wall -Wextra -Wno-unused-parameter -Wno-warn-absolute-paths -I $(CURDIR) -I$(CURDIR)/libs/box2d/Box2D/ -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/libtmxparser/src
 CXXFLAGS = -std=gnu++11 $(CFLAGS)
 
 

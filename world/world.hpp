@@ -36,7 +36,6 @@ class World {
     shared_ptr<Canvas> graphicsContext;
 
     std::weak_ptr<World> wthis;
-    void load(const std::string& tmxFile);
 public:
     //int pn = 1; //player polarity, this should prob be set in player state
     //int EMoff = 1; //EM force ON or OFF
@@ -46,7 +45,8 @@ public:
     }
     void updateCamera(GameObject *obj, b2Vec2 player);
     static void init(const shared_ptr<Canvas> &canvas, shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState);
-    World(const shared_ptr<Canvas> &canvas, const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> _playerState, shared_ptr<GameState> _gameState);
+    World(const shared_ptr<Canvas> &canvas, std::shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> _playerState, shared_ptr<GameState> _gameState);
+    void load(const std::string& tmxFile);
     void addObject(Behavior*behavior, const b2BodyDef&, const std::vector<b2FixtureDef>&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties);
     void tick();
     void draw(Canvas *screen);

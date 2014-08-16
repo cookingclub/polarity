@@ -29,7 +29,7 @@ extern void loadAssets();
 namespace {
 std::mutex mainThreadCallbackMutex;
 }
-#define LOCK_MAIN_THREAD_CALLBACK_MUTEX() std::lock_guard(mainThreadCallbackMutex)
+#define LOCK_MAIN_THREAD_CALLBACK_MUTEX() std::lock_guard local_lock(mainThreadCallbackMutex)
 #endif
 namespace {
 std::vector<std::function<void()> > functionsToCallOnMainThread;

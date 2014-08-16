@@ -15,7 +15,7 @@ using std::shared_ptr;
 namespace Polarity {
 std::shared_ptr<World> world;
 
-World::World(const shared_ptr<Canvas> &canvas, const std::string& tmxFile, std::shared_ptr<AudioChannelPlayer> _audioPlayer,
+World::World(const shared_ptr<Canvas> &canvas, std::shared_ptr<AudioChannelPlayer> _audioPlayer,
             shared_ptr<PlayerState> _playerState, shared_ptr<GameState> _gameState)
         : physics(b2Vec2(0.0f, -10.0f)),
         graphicsScale(b2Vec2(96, 96)),
@@ -33,15 +33,16 @@ World::World(const shared_ptr<Canvas> &canvas, const std::string& tmxFile, std::
     for (int i=0; i< SDLK_LAST; ++i) {
         keyState[i] = false;
     }
-    load(tmxFile);
     physics.SetContactListener(&contactListener);
 }
 
 void World::init(const shared_ptr<Canvas> &canvas, shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState) {
-    World *w = new World(canvas, "assets/levels/level3a.tmx", audioPlayer, playerState, gameState);
+    const char* tmxFile = "assets/levels/level3a.tmx";
+    World *w = new World(canvas, audioPlayer, playerState, gameState);
     std::shared_ptr<World> sworld(w);
     w->wthis = sworld;
     world = sworld;
+    w->load(tmxFile);
 }
 
 void World::addObject(Behavior *behavior, const b2BodyDef&bdef, const std::vector<b2FixtureDef>&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties) {
@@ -140,8 +141,10 @@ void World::tick() {
 }
 
 void World::draw(Canvas *screen) {
-    for (auto& layer : layers->layers) {
-        layer->draw(screen, -camera.x, -camera.y);
+    if (layers) {
+        for (auto& layer : layers->layers) {
+            layer->draw(screen, -camera.x, -camera.y);
+        }
     }
     for (auto& object : objects) {
         object->draw(this, screen);
@@ -157,12 +160,14 @@ public:
 
 void World::load_async(const std::weak_ptr<World>&weakThis, const std::string &tmxFile,
                        const char * data, int size) {
+    std::cerr << "load async " << tmxFile << std::endl;
     std::shared_ptr<World> world (weakThis.lock());
     if (world) {
         TmxMapWrapper *map = new TmxMapWrapper();
         tmxparser::TmxReturn error = tmxparser::parseFromFile(tmxFile, &map->map);
         world->mapDimensions.x = map->map.width * map->map.tileWidth;
         world->mapDimensions.y = map->map.height * map->map.tileHeight;
+        std::cerr << "done load async" << std::endl;
         Polarity::mainThreadCallback(std::bind(&World::finalizeLoad, weakThis, tmxFile, map));
     }
 }
@@ -170,6 +175,7 @@ void World::load_async(const std::weak_ptr<World>&weakThis, const std::string &t
 void World::finalizeLoad(const std::weak_ptr<World> &weakThis,
                          const std::string &tmxFile,
                          TmxMapWrapper *data) {
+    std::cerr << "finalize load " << tmxFile << std::endl;
     std::unique_ptr<TmxMapWrapper> destroyOnFunctionEnd(data);
     std::shared_ptr<World> world (weakThis.lock());
     if (world) {
@@ -247,6 +253,7 @@ void World::finalizeLoad(const std::weak_ptr<World> &weakThis,
 
 }
 void World::load(const std::string &tmxFile) {
+    std::cerr << "start async load " << tmxFile << std::endl;
     Polarity::asyncFileLoad(tmxFile, std::bind(&World::load_async, wthis, tmxFile, std::placeholders::_1, std::placeholders::_2));
 }
 }
