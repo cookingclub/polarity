@@ -37,8 +37,8 @@ GameObject::GameObject(const std::shared_ptr<Canvas> &canvas, b2World *world, Be
 
     idle = nullptr;
 
-	polarityCharge = COLORLESS;
-	auto it=properties.find("color");
+    polarityCharge = COLORLESS;
+    auto it=properties.find("color");
     if (it != properties.end()){
         if (it -> second == "black") {
             polarityCharge = BLACK;
@@ -46,7 +46,7 @@ GameObject::GameObject(const std::shared_ptr<Canvas> &canvas, b2World *world, Be
         else if (it->second == "white") {
             polarityCharge = WHITE;
         }
-	}
+    }
 
     for(int i=0;i<NUM_ACTIONS;++i) {
         Actions act = (Actions)i;
@@ -84,7 +84,10 @@ GameObject::GameObject(const std::shared_ptr<Canvas> &canvas, b2World *world, Be
 void GameObject::setAction(Actions a) {
     if (currentAction != a) {
         currentAction = a;
-        actionsAnimation[a]->restart();
+        auto where = actionsAnimation.find(a);
+        if (where != actionsAnimation.end()) {
+            where->second->restart();
+        }
     }
 }
 
@@ -158,16 +161,16 @@ float GameObject::printPosition(){
 }
 
 float GameObject::polarityForceMultiplier(Charge a, Charge b) {
-	if (a == 0 || b == 0) {
-		return 0;
-	}
-	if (a == b) {
-		return 1;
-	} else if (a == -b) {
-		return -1;
-	} else {
-		return 0;
-	}
+    if (a == 0 || b == 0) {
+        return 0;
+    }
+    if (a == b) {
+        return 1;
+    } else if (a == -b) {
+        return -1;
+    } else {
+        return 0;
+    }
 }
 
 }

@@ -16,7 +16,7 @@ else
 CC = emcc
 CXX = em++
 AR = emar
-LDFLAGS = -s STB_IMAGE=1 --preload-file assets -s TOTAL_MEMORY=134217728 $(EXTERNALS)
+LDFLAGS = --preload-file assets -s TOTAL_MEMORY=134217728 $(EXTERNALS)
 endif
 #-O2 
 
