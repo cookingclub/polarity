@@ -53,21 +53,23 @@ void completeAllPendingCallbacksFromMainThread(){
     }
 }
 
-#if 0//def EMSCRIPTEN
-static void asyncFileLoadOnLoad(void*ctx, void *data, unsigned*size){
-    auto cb = static_cast<std::function<void(const char * data, int size)>*>(ctx);
-    *cb(data, *size);
+#ifdef EMSCRIPTEN
+static void asyncFileLoadOnLoad(void*ctx, void *data, unsigned int size){
+    auto cb = reinterpret_cast<std::function<void(const char * data, int size)>*>(ctx);
+    (*cb)(reinterpret_cast<const char*>(data), size);
+    delete cb;
 }
 static void asyncFileLoadOnError(void*ctx, int, const char*){
-    auto cb = static_cast<std::function<void(const char * data, int size)>*>(ctx);
-    *cb(nullptr, -1);
+    auto cb = reinterpret_cast<std::function<void(const char * data, int size)>*>(ctx);
+    (*cb)(nullptr, -1);
+    delete cb;
 }
 static void asyncFileLoadOnProgress(void*, int, int){
 }
-void asyncFileLoad(const std::string fileName,
+void asyncFileLoad(const std::string &fileName,
                    const std::function<void(const char * data, int size)>&callback) {
     auto cb = new std::function<void(const char * data, int size)>(callback);
-    emscripten_async_wget2_data(fileName, "GET", "", cb, true, asyncFileLoadOnLoad, asyncFileLoadOnError, asyncFileLoadOnProgress);
+    emscripten_async_wget2_data(fileName.c_str(), "GET", "", cb, true, &asyncFileLoadOnLoad, &asyncFileLoadOnError, asyncFileLoadOnProgress);
 }
 #else
 
@@ -80,6 +82,8 @@ void asyncFileLoad(const std::string &fileName,
         size_t size = ftell(fp);
         fseek(fp, 0, SEEK_SET);
         char *data = (char*)malloc(size);
+        fread(data, 1, size, fp);
+        fclose(fp);
         callback(data, size);
         free(data);
     }else {
@@ -122,6 +126,23 @@ void mainloop() {
 }
 
 int main() {
+    std::weak_ptr<int>test0;
+    if (!test0.lock()) {
+        cerr << "OK2"<<std::endl;
+    }
+    {
+        int * itest = nullptr;
+        itest = new int(4);
+        std::shared_ptr<int> test(itest);
+        std::weak_ptr<int> test1(test);
+        test0 = test1;
+        if (test1.lock() && test0.lock()) {
+            cerr << *test0.lock() << "OK1"<<std::endl;
+        }
+    }
+    if (!test0.lock()) {
+        cerr << "OK0"<<std::endl;
+    }
     int retval = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO |
                           SDL_INIT_TIMER);
     if (retval) {

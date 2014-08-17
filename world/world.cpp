@@ -164,10 +164,11 @@ void World::load_async(const std::weak_ptr<World>&weakThis, const std::string &t
     std::shared_ptr<World> world (weakThis.lock());
     if (world) {
         TmxMapWrapper *map = new TmxMapWrapper();
-        tmxparser::TmxReturn error = tmxparser::parseFromFile(tmxFile, &map->map);
+        tmxparser::TmxReturn error = tmxparser::parseFromMemory(const_cast<char*>(data), size,
+                                                                &map->map);
         world->mapDimensions.x = map->map.width * map->map.tileWidth;
         world->mapDimensions.y = map->map.height * map->map.tileHeight;
-        std::cerr << "done load async" << std::endl;
+        std::cerr << "done load async"<<std::endl;
         Polarity::mainThreadCallback(std::bind(&World::finalizeLoad, weakThis, tmxFile, map));
     }
 }
