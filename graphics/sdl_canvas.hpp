@@ -52,7 +52,7 @@ class SDLImage : public Image {
                                                               image->pixelSize() * image->width,
                                                               mask[0], mask[1], mask[2], mask[3]);
 
-                tmpImage = IMG_Load(filename.c_str());
+                //tmpImage = IMG_Load(filename.c_str());
                 if (!tmpImage) {
                     thus->stage = FAILED;
                 } else {

@@ -15,6 +15,9 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_audio.h>
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
 
 using namespace std;
 
@@ -49,30 +52,80 @@ public:
         fNumAvailableChans = Mix_AllocateChannels(channels);
     }
 
-    Polarity::AudioFileError addChannel(string id, string filePath, int num) {
-        if (fAllocatedChans >= fNumChans) {
+    static Polarity::AudioFileError addChannel(std::shared_ptr<AudioChannelPlayer> thus, string id, string filePath, int num) {
+        if (thus->fAllocatedChans >= thus->fNumChans) {
             cerr << "All channels allocated, can't allocate another one" << endl;
             return Polarity::AudioFileError::NO_MORE_CHANNELS;
         }
+
+        thus->fChunks[id] = nullptr;
+        thus->fChannelNames[id] = num;
+        thus->fChannelPaths[id] = filePath;
+        thus->fChannelStates[id] = Polarity::CurrentAudioState::LOADED;
+        thus->fChannelLoops[id] = 1;
+        thus->fChannelVolumes[id] = 0;
+        thus->fAllocatedChans++;
+        queueLoad(thus, id, filePath);
+        return Polarity::AudioFileError::OK;
+    }
+#ifdef EMSCRIPTEN
+    struct UserData{
+        std::weak_ptr<AudioChannelPlayer> aplayer;
+        string id;
+        string filePath;
+    };
+    static void oncomplete(void*ud, const char* fileName) {
+        std::unique_ptr<UserData> userData(reinterpret_cast<UserData*>(ud));
+        std::cerr << "loaded audio: " << userData->filePath << std::endl;
+        queueLoadHelper(userData->aplayer, userData->id, userData->filePath);
+    }
+    static void onprogress(void*userData, int code) {
+    }
+    static void onerror(void*ud, int code) {
+        //std::unique_ptr<UserData> userData(reinterpret_cast<UserData*>(ud));
+
+        std::cerr << "x failed to load " << reinterpret_cast<UserData*>(ud)->filePath << std::endl;
+    }
+    static void queueLoad(const std::weak_ptr<AudioChannelPlayer>&aplayer,
+                          string id, string filePath) {
+        std::cerr<< "preparing to load "<<filePath<<std::endl;
+        std::string fullPath = "/"  + filePath;
+        emscripten_async_wget2(filePath.c_str(), fullPath.c_str(), "GET", "", new UserData{aplayer, id, filePath},
+                               &oncomplete, &onprogress, &onerror);
+    }
+#else
+    static void queueLoad(const std::weak_ptr<AudioChannelPlayer>&aplayer,
+                          string id, string filePath) {
+        queueLoadHelper(aplayer, id, filePath);
+    }
+#endif
+    static void queueLoadHelper(const std::weak_ptr<AudioChannelPlayer>&aplayer, string id, string filePath) {
         Mix_Chunk *chunk = Mix_LoadWAV( filePath.c_str() );
         if (chunk == nullptr) {
             cerr << "Couldn't load " << filePath << ", got error: " << Mix_GetError() << endl;
-            return Polarity::AudioFileError::FILE_NOT_LOADED;
-        } 
-
-        fChunks[id] = chunk;
-        fChannelNames[id] = num;
-        fChannelPaths[id] = filePath;
-        fChannelStates[id] = Polarity::CurrentAudioState::LOADED;
-        fChannelVolumes[id] = 0;
-        setChannelVolume(id, 0);
-        fAllocatedChans++;
-        return Polarity::AudioFileError::OK;
+        } else {
+            std::shared_ptr<AudioChannelPlayer> thus(aplayer.lock());
+            if (thus) {
+                if (thus->channelExists(id)) {
+                    thus->fChunks[id] = chunk;
+                    thus->setChannelVolume(id, thus->fChannelVolumes[id]);
+                    if (thus->fChannelStates[id] == Polarity::CurrentAudioState::PLAYING) {
+                        thus->playChannel(id, thus->fChannelLoops[id]);
+                    } else {
+                        thus->stopChannel(id);
+                    }
+                }
+            }
+        }
     }
 
+    bool channelLoaded(string id) {
+        auto where= fChunks.find(id);
+        return where != fChunks.end() && where->second != nullptr;
+    }
 
     bool channelExists(string id) {
-        return  fChunks.find(id) != fChunks.end() &&
+        return fChunks.find(id) != fChunks.end() &&
                 fChannelNames.find(id) != fChannelNames.end() &&
                 fChannelPaths.find(id) != fChannelPaths.end();
     }
@@ -80,7 +133,10 @@ public:
     // scale is 0 to 1 and maps to 0 to 128
     Polarity::AudioFileError setChannelVolume(string id, double scale) {
         if (channelExists(id)) {
-            fChannelVolumes[id] = Mix_Volume(fChannelNames[id], scale * MIX_MAX_VOLUME);
+            fChannelVolumes[id] = scale;
+            if (channelLoaded(id)) {
+                Mix_Volume(fChannelNames[id], scale * MIX_MAX_VOLUME);
+            }
             return Polarity::AudioFileError::OK;
         } else {
             return Polarity::AudioFileError::NO_SUCH_CHANNEL;
@@ -92,7 +148,7 @@ public:
             cerr << "Channel " << id << " doesn't exist" << endl;
             return Polarity::AudioFileError::NO_SUCH_CHANNEL;
         }
-        if (fChannelStates[id] != Polarity::CurrentAudioState::PLAYING) {
+        if (channelLoaded(id) && fChannelStates[id] != Polarity::CurrentAudioState::PLAYING) {
             if (Mix_Playing(fChannelNames[id]) == 0) {
                 if( Mix_PlayChannel(fChannelNames[id], fChunks[id], loops) == -1) {
                     cerr << "Mix_PlayChannel failed: " << Mix_GetError() << endl;
@@ -103,6 +159,7 @@ public:
             }
         }
         fChannelStates[id] = Polarity::CurrentAudioState::PLAYING;
+        fChannelLoops[id] = loops;
         return Polarity::AudioFileError::OK;
     }
 
@@ -111,8 +168,10 @@ public:
             cerr << "Channel " << id << " doesn't exist" << endl;
             return Polarity::AudioFileError::NO_SUCH_CHANNEL;
         }
-
-        Mix_HaltChannel(fChannelNames[id]);
+        if (channelLoaded(id)) {
+            Mix_HaltChannel(fChannelNames[id]);
+        }
+        fChannelLoops[id] = 1;
         fChannelStates[id] = Polarity::CurrentAudioState::STOPPED;
         return Polarity::AudioFileError::OK;
     }
@@ -124,7 +183,8 @@ private:
     map<string, int> fChannelNames;
     map<string, string> fChannelPaths;
     map<string, Polarity::CurrentAudioState> fChannelStates;
-    map<string, int> fChannelVolumes;
+    map<string, int> fChannelLoops;
+    map<string, double> fChannelVolumes;
     int fAllocatedChans;
     int fNumAvailableChans;
 };

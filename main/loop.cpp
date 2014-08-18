@@ -22,7 +22,7 @@ static ChannelSpec specs[] = {  ChannelSpec("white-music", "assets/audio/frozen_
                             };
 
 AudioFileError createAudioChannel(std::shared_ptr<AudioChannelPlayer> audioPlayer, string id, string filepath, int num, double initVolume = 0.0) {
-    AudioFileError err = audioPlayer->addChannel(id, filepath, num);
+    AudioFileError err = audioPlayer->addChannel(audioPlayer, id, filepath, num);
     if (err != AudioFileError::OK) {
         cerr << "Couldn't load track for '" << id << "'\n";
     } else {
