@@ -6,7 +6,7 @@
 
 namespace Polarity {
 
-Animation::Animation(Canvas *canvas, const std::string& filename, const std::string &ext, int numFrames) {
+Animation::Animation(Canvas *canvas, const std::string& filename, const std::string &ext, int numFrames) : Image(filename) {
     frame = 0;
     lastTime = SDL_GetTicks();
     running = true;
@@ -17,7 +17,6 @@ Animation::Animation(Canvas *canvas, const std::string& filename, const std::str
       std::cerr << "Truncating animation to 999 frames" << std::endl;
     }
     char numberTarget[64]={0};
-    char * mdata = strdup(filename.c_str());
     for (int i = 0; i < numFrames; ++i) {
       if (numFrames > 1000) {
           sprintf(numberTarget, "%d.", i);
