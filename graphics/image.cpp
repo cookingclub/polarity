@@ -32,6 +32,11 @@ void Image::drawSubimage(Canvas *screen, const Rect& src, int x, int y) {
     screen->drawImage(this, src, dest);
 }
 
+void Image::drawSprite(Canvas *screen,
+                       float centerX, float centerY, float scaleX, float scaleY, float angle) {
+    screen->drawSprite(this, centerX, centerY, scaleX, scaleY, angle);
+}
+
 void Image::draw(Canvas *screen, int x, int y) {
     Rect src (0, 0, width(), height());
     drawSubimage(screen, src, x, y);

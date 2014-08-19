@@ -59,11 +59,16 @@ public:
     static std::shared_ptr<Image> get(Canvas *canvas, const std::string &filename);
 
     virtual void draw(Canvas *screen, int x, int y);
+    virtual void drawSprite(Canvas *screen, float centerX, float centerY,
+                            float scaleX, float scaleY, float angle);
     virtual void drawSubimage(Canvas *screen, const Rect& src, int x, int y);
     virtual int width() = 0;
     virtual int height() = 0;
     bool isLoaded() const{
         return stage == COMPLETE;
+    }
+    const std::string& sourceUrl() const{
+        return filename;
     }
 };
 

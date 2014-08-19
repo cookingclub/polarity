@@ -127,23 +127,7 @@ void GameObject::draw(World * world, Canvas* screen) {
     b2Vec2 wh = 2. * world->physicsToGraphics(this->getBounds().GetExtents(), 1);
     b2Vec2 actualpos = world->physicsToGraphics(this->groundBody->GetPosition());
     actualpos -= world->getCamera();
-    b2Vec2 drawpos = actualpos - 0.5 * wh;
 
-    /*
-    SDL_Rect rect;
-    rect.x = drawpos.x;
-    rect.y = drawpos.y;
-
-    rect.w = wh.x;
-    rect.h = wh.y;
-    int r = type == TERRAIN ? 255 : 0;
-    int g = type == DOOR || type == PLATFORM ? 255 : 0;
-    int b = type == PLAYER || type == DOOR ? 255 : 0;
-    // TODO: set the right color
-    if (world->isKeyDown('b')) {
-        SDL_FillRect(screen, &rect, SDL_MapRGBA(screen->format, r, g, b, 70));
-    }
-    */
     auto actionAnimationIter = actionsAnimation.find(currentAction);
     std::shared_ptr<Animation> actionAnim;
     if (actionAnimationIter != actionsAnimation.end()) {
@@ -152,7 +136,10 @@ void GameObject::draw(World * world, Canvas* screen) {
         actionAnim = idle;
     }
     if (actionAnim) {
-        actionAnim->draw(screen, actualpos.x - actionAnim->width() / 2, actualpos.y - actionAnim->height() / 2);
+        //actionAnim->draw(screen, actualpos.x - actionAnim->width() / 2, actualpos.y - actionAnim->height() / 2);
+        actionAnim->drawSprite(screen,
+                               actualpos.x, actualpos.y,
+                               actionAnim->width(), actionAnim->height(), 0 /* rotation */);
     }
 }
 

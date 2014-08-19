@@ -16,7 +16,10 @@ public:
     virtual ~Canvas() {}
 
     virtual Image *loadImage(const std::string &filename) = 0;
-
+    virtual void drawSprite(Image *image,
+                            float centerX, float centerY,
+                            float scaleX, float scaleY,
+                            float angle) = 0;
     virtual void drawImage(Image *image, const Rect &src, const Rect &dst) = 0;
     virtual void swapBuffers() = 0;
 };
