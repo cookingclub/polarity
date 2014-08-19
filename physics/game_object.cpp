@@ -126,6 +126,7 @@ b2AABB GameObject::getBounds() const{
 void GameObject::draw(World * world, Canvas* screen) {
     b2Vec2 wh = 2. * world->physicsToGraphics(this->getBounds().GetExtents(), 1);
     b2Vec2 actualpos = world->physicsToGraphics(this->groundBody->GetPosition());
+    float angle = this->groundBody->GetAngle();
     actualpos -= world->getCamera();
 
     auto actionAnimationIter = actionsAnimation.find(currentAction);
@@ -139,7 +140,7 @@ void GameObject::draw(World * world, Canvas* screen) {
         //actionAnim->draw(screen, actualpos.x - actionAnim->width() / 2, actualpos.y - actionAnim->height() / 2);
         actionAnim->drawSprite(screen,
                                actualpos.x, actualpos.y,
-                               actionAnim->width(), actionAnim->height(), 0 /* rotation */);
+                               actionAnim->width(), actionAnim->height(), angle);
     }
 }
 
