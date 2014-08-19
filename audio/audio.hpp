@@ -16,6 +16,7 @@
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_audio.h>
 #ifdef EMSCRIPTEN
+#include <sys/stat.h>
 #include <emscripten.h>
 #endif
 
@@ -75,23 +76,35 @@ public:
         string filePath;
     };
     static void oncomplete(void*ud, const char* fileName) {
+        std::cerr << "audone: " << reinterpret_cast<UserData*>(ud)->filePath << " "<<fileName<< std::endl;
         std::unique_ptr<UserData> userData(reinterpret_cast<UserData*>(ud));
         std::cerr << "loaded audio: " << userData->filePath << std::endl;
         queueLoadHelper(userData->aplayer, userData->id, userData->filePath);
     }
     static void onprogress(void*userData, int code) {
+        std::cerr << "progress audio: " << reinterpret_cast<UserData*>(userData)->filePath << " " << code << std::endl;
     }
     static void onerror(void*ud, int code) {
-        //std::unique_ptr<UserData> userData(reinterpret_cast<UserData*>(ud));
+        std::unique_ptr<UserData> userData(reinterpret_cast<UserData*>(ud));
 
         std::cerr << "x failed to load " << reinterpret_cast<UserData*>(ud)->filePath << std::endl;
     }
     static void queueLoad(const std::weak_ptr<AudioChannelPlayer>&aplayer,
                           string id, string filePath) {
         std::cerr<< "preparing to load "<<filePath<<std::endl;
-        std::string fullPath = "/"  + filePath;
-        emscripten_async_wget2(filePath.c_str(), fullPath.c_str(), "GET", "", new UserData{aplayer, id, filePath},
-                               &oncomplete, &onprogress, &onerror);
+        std::string fullPath = filePath;
+        std::string::size_type where_slash = fullPath.find_first_of("\\/");
+        while (where_slash != std::string::npos) {
+            std::string subdir = fullPath.substr(0,where_slash);
+            if (!subdir.empty()) {
+                mkdir(subdir.c_str(), 0777);
+            }
+            where_slash = fullPath.find_first_of("\\/", where_slash + 1);
+        }
+        fullPath = "/" + filePath;
+        emscripten_async_wget2(filePath.c_str(), fullPath.c_str(), "GET", "",
+                               new UserData{aplayer, id, filePath},
+                               &oncomplete, &onerror, &onprogress);
     }
 #else
     static void queueLoad(const std::weak_ptr<AudioChannelPlayer>&aplayer,

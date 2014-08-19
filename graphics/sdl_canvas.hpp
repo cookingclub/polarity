@@ -45,13 +45,28 @@ class SDLImage : public Image {
                         memcpy(&mask[3], amask, 4);
                     }
                 }
-                SDL_Surface *tmpImage = SDL_CreateRGBSurfaceFrom(&image->data[0],
+                SDL_Surface *tmpImage = SDL_CreateRGBSurface(0, //FLAGS
                                                               image->width,
                                                               image->height,
                                                               image->pixelSize() * 8,
-                                                              image->pixelSize() * image->width,
                                                               mask[0], mask[1], mask[2], mask[3]);
-
+                if (SDL_LockSurface(tmpImage) == 0) {
+                    if (tmpImage->pixels) {
+                        unsigned char * pixels = static_cast<unsigned char*>(tmpImage->pixels);
+                        unsigned int pixelSize = image->pixelSize();
+                        unsigned int height = image->height;
+                        unsigned int pitch = pixelSize * image->width;
+                        unsigned int dpitch = tmpImage->pitch;
+                        for (unsigned int i = 0; i < height; ++i) {
+                            memcpy(pixels + dpitch * i,
+                                   &image->data[pitch * i],
+                                   pitch);
+                        }
+                    }
+                    SDL_UnlockSurface(tmpImage);
+                } else {
+                    std::cerr << "Unable to lock surface " << filename << std::endl;
+                }
                 //tmpImage = IMG_Load(filename.c_str());
                 if (!tmpImage) {
                     thus->stage = FAILED;
