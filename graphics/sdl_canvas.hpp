@@ -180,7 +180,7 @@ public:
                 for (std::vector<Image::BlitDescription>::const_iterator i=dl.begin(), ie=dl.end();
                      i!=ie;
                      ++i) {
-                    img->draw(canvas, *i);
+                    img->draw(canvas, *i, x, y);
                 }
             }
         }

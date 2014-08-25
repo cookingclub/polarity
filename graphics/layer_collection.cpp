@@ -23,12 +23,14 @@ Rect Tileset::positionInImage(int tileindex) {
     int img_yoff = effective_img_yoff + tileMarginInImage - tileSpacingInImage;
     return Rect(img_xoff, img_yoff, tileWidth, tileHeight);
 }
-
+Rect Tileset::getTileOutputBounds(int tileindex, int x, int y) {
+    return Rect(x, y - tileHeight, tileWidth, tileHeight);
+}
 Image::BlitDescription Tileset::drawTile(int tileindex, int x, int y) {
     Rect srcpos = positionInImage(tileindex);
     Image::BlitDescription bd = {srcpos,
                                  static_cast<float>(x + tileWidth / 2.0f),
-                                 static_cast<float>(y + tileHeight / 2.0f),
+                                 static_cast<float>(y + tileHeight / 2.0f - tileHeight),
                                  static_cast<float>(tileWidth),
                                  static_cast<float>(tileHeight), 0};
     return bd;
@@ -97,6 +99,12 @@ void Layer::makeDisplayLists(Canvas *screen) {
     int layerWidth = (int)width * layers->tileWidth;
     int layerHeight = (int)height * layers->tileHeight;
     int tileid = 0;
+    for (std::unique_ptr<Tileset> &tile : layers->tilesets) {
+        if (!tile->image->isLoaded()) {
+            std::cerr << "Awaiting Image load..."<<std::endl;
+            return; // not loaded
+        }
+    }
     std::vector<std::vector<Image::BlitDescription> >displayListCoords(layers->tilesets.size());
     std::vector<Rect>bounds(layers->tilesets.size());
     for (int layerY = 0; layerY < layerHeight; layerY += layers->tileHeight) {
@@ -113,15 +121,14 @@ void Layer::makeDisplayLists(Canvas *screen) {
             displayListCoords[t.tilesetIndex].push_back(
                 tileset.drawTile(t.tileInTilesetIndex,
                                  layerX,
-                                 layerY)); // FIXME drh + layers->tileHeight !??!
-            Rect imageBounds(layerX,
-                             layerY,
-                             tileset.getTileWidth(),
-                             tileset.getTileHeight());
+                                 layerY + layers->tileHeight)); // FIXME drh  !??!
+            Rect tileImageBounds = tileset.getTileOutputBounds(t.tileInTilesetIndex,
+                                                               layerX,
+                                                               layerY + layers->tileHeight);
             if (bounds[t.tilesetIndex]) {
-                bounds[t.tilesetIndex] = bounds[t.tilesetIndex].unionize(imageBounds);
+                bounds[t.tilesetIndex] = bounds[t.tilesetIndex].unionize(tileImageBounds);
             } else {
-                bounds[t.tilesetIndex] = imageBounds;
+                bounds[t.tilesetIndex] = tileImageBounds;
             }
         }
     }

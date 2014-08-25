@@ -33,6 +33,7 @@ public:
     }
     Rect positionInImage(int tileindex);
     Image::BlitDescription drawTile(int tileindex, int x, int y);
+    Rect getTileOutputBounds(int tileindex, int x, int y);
     std::shared_ptr<Image> image;
 };
 
