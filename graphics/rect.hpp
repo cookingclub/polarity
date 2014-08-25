@@ -6,6 +6,13 @@ public:
     float x, y;
     float w, h;
 
+    explicit Rect() {
+        x = 0;
+        y = 0;
+        w = 0;
+        h = 0;
+    }
+
     Rect(float x, float y, float w, float h)
             : x(x), y(y), w(w), h(h) {
         if (w < 0) {
@@ -43,7 +50,13 @@ public:
     operator bool() {
         return w > 0 && h > 0;
     }
-
+    Rect unionize(const Rect& other) const {
+        return Rect::fromBounds(
+                left() < other.left() ? left() : other.left(),
+                top() < other.top() ? top() : other.top(),
+                bottom() > other.bottom() ? bottom() : other.bottom(),
+                right() > other.right() ? right() : other.right());
+    }
     Rect intersect(const Rect& other) const {
         return Rect::fromBounds(
                 left() > other.left() ? left() : other.left(),

@@ -95,20 +95,20 @@ size_t Animation::getFrame() {
     }
     return frame;
 }
-void Animation::drawSprite(Canvas *screen,
+void Animation::drawSprite(Canvas *screen, const Rect &src,
                        float centerX, float centerY, float scaleX, float scaleY, float angle) {
     size_t frame = getFrame();
     if (!images.empty()) {
-        images[frame]->drawSprite(screen, centerX, centerY, scaleX, scaleY, angle);
+        images[frame]->drawSprite(screen, src, centerX, centerY, scaleX, scaleY, angle);
     }else {
         std::cerr << "No frames in surface: shouldn't happen." << std::endl;
     }
 }
 
-void Animation::drawSubimage(Canvas *screen, const Rect &src, int x, int y) {
+void Animation::drawSubimage(Canvas *screen, const Rect &src, int x, int y, float angle) {
     size_t frame = getFrame();
     if (!images.empty()) {
-        images[frame]->drawSubimage(screen, src, x, y);
+        images[frame]->drawSubimage(screen, src, x, y, angle);
     }else {
         std::cerr << "No frames in surface: shouldn't happen." << std::endl;
     }

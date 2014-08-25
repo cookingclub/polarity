@@ -13,6 +13,8 @@
 namespace Polarity {
 
 class Canvas;
+class DisplayList;
+
 
 class Image {
 protected:
@@ -57,11 +59,23 @@ public:
     virtual ~Image() {}
 
     static std::shared_ptr<Image> get(Canvas *canvas, const std::string &filename);
-
-    virtual void draw(Canvas *screen, int x, int y);
-    virtual void drawSprite(Canvas *screen, float centerX, float centerY,
+    void draw(Canvas *screen, int x, int y, float angle);
+    struct BlitDescription {
+        Rect src;
+        float centerX;
+        float centerY;
+        float scaleX;
+        float scaleY;
+        float angle;
+    };
+    virtual void draw(Canvas *screen, const BlitDescription &desc) {
+        drawSprite(screen,
+                   desc.src, desc.centerX, desc.centerY,
+                   desc.scaleX, desc.scaleY, desc.angle);
+    }
+    virtual void drawSprite(Canvas *screen, const Rect &src, float centerX, float centerY,
                             float scaleX, float scaleY, float angle);
-    virtual void drawSubimage(Canvas *screen, const Rect& src, int x, int y);
+    virtual void drawSubimage(Canvas *screen, const Rect& src, int x, int y, float angle);
     virtual int width() = 0;
     virtual int height() = 0;
     bool isLoaded() const{

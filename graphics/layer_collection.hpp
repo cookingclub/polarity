@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "animation.hpp"
+#include "display_list.hpp"
 #include "rect.hpp"
 
 #include "tmxparser.h"
@@ -24,10 +25,14 @@ public:
     Tileset(Canvas *canvas,
             const std::string& directory,
             const tmxparser::TmxTileset& tileset);
-
+    unsigned int getTileWidth()const {
+        return tileWidth;
+    }
+    unsigned int getTileHeight()const {
+        return tileHeight;
+    }
     Rect positionInImage(int tileindex);
-    void drawTile(int tileindex, Canvas *surf, int x, int y);
-
+    Image::BlitDescription drawTile(int tileindex, int x, int y);
     std::shared_ptr<Image> image;
 };
 
@@ -46,6 +51,8 @@ public:
     LayerCollection *layers;
 
     std::shared_ptr<Image> backgroundImage;
+    void makeDisplayLists(Canvas *screen);
+    std::vector<std::unique_ptr<DisplayList> > displayLists;
 };
 
 class LayerCollection : public tmxparser::TmxMap {

@@ -34,10 +34,10 @@ public:
     size_t frame;
     float frameTime;
     static std::shared_ptr<Animation> get(Canvas *canvas, const std::string &filename);
-    void drawSprite(Canvas *screen, float centerX, float centerY,
+    void drawSprite(Canvas *screen, const Rect & src, float centerX, float centerY,
                     float scaleX, float scaleY, float angle);
 
-    void drawSubimage(Canvas* canvas, const Rect& src, int x, int y);
+    void drawSubimage(Canvas* canvas, const Rect& src, int x, int y, float angle);
 
     int width();
     int height();

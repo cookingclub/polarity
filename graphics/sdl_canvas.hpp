@@ -10,6 +10,7 @@
 
 #include "image.hpp"
 #include "canvas.hpp"
+#include "display_list.hpp"
 #include "main/main.hpp"
 namespace Polarity {
 
@@ -162,7 +163,42 @@ public:
         if (a < 0) a = -a;
         return a < tol;
     }
+    class SDLDisplayList : public DisplayList {
+        std::weak_ptr<Image> image;
+        std::vector<Image::BlitDescription> dl;
+    public:
+        SDLDisplayList(SDLCanvas *canvas,
+                       const std::shared_ptr<Image> &image,
+                       const std::vector<Image::BlitDescription> &draws):image(image), dl(draws) {
+        }
+        void attach(const std::shared_ptr<Image>&newImage) {
+            image = newImage;
+        }
+        void draw(Canvas *canvas, int x, int y) const {
+            std::shared_ptr<Image> img (image.lock());
+            if (img) {
+                for (std::vector<Image::BlitDescription>::const_iterator i=dl.begin(), ie=dl.end();
+                     i!=ie;
+                     ++i) {
+                    img->draw(canvas, *i);
+                }
+            }
+        }
+    };
+    virtual DisplayList *makeDisplayList(const std::shared_ptr<Image> &image,
+                                         const std::vector<Image::BlitDescription> &draws,
+                                         const Rect&bounds) {
+        return new SDLDisplayList(this, image, draws);
+    }
+    virtual void attachDisplayList(DisplayList *dl, const std::shared_ptr<Image> &image) {
+        dl->attach(image);
+    }
+    virtual void drawDisplayList(const DisplayList *dl, int x, int y){
+        dl->draw(this, x,y);
+    }
+
     virtual void drawSprite(Image *image,
+                            const Rect &src,
                             float centerX, float centerY,
                             float scaleX, float scaleY,
                             float angle) {
@@ -174,12 +210,44 @@ public:
         }
         SDLImage* sdl_image = static_cast<SDLImage*>(image);
         SDL_Surface * surf = sdl_image->surf;
+        if (angle == 0 && scaleX == src.w && scaleY == src.h) {
+            SDL_Rect sdlsrc (rectToSDL(src));
+            SDL_Rect sdldest;
+            sdldest.x = centerX - scaleX / 2;
+            sdldest.y = centerY - scaleY / 2;
+            sdldest.w = sdlsrc.w;
+            sdldest.h = sdlsrc.h;
+            SDL_BlitSurface(surf, &sdlsrc, screen, &sdldest);
+            return;
+        }
+        if (src.x != 0 || src.y != 0 || src.w != surf->w || src.h != surf->h) {
+            SDL_Surface *tmpImage = SDL_CreateRGBSurface(0, //FLAGS
+                                                         src.w,
+                                                         src.h,
+                                                         surf->format->BytesPerPixel * 8,
+                                                         surf->format->Rmask,
+                                                         surf->format->Gmask,
+                                                         surf->format->Bmask,
+                                                         surf->format->Amask);
+            SDL_Rect sdlsrc, sdldest;
+            sdlsrc.x = src.x;
+            sdlsrc.y = src.y;
+            sdlsrc.w = src.w;
+            sdlsrc.h = src.h;
+            sdldest.x = 0;
+            sdldest.y = 0;
+            sdldest.w = src.w;
+            sdldest.h = src.h;
+            SDL_BlitSurface(surf, &sdlsrc, tmpImage, &sdldest);
+            surf = tmpImage;
+        }
         float zoom = scaleX != surf->w ? scaleX / surf->w : 1.0;
         if ((angle == 0 && zoom != 1.0) || !SDLCanvas::similar(scaleX * surf->h, scaleY * surf->w,
                                                                0.25f * (surf->h + surf->w))) {
+            SDL_Surface *tmpImage = nullptr;
 #if 0
             // for some reason SDL doesn't support stretchBlit but does support zoom
-            SDL_Surface *tmpImage = SDL_CreateRGBSurface(0, //FLAGS
+            tmpImage = SDL_CreateRGBSurface(0, //FLAGS
                                                          scaleX,
                                                          scaleY,
                                                          surf->format->BytesPerPixel * 8,
@@ -200,11 +268,14 @@ public:
             dstr.w = tmpImage->w; dstr.h = tmpImage->h;
             SDL_SoftStretch(surf, &srcr, tmpImage, &dstr);
             std::cerr << "Soft stretch not supported" << std::endl;
-            surf = tmpImage;
 #else
             // std::cerr<< "Zoom " <<scaleX / surf->w<<","<< scaleY / surf->h << std::endl;
-            surf = zoomSurface(surf, scaleX / surf->w, scaleY / surf->h, true);
+            tmpImage = zoomSurface(surf, scaleX / surf->w, scaleY / surf->h, true);
 #endif
+            if (surf != sdl_image->surf) {
+                SDL_FreeSurface(surf); // this is if asymmetric zoom was necessary
+            }
+            surf = tmpImage;
             zoom = 1.0;
         }
         if (angle != 0 || zoom != 1.0) {
@@ -232,15 +303,6 @@ public:
             SDL_FreeSurface(surf); // this is if asymmetric zoom was necessary
         }
     }
-    virtual void drawImage(Image *image, const Rect &src, const Rect &dst) {
-        if (image->isLoaded()) {
-            SDLImage* sdl_image = static_cast<SDLImage*>(image);
-            SDL_Rect sdlsrc (rectToSDL(src));
-            SDL_Rect sdldest (rectToSDL(dst));
-            SDL_BlitSurface(sdl_image->surf, &sdlsrc, screen, &sdldest);
-        }
-    }
-
     virtual void swapBuffers() {
 #ifndef EMSCRIPTEN
         SDL_Flip(screen);

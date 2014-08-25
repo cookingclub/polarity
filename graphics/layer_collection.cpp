@@ -24,9 +24,15 @@ Rect Tileset::positionInImage(int tileindex) {
     return Rect(img_xoff, img_yoff, tileWidth, tileHeight);
 }
 
-void Tileset::drawTile(int tileindex, Canvas *surf, int x, int y) {
+Image::BlitDescription Tileset::drawTile(int tileindex, int x, int y) {
     Rect srcpos = positionInImage(tileindex);
-    image->drawSubimage(surf, srcpos, x, y - tileHeight);
+    Image::BlitDescription bd = {srcpos,
+                                 static_cast<float>(x + tileWidth / 2.0f),
+                                 static_cast<float>(y + tileHeight / 2.0f),
+                                 static_cast<float>(tileWidth),
+                                 static_cast<float>(tileHeight), 0};
+    return bd;
+    //image->drawSubimage(surf, srcpos, x, y, 0); // DRH fixme - tileHeight
 }
 
 Layer::Layer(Canvas *canvas,
@@ -73,26 +79,58 @@ Layer::Layer(Canvas *canvas,
  * +------+-----------+
  */
 
-
 void Layer::draw(Canvas *screen, int startx, int starty) {
     startx *= xparallax;
     starty *= yparallax;
     if (backgroundImage) {
-        backgroundImage->draw(screen, startx, starty);
+        backgroundImage->draw(screen, startx, starty, 0);
         return;
     }
+    if (displayLists.empty()) {
+        makeDisplayLists(screen);
+    }
+    for (const std::unique_ptr<DisplayList>& dl : displayLists) {
+        dl->draw(screen, startx, starty);
+    }
+}
+void Layer::makeDisplayLists(Canvas *screen) {
     int layerWidth = (int)width * layers->tileWidth;
     int layerHeight = (int)height * layers->tileHeight;
     int tileid = 0;
+    std::vector<std::vector<Image::BlitDescription> >displayListCoords(layers->tilesets.size());
+    std::vector<Rect>bounds(layers->tilesets.size());
     for (int layerY = 0; layerY < layerHeight; layerY += layers->tileHeight) {
         for (int layerX = 0; layerX < layerWidth; layerX += layers->tileWidth, ++tileid) {
             tmxparser::TmxLayerTile& t = tiles[tileid];
             if (!t.gid) {
                 continue;
             }
+            if (t.tilesetIndex >= layers->tilesets.size()) {
+                std::cerr << "Tileset index " << t.tilesetIndex << " out of bounds "<<std::endl;
+                continue;
+            }
             Tileset& tileset = *layers->tilesets[t.tilesetIndex];
-            tileset.drawTile(t.tileInTilesetIndex, screen,
-                    startx + layerX, starty + layerY + layers->tileHeight);
+            displayListCoords[t.tilesetIndex].push_back(
+                tileset.drawTile(t.tileInTilesetIndex,
+                                 layerX,
+                                 layerY)); // FIXME drh + layers->tileHeight !??!
+            Rect imageBounds(layerX,
+                             layerY,
+                             tileset.getTileWidth(),
+                             tileset.getTileHeight());
+            if (bounds[t.tilesetIndex]) {
+                bounds[t.tilesetIndex] = bounds[t.tilesetIndex].unionize(imageBounds);
+            } else {
+                bounds[t.tilesetIndex] = imageBounds;
+            }
+        }
+    }
+    size_t numTileSets = layers->tilesets.size();
+    for (size_t i = 0; i < numTileSets; ++i) {
+        if (!displayListCoords[i].empty()) {
+            displayLists.emplace_back(screen->makeDisplayList(layers->tilesets[i]->image,
+                                                              displayListCoords[i],
+                                                              bounds[i]));
         }
     }
 }
