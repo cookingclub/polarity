@@ -164,6 +164,7 @@ public:
         return a < tol;
     }
     class SDLDisplayList : public DisplayList {
+    protected:
         std::weak_ptr<Image> image;
         std::vector<Image::BlitDescription> dl;
     public:
@@ -185,10 +186,84 @@ public:
             }
         }
     };
+    class SDLImageCacheDisplayList : public SDLDisplayList {
+        Rect bounds;
+        std::unique_ptr<SDLCanvas> cache;
+        static SDLCanvas * makeBlankDrawableSurface(int w, int h) {
+            unsigned char rmask[4] = {0xff,0x0,0x0,0x0};
+            unsigned char gmask[4] = {0x0,0xff,0x0,0x0};
+            unsigned char bmask[4] = {0x0,0x0,0xff,0x0};
+            unsigned char amask[4] = {0x0,0x0,0x0,0xff};
+            Uint32 mask[4] = {0, 0, 0, 0};
+            memcpy(&mask[0], rmask, 4);
+            memcpy(&mask[1], gmask, 4);
+            memcpy(&mask[2], bmask, 4);
+            memcpy(&mask[3], amask, 4);
+            SDL_Surface *tmpImage = SDL_CreateRGBSurface(0, //FLAGS
+                                 w,
+                                 h,
+                                 32,
+                                 mask[0],
+                                 mask[1],
+                                 mask[2],
+                                 mask[3]);
+            SDLCanvas * retval = new SDLCanvas(SDL_DisplayFormatAlpha(tmpImage));
+            SDL_FreeSurface(tmpImage);
+            return retval;
+        }
+    public:
+        SDLImageCacheDisplayList(SDLCanvas *canvas,
+                                  const std::shared_ptr<Image> &image,
+                                  const std::vector<Image::BlitDescription> &lst,
+                                  const Rect &bound)
+            : SDLDisplayList(canvas, image, lst),
+              bounds(bound),
+              cache(makeBlankDrawableSurface(bound.w, bound.h)) {
+            loadImage();
+        }
+        void loadImage() {
+            std::shared_ptr<Image> img(image.lock());
+            if (img) {
+                for(Image::BlitDescription drawCall : dl) {
+                    img->draw(cache.get(), drawCall, -bounds.x, -bounds.y);
+                }
+            }
+        }
+        void reloadImage() {
+            SDL_Rect full;
+            full.x = 0;
+            full.y = 0;
+            full.w = cache->screen->w;
+            full.h = cache->screen->h;
+            SDL_FillRect(cache->screen, &full, 0);
+            loadImage();
+        }
+        void attach(const std::shared_ptr<Image> &newImage) {
+            SDLDisplayList::attach(newImage);
+            reloadImage();
+        }
+        void draw(Canvas *canvas, int x, int y) const {
+            SDL_Rect src;
+            SDL_Rect dest;
+            src.x = 0;
+            src.y = 0;
+            src.w = cache->screen->w;
+            src.h = cache->screen->h;
+            dest.x = static_cast<int>(x + bounds.x);
+            dest.y = static_cast<int>(y + bounds.y);
+            dest.w = src.w;
+            dest.h = src.h;
+            SDL_BlitSurface(cache->screen, &src, static_cast<SDLCanvas*>(canvas)->screen, &dest);
+        }
+    };
     virtual DisplayList *makeDisplayList(const std::shared_ptr<Image> &image,
                                          const std::vector<Image::BlitDescription> &draws,
                                          const Rect&bounds) {
-        return new SDLDisplayList(this, image, draws);
+        if (bounds.w && bounds.h) {
+            return new SDLImageCacheDisplayList(this, image, draws, bounds);
+        } else {
+            return new SDLDisplayList(this, image, draws);
+        }
     }
     virtual void attachDisplayList(DisplayList *dl, const std::shared_ptr<Image> &image) {
         dl->attach(image);
