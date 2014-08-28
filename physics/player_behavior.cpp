@@ -21,9 +21,9 @@ void PlayerBehavior::handleMusicByPlayerColor(World *world, GameObject *obj) {
 const float MAX_VELOCITY = 5;
 
 void PlayerBehavior::addedToWorld(World *world, GameObject* obj) {
-    if (world->gameState()->musicOn) {
+    if (world && world->gameState() && world->gameState()->musicOn) {
         world->audio()->playChannel("white-music");
-        world->audio()->playChannel("black-music");            
+        world->audio()->playChannel("black-music");
     }
 }
 

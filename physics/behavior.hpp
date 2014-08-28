@@ -1,5 +1,6 @@
 #ifndef _BEHAVIOR_HPP_
 #define _BEHAVIOR_HPP_
+#include <memory>
 namespace Polarity {
 class GameObject;
 class World;

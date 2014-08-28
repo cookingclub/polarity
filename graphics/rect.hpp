@@ -54,15 +54,15 @@ public:
         return Rect::fromBounds(
                 left() < other.left() ? left() : other.left(),
                 top() < other.top() ? top() : other.top(),
-                bottom() > other.bottom() ? bottom() : other.bottom(),
-                right() > other.right() ? right() : other.right());
+                right() > other.right() ? right() : other.right(),
+                bottom() > other.bottom() ? bottom() : other.bottom());
     }
     Rect intersect(const Rect& other) const {
         return Rect::fromBounds(
                 left() > other.left() ? left() : other.left(),
                 top() > other.top() ? top() : other.top(),
-                bottom() < other.bottom() ? bottom() : other.bottom(),
-                right() < other.right() ? right() : other.right());
+                right() < other.right() ? right() : other.right(),
+                bottom() < other.bottom() ? bottom() : other.bottom());
     }
 };
 

@@ -32,14 +32,20 @@ protected:
 public:
     class DecodedImage {
     public:
-        DecodedImage(const DecodedImage&) = delete;
-        DecodedImage& operator=(const DecodedImage&)const = delete;
         enum Format{
             L=1,
             LA=2,
             RGB=3,
             RGBA=4
         };
+
+        DecodedImage(int w, int h, Format f) {
+            width = w;
+            height = h;
+            format = f;
+        }
+        DecodedImage(const DecodedImage&) = delete;
+        DecodedImage& operator=(const DecodedImage&)const = delete;
         int pixelSize() const{
             return (int)format;
         }

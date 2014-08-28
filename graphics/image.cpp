@@ -1,7 +1,9 @@
+#include <cstring>
 #include "graphics/image.hpp"
 #include "graphics/sdl_canvas.hpp"
 #include <unordered_map>
 #include <png.h>
+#include <assert.h>
 
 namespace Polarity {
 
@@ -69,7 +71,7 @@ void postFailure(Image *img,
                                           const std::string&,
                                           const std::shared_ptr<Image::DecodedImage>&)>&callback) {
     callback(img, filename,
-             std::shared_ptr<Image::DecodedImage>(new Image::DecodedImage{0,0,Image::DecodedImage::L, std::vector<unsigned char>()}));
+             std::shared_ptr<Image::DecodedImage>(new Image::DecodedImage(0,0,Image::DecodedImage::L)));
 }
 void readPngImage(png_structp pngState, png_infop infoPtr, Image::DecodedImage *png) {
     const png_size_t rowSize = png_get_rowbytes(pngState, infoPtr);
@@ -152,7 +154,7 @@ void Image::parseAndLoad(Image *img, const std::string &filename,
         return;
     }
 
-    auto png = new DecodedImage {0, 0, DecodedImage::L, std::vector<unsigned char>()};
+    DecodedImage *png = new DecodedImage(0, 0, DecodedImage::L);
     configurePngHeader(pngState, infoPtr, true, png);
     readPngImage(pngState, infoPtr, png);
 

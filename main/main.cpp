@@ -1,3 +1,4 @@
+#include <mutex>
 #ifdef EMSCRIPTEN
 #include "emscripten.h"
 #endif
@@ -26,10 +27,11 @@ extern void loadAssets();
 #ifdef EMSCRIPTEN
 #define LOCK_MAIN_THREAD_CALLBACK_MUTEX()
 #else
+using std::mutex;
 namespace {
-std::mutex mainThreadCallbackMutex;
+mutex mainThreadCallbackMutex;
 }
-#define LOCK_MAIN_THREAD_CALLBACK_MUTEX() std::lock_guard local_lock(mainThreadCallbackMutex)
+#define LOCK_MAIN_THREAD_CALLBACK_MUTEX() std::lock_guard<mutex> local_lock(mainThreadCallbackMutex)
 #endif
 namespace {
 std::vector<std::function<void()> > functionsToCallOnMainThread;
@@ -115,7 +117,7 @@ void mainloop() {
 void mainloop() {
     atexit(SDL_Quit);
     while (true) {
-        if (!loopIter(screen)) {
+        if (!loopIter(screen.get())) {
             break;
         } else {
             screen->swapBuffers();
