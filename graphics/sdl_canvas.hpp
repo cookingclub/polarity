@@ -1,6 +1,5 @@
 #ifndef POLARITY_GRAPHICS_SDL_CANVAS_HPP__
 #define POLARITY_GRAPHICS_SDL_CANVAS_HPP__
-
 #include "SDL/SDL.h"
 #include "SDL/SDL_video.h"
 #include "SDL/SDL_image.h"
@@ -72,6 +71,7 @@ class SDLImage : public Image {
                 if (!tmpImage) {
                     thus->stage = FAILED;
                 } else {
+                    //thus->surf = SDL_ConvertSurface(tmpImage, canvas->surface->pixels, 0);
                     thus->surf = SDL_DisplayFormatAlpha(tmpImage);
                     SDL_FreeSurface(tmpImage);
                     thus->stage = COMPLETE;
@@ -105,7 +105,24 @@ public:
 
     virtual int width() { return surf->w; }
     virtual int height() { return surf->h; }
-
+    virtual void enableAlphaBlend() {
+        if (surf != nullptr) {
+#ifdef SDL_SRCALPHA
+            SDL_SetAlpha(surf, SDL_SRCALPHA, 0xff);
+#else
+            SDL_SetSurfaceBlendMode(surf, SDL_BLENDMODE_BLEND);
+#endif
+        }
+    }
+    virtual void disableAlphaBlend() {
+        if (surf != nullptr) {
+#ifdef SDL_SRCALPHA
+            SDL_SetAlpha(surf, 0, 0xff);//surf->format->alpha
+#else
+            SDL_SetSurfaceBlendMode(surf, SDL_BLENDMODE_NONE);
+#endif
+        }
+    }
 private:
     SDL_Surface *surf;
 };
@@ -223,11 +240,14 @@ public:
         }
         void loadImage() {
             std::shared_ptr<Image> img(image.lock());
+            // this lets us copy the alpha channel directly
+            static_cast<SDLImage*>(img.get())->disableAlphaBlend();
             if (img) {
                 for(Image::BlitDescription drawCall : dl) {
                     img->draw(cache.get(), drawCall, -bounds.x, -bounds.y);
                 }
             }
+            static_cast<SDLImage*>(img.get())->enableAlphaBlend();
         }
         void reloadImage() {
             SDL_Rect full;
