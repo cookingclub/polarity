@@ -1,5 +1,6 @@
 #ifndef POLARITY_GRAPHICS_SDL_CANVAS_HPP__
 #define POLARITY_GRAPHICS_SDL_CANVAS_HPP__
+//#define SDL_NO_COMPAT
 #include "SDL/SDL.h"
 #include "SDL/SDL_video.h"
 #include "SDL/SDL_image.h"
@@ -17,7 +18,8 @@ class SDLImage : public Image {
     friend class SDLCanvas;
     static void loadImageSDL(Image *super,
                              const std::string &filename,
-                             const std::shared_ptr<DecodedImage> &image) {
+                             const std::shared_ptr<DecodedImage> &image,
+                             SDL_PixelFormat *screenPixelFormat) {
         std::shared_ptr<Image>superShared = Image::getValidImage(filename);
         if (superShared.get() == super) {
             SDLImage *thus = static_cast<SDLImage*>(superShared.get());
@@ -71,30 +73,42 @@ class SDLImage : public Image {
                 if (!tmpImage) {
                     thus->stage = FAILED;
                 } else {
-                    //thus->surf = SDL_ConvertSurface(tmpImage, canvas->surface->pixels, 0);
+#if 0
+                    //def SDL_SRCALPHA
                     thus->surf = SDL_DisplayFormatAlpha(tmpImage);
+#else
+                    thus->surf = SDL_ConvertSurface(tmpImage, screenPixelFormat, 0);
+#endif
                     SDL_FreeSurface(tmpImage);
                     thus->stage = COMPLETE;
                 }
             }
         }
+        SDL_FreeFormat(screenPixelFormat);
     }
-    void downloadAndLoad(){
+    void downloadAndLoad(SDL_PixelFormat *screenPixelFormat){
         Image * super = this;
         Polarity::asyncFileLoad(filename,
                                 std::bind(Image::parseAndLoad,
                                           super,
                                           filename,
-                                          &SDLImage::loadImageSDL,
+                                          std::function<void(Image*,
+                                                             const std::string&,
+                                                             const std::shared_ptr<DecodedImage>&)>(
+                                                                 std::bind(&SDLImage::loadImageSDL,
+                                                                           std::placeholders::_1,
+                                                                           std::placeholders::_2,
+                                                                           std::placeholders::_3,
+                                                                           screenPixelFormat)),
                                           std::placeholders::_1,
                                           std::placeholders::_2));
     }
 public:
     //    explicit SDLImage(SDL_Surface* surf) : surf(surf) {}
-    SDLImage(const std::string&filename) : Image(filename) {
+    SDLImage(SDL_PixelFormat * pf, const std::string&filename) : Image(filename) {
         surf = nullptr;
         if (!filename.empty()) {
-            downloadAndLoad();
+            downloadAndLoad(pf);
         }
     }
     virtual ~SDLImage() {
@@ -172,7 +186,24 @@ private:
 public:
 
     SDLImage *loadImage(const std::string &filename) {
-        SDLImage *retval = new SDLImage(filename);
+        SDL_PixelFormat *pf = SDL_AllocFormat(screen->format->format);
+        pf->BitsPerPixel = screen->format->BitsPerPixel;
+        pf->BytesPerPixel = screen->format->BytesPerPixel;
+        pf->Rmask = screen->format->Rmask;
+        pf->Gmask = screen->format->Gmask;
+        pf->Bmask = screen->format->Bmask;
+        pf->Amask = screen->format->Amask;
+
+        pf->Rloss = screen->format->Rloss;
+        pf->Gloss = screen->format->Gloss;
+        pf->Bloss = screen->format->Bloss;
+        pf->Aloss = screen->format->Aloss;
+
+        pf->Rshift = screen->format->Rshift;
+        pf->Gshift = screen->format->Gshift;
+        pf->Bshift = screen->format->Bshift;
+        pf->Ashift = screen->format->Ashift;
+        SDLImage *retval = new SDLImage(pf, filename);
         return retval;
     }
     static bool similar(float a, float b, float tol) {
