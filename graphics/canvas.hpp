@@ -17,7 +17,6 @@ public:
 
     virtual Image *loadImage(const std::string &filename) = 0;
     virtual void drawSprite(Image *image,
-                            const Rect & src,
                             float centerX, float centerY,
                             float scaleX, float scaleY,
                             float angle) = 0;

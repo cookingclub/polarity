@@ -138,7 +138,6 @@ void GameObject::draw(World * world, Canvas* screen) {
     }
     if (actionAnim) {
         actionAnim->drawSprite(screen,
-                               Rect(0, 0, actionAnim->width(), actionAnim->height()),
                                actualpos.x, actualpos.y,
                                actionAnim->width(), actionAnim->height(), angle);
     }

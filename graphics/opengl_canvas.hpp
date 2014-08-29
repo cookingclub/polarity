@@ -58,6 +58,13 @@ class OpenGLCanvas : public Canvas {
 
     void createRectProgram();
 
+    void drawSpriteSrc(Image *image, const Rect &src,
+                            float centerX, float centerY,
+                            float scaleX, float scaleY,
+                            float angle);
+
+    friend class OpenGLDisplayList;
+
 public:
     OpenGLCanvas(int width, int height);
 
@@ -66,7 +73,7 @@ public:
 
     OpenGLImage *loadImage(const std::string &filename);
 
-    virtual void drawSprite(Image *image, const Rect &src,
+    virtual void drawSprite(Image *image,
                             float centerX, float centerY,
                             float scaleX, float scaleY,
                             float angle);

@@ -74,14 +74,8 @@ public:
         float scaleY;
         float angle;
     };
-    virtual void draw(Canvas *screen, const BlitDescription &desc, int x, int y) {
-        drawSprite(screen,
-                   desc.src, desc.centerX + x, desc.centerY + y,
-                   desc.scaleX, desc.scaleY, desc.angle);
-    }
-    virtual void drawSprite(Canvas *screen, const Rect &src, float centerX, float centerY,
+    virtual void drawSprite(Canvas *screen, float centerX, float centerY,
                             float scaleX, float scaleY, float angle);
-    virtual void drawSubimage(Canvas *screen, const Rect& src, int x, int y, float angle);
     virtual int width() = 0;
     virtual int height() = 0;
     bool isLoaded() const{

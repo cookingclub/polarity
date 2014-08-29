@@ -195,10 +195,10 @@ public:
         void draw(Canvas *canvas, int x, int y) const {
             std::shared_ptr<Image> img (image.lock());
             if (img) {
-                for (std::vector<Image::BlitDescription>::const_iterator i=dl.begin(), ie=dl.end();
-                     i!=ie;
-                     ++i) {
-                    img->draw(canvas, *i, x, y);
+                for (auto blit : dl) {
+                    static_cast<SDLCanvas*>(canvas)->drawSpriteSrc(
+                        img.get(), blit.src, blit.centerX + x, blit.centerY + y,
+                        blit.scaleX, blit.scaleY, blit.angle);
                 }
             }
         }
@@ -243,8 +243,12 @@ public:
             // this lets us copy the alpha channel directly
             static_cast<SDLImage*>(img.get())->disableAlphaBlend();
             if (img) {
-                for(Image::BlitDescription drawCall : dl) {
-                    img->draw(cache.get(), drawCall, -bounds.x, -bounds.y);
+                for(Image::BlitDescription blit : dl) {
+                    cache.get()->drawSpriteSrc(
+                        img.get(), blit.src,
+                        blit.centerX - bounds.x,
+                        blit.centerY - bounds.y,
+                        blit.scaleX, blit.scaleY, blit.angle);
                 }
             }
             static_cast<SDLImage*>(img.get())->enableAlphaBlend();
@@ -293,6 +297,18 @@ public:
     }
 
     virtual void drawSprite(Image *image,
+                            float centerX, float centerY,
+                            float scaleX, float scaleY,
+                            float angle) {
+        SDLImage* sdl_image = static_cast<SDLImage*>(image);
+        SDL_Surface * surf = sdl_image->surf;
+        if (!surf) {
+            return;
+        }
+        drawSpriteSrc(image, Rect(0, 0, surf->w, surf->h),
+                      centerX, centerY, scaleX, scaleY, angle);
+    }
+    void drawSpriteSrc(Image *image,
                             const Rect &src,
                             float centerX, float centerY,
                             float scaleX, float scaleY,

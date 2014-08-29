@@ -11,7 +11,7 @@ OpenGLDisplayList::OpenGLDisplayList(
 
 void OpenGLDisplayList::draw(Canvas *canvas, int x, int y) const {
     for (const auto& blit : blits) {
-        canvas->drawSprite(image.get(), blit.src, blit.centerX + x, blit.centerY + y,
+        static_cast<OpenGLCanvas*>(canvas)->drawSpriteSrc(image.get(), blit.src, blit.centerX + x, blit.centerY + y,
                            blit.scaleX, blit.scaleY, blit.angle);
     }
 }
@@ -289,7 +289,17 @@ void OpenGLCanvas::drawDisplayList(const DisplayList *dl, int x, int y) {
     dl->draw(this, x, y);
 }
 
-void OpenGLCanvas::drawSprite(Image *image, const Rect &src,
+void OpenGLCanvas::drawSprite(Image *image,
+                              float centerX, float centerY,
+                              float scaleX, float scaleY,
+                              float angle) {
+    if (!image->isLoaded()) {
+        return;
+    }
+    drawSpriteSrc(image, Rect(0, 0, image->width(), image->height()),
+            centerX, centerY, scaleX, scaleY, angle);
+}
+void OpenGLCanvas::drawSpriteSrc(Image *image, const Rect &src,
                               float centerX, float centerY,
                               float scaleX, float scaleY,
                               float angle) {

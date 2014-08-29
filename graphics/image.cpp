@@ -29,21 +29,14 @@ std::shared_ptr<Image> Image::get(Canvas *canvas, const std::string& filename) {
     return imPtr;
 }
 
-void Image::drawSubimage(Canvas *screen, const Rect& src, int x, int y, float angle) {
-    Rect dest(x, y, src.width(), src.height());
-    screen->drawSprite(this, src, dest.x + src.width() / 2, dest.y + src.height() / 2, src.width(), src.height(), angle);
-}
-
 // angle unrestricted
 void Image::drawSprite(Canvas *screen,
-                       const Rect& src,
                        float centerX, float centerY, float scaleX, float scaleY, float angle) {
-    screen->drawSprite(this, src, centerX, centerY, scaleX, scaleY, angle);
+    screen->drawSprite(this, centerX, centerY, scaleX, scaleY, angle);
 }
 
 void Image::draw(Canvas *screen, int x, int y, float angle) {//angle should be multiple of PI/2
-    Rect src (0, 0, width(), height());
-    drawSubimage(screen, src, x, y, angle);
+    drawSprite(screen, x + width() / 2., y + height() / 2., width(), height(), angle);
 }
 
 namespace {
