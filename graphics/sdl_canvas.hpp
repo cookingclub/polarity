@@ -103,8 +103,8 @@ public:
         }
     }
 
-    virtual int width() { return surf->w; }
-    virtual int height() { return surf->h; }
+    virtual int width() { return surf ? surf->w : 0; }
+    virtual int height() { return surf ? surf->h : 0; }
     virtual void enableAlphaBlend() {
         if (surf != nullptr) {
 #ifdef SDL_SRCALPHA

@@ -2,7 +2,10 @@
 #ifdef EMSCRIPTEN
 #include "emscripten.h"
 #endif
-
+#include <mutex>
+#include <thread>
+#include <deque>
+#include <condition_variable>
 #include "graphics/sdl_canvas.hpp"
 #include "audio/audio.hpp"
 #include "main/main.hpp"
@@ -31,7 +34,7 @@ using std::mutex;
 namespace {
 mutex mainThreadCallbackMutex;
 }
-#define LOCK_MAIN_THREAD_CALLBACK_MUTEX() std::lock_guard<mutex> local_lock(mainThreadCallbackMutex)
+#define LOCK_MAIN_THREAD_CALLBACK_MUTEX() std::unique_lock<mutex> local_lock(mainThreadCallbackMutex)
 #endif
 namespace {
 std::vector<std::function<void()> > functionsToCallOnMainThread;
@@ -74,9 +77,32 @@ void asyncFileLoad(const std::string &fileName,
     emscripten_async_wget2_data(fileName.c_str(), "GET", "", cb, true, &asyncFileLoadOnLoad, &asyncFileLoadOnError, asyncFileLoadOnProgress);
 }
 #else
-
+namespace {
+mutex workerWorkMutex;
+std::condition_variable workerWorkCondition;
+}
+std::deque<std::function<void()> >work;
+std::vector<std::thread> workers;
+void worker() {
+    while (true) {
+        std::function<void()> f;
+        {
+            std::unique_lock<mutex> workLock(workerWorkMutex);
+            while (work.empty()) {
+                workerWorkCondition.wait(workLock);
+            }
+            f = std::move(work.front());
+            work.pop_front();
+        }
+        if (f) {
+            f();
+        } else {
+            return;
+        }
+    }
+}
 //FIXME: USE PTHREAD so that the disk load and the async processing happen on a worker thread
-void asyncFileLoad(const std::string &fileName,
+void asyncFileLoadHelper(const std::string &fileName,
                    const std::function<void(const char * data, int size)>&callback) {
     FILE * fp = fopen(fileName.c_str(), "rb");
     if (fp) {
@@ -91,6 +117,21 @@ void asyncFileLoad(const std::string &fileName,
     }else {
         callback(NULL, -1);
     }
+}
+void asyncFileLoadX(const std::string &fileName,
+                   const std::function<void(const char * data, int size)>&callback) {
+  asyncFileLoadHelper(fileName, callback);
+}
+void asyncFileLoad(const std::string &fileName,
+                   const std::function<void(const char * data, int size)>&callback) {
+    std::unique_lock<mutex> workLock(workerWorkMutex);
+    if (workers.empty()) {
+        for (int i=0; i < 3; ++i) {
+            workers.emplace_back(&worker);
+        }
+    }
+    work.emplace_back(std::bind(&asyncFileLoadHelper, fileName, std::move(callback)));
+    workerWorkCondition.notify_all();
 }
 #endif
 void mainThreadCallback(const std::function<void()>&&function) {
@@ -159,7 +200,7 @@ int main() {
     SDL_EnableUNICODE(SDL_ENABLE);
     if (Mix_OpenAudio(AUDIO_RATE, AUDIO_S16, 2, 4096)) {
         cerr << "Failed to init Audio" << endl;
-        return 1;
+        //return 1;
     }
 
     Polarity::screen.reset(new Polarity::SDLCanvas(CANVAS_WIDTH, CANVAS_HEIGHT));
