@@ -216,12 +216,10 @@ void main() {\n\
     program = glCreateProgram();
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);
-    positionLocation = 1;
-    texCoordLocation = 0;
     glLinkProgram(program);
 
-    glBindAttribLocation(program, positionLocation, "a_position");
-    glBindAttribLocation(program, texCoordLocation, "a_texcoord");
+    positionLocation = glGetAttribLocation(program, "a_position");
+    texCoordLocation = glGetAttribLocation(program, "a_texcoord");
     GLint success = GL_FALSE;
     glGetProgramiv(program, GL_LINK_STATUS, &success);
     GLint len = 0;
