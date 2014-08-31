@@ -6,6 +6,8 @@
 #include <thread>
 #include <deque>
 #include <condition_variable>
+
+#include "graphics/opengl_canvas.hpp"
 #include "graphics/sdl_canvas.hpp"
 #include "audio/audio.hpp"
 #include "main/main.hpp"
@@ -144,6 +146,7 @@ void mainThreadCallback(const std::function<void()>&&function) {
 
 #ifdef EMSCRIPTEN
 void emLoopIter() {
+    screen->clear();
     if (!loopIter(screen.get())) {
         SDL_Quit();
     }
@@ -158,17 +161,19 @@ void mainloop() {
 void mainloop() {
     atexit(SDL_Quit);
     while (true) {
+        screen->clear();
         if (!loopIter(screen.get())) {
             break;
         } else {
             screen->swapBuffers();
         }
+        usleep(10000);
     }
 }
 #endif
 }
 
-int main() {
+int main(int argc, char**argv) {
     std::weak_ptr<int>test0;
     if (!test0.lock()) {
         cerr << "OK2"<<std::endl;
@@ -204,6 +209,7 @@ int main() {
     }
 
     Polarity::screen.reset(new Polarity::SDLCanvas(CANVAS_WIDTH, CANVAS_HEIGHT));
+    //Polarity::screen.reset(new Polarity::OpenGLCanvas(CANVAS_WIDTH, CANVAS_HEIGHT));
 
     // SDL_MapRGB(screen->format, 65, 65, 65);
     srand(time(NULL));

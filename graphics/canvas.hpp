@@ -27,6 +27,7 @@ public:
     virtual void attachDisplayList(DisplayList *, const std::shared_ptr<Image> &image) = 0;
     virtual void drawDisplayList(const DisplayList *, int x, int y) = 0;
     virtual void swapBuffers() = 0;
+    virtual void clear() {}
 };
 
 }

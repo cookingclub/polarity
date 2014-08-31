@@ -1,7 +1,12 @@
 #ifndef _POLARITY_GRAPHICS_DISPLAY_LIST_HPP_
 #define _POLARITY_GRAPHICS_DISPLAY_LIST_HPP_
 
+#include "image.hpp"
+
+#include <memory>
+
 namespace Polarity {
+    class Canvas;
     class DisplayList {
     public:
         virtual ~DisplayList(){}
