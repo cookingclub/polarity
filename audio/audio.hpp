@@ -13,6 +13,7 @@
 #include <tuple>
 #include <vector>
 #include <memory>
+#include <unordered_map>
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_audio.h>
@@ -76,11 +77,34 @@ public:
         string id;
         string filePath;
     };
-    static void oncomplete(void*ud, const char* fileName) {
-        std::cerr << "audone: " << reinterpret_cast<UserData*>(ud)->filePath << " "<<fileName<< std::endl;
-        std::unique_ptr<UserData> userData(reinterpret_cast<UserData*>(ud));
-        std::cerr << "loaded audio: " << userData->filePath << std::endl;
-        queueLoadHelper(userData->aplayer, userData->id, userData->filePath);
+    static void onprepareload(const char *filename) {
+        oncomplete(NULL, filename);
+    }
+    static void onprepareerror(const char *filename) {
+        std::cerr << "failed to prpepare " << filename<<std::endl;
+        oncomplete(NULL, filename);
+    }
+    static void oncomplete(void*ud, const char* file) {
+        std::string fileName(file);
+        static std::unordered_map<std::string, UserData> userDataMap;
+        auto where = userDataMap.find(fileName);
+        if (where == userDataMap.end()) {
+            if (ud == nullptr) {
+                std::cerr << "unexpected audio: " << fileName<< std::endl;
+                return;
+            }
+            std::unique_ptr<UserData>userData(reinterpret_cast<UserData*>(ud));
+            userDataMap[fileName] = *userData;
+            assert(userDataMap[fileName].filePath == fileName);
+            std::cerr << "loaded audio: " << userDataMap[fileName].filePath << " X " << fileName<< std::endl;
+            emscripten_async_prepare(userDataMap[fileName].filePath.c_str(),
+                                     onprepareload, onprepareerror);
+        } else {
+            std::cerr << "prepared audio: " << where->second.filePath << " X " << fileName<<std::endl;
+            assert(where->second.filePath == fileName);
+            queueLoadHelper(where->second.aplayer, where->second.id, where->second.filePath);
+            userDataMap.erase(where);
+        }
     }
     static void onprogress(void*userData, int code) {
         std::cerr << "progress audio: " << reinterpret_cast<UserData*>(userData)->filePath << " " << code << std::endl;
@@ -102,9 +126,10 @@ public:
             }
             where_slash = fullPath.find_first_of("\\/", where_slash + 1);
         }
-        fullPath = "/" + filePath;
-        emscripten_async_wget2(filePath.c_str(), fullPath.c_str(), "GET", "",
-                               new UserData{aplayer, id, filePath},
+        fullPath = filePath;
+        UserData * userData =new UserData{aplayer, id, filePath};
+        emscripten_async_wget2(userData->filePath.c_str(), userData->filePath.c_str(), "GET", "",
+                               userData,
                                &oncomplete, &onerror, &onprogress);
     }
 #else

@@ -61,9 +61,9 @@ void completeAllPendingCallbacksFromMainThread(){
 }
 
 #ifdef EMSCRIPTEN
-static void asyncFileLoadOnLoad(void*ctx, void *data, unsigned int size){
+static void asyncFileLoadOnLoad(void*ctx, void *data, unsigned *size){
     auto cb = reinterpret_cast<std::function<void(const char * data, int size)>*>(ctx);
-    (*cb)(reinterpret_cast<const char*>(data), size);
+    (*cb)(reinterpret_cast<const char*>(data), (size_t)size);
     delete cb;
 }
 static void asyncFileLoadOnError(void*ctx, int, const char*){
