@@ -124,7 +124,7 @@ public:
                     thus->fChunks[id] = chunk;
                     thus->setChannelVolume(id, thus->fChannelVolumes[id]);
                     if (thus->fChannelStates[id] == Polarity::CurrentAudioState::PLAYING) {
-                        thus->playChannel(id, thus->fChannelLoops[id]);
+                        thus->playChannel(id, thus->fChannelLoops[id], true);
                     } else {
                         thus->stopChannel(id);
                     }
@@ -157,12 +157,13 @@ public:
         }
     }
 
-    Polarity::AudioFileError playChannel(string id, int loops = 1) {
+    Polarity::AudioFileError playChannel(string id, int loops = 1, bool force=false) {
         if (!channelExists(id)) {
             cerr << "Channel " << id << " doesn't exist" << endl;
             return Polarity::AudioFileError::NO_SUCH_CHANNEL;
         }
-        if (channelLoaded(id) && fChannelStates[id] != Polarity::CurrentAudioState::PLAYING) {
+        if (channelLoaded(id) && (force ||
+                                  fChannelStates[id] != Polarity::CurrentAudioState::PLAYING)) {
             if (Mix_Playing(fChannelNames[id]) == 0) {
                 if( Mix_PlayChannel(fChannelNames[id], fChunks[id], loops) == -1) {
                     cerr << "Mix_PlayChannel failed: " << Mix_GetError() << endl;

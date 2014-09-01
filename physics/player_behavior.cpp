@@ -21,7 +21,7 @@ void PlayerBehavior::handleMusicByPlayerColor(World *world, GameObject *obj) {
 const float MAX_VELOCITY = 5;
 
 void PlayerBehavior::addedToWorld(World *world, GameObject* obj) {
-    if (world && world->gameState() && world->gameState()->musicOn) {
+    if (world && world->audio()) {
         world->audio()->playChannel("white-music");
         world->audio()->playChannel("black-music");
     }
@@ -39,14 +39,14 @@ void PlayerBehavior::tick(World *world, GameObject *obj) {
     bool jump = world->isKeyDown(SDLK_UP);
     bool toggleMute = world->wasKeyJustPressed(SDLK_m);
     bool toggleBlackWhite = world->wasKeyJustPressed(SDLK_RSHIFT) || world->wasKeyJustPressed(SDLK_LSHIFT);
-    
+
     b2Body *phyobj = obj->groundBody;
-    
+
     // get the vectors for L, R, U (this is 3x redundant but easy)
     b2Vec2 forceDirectionR = phyobj->GetWorldVector( b2Vec2(1,0) );
     b2Vec2 forceDirectionL = phyobj->GetWorldVector( b2Vec2(-1,0) );
     b2Vec2 forceDirectionU = phyobj->GetWorldVector( b2Vec2(0,1) );
-    
+
     if (left) {
         obj->setAction(GameObject::WALK);
         phyobj->ApplyLinearImpulse( forceDirectionL, phyobj->GetWorldCenter(), true); // moves backwards
