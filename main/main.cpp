@@ -61,9 +61,9 @@ void completeAllPendingCallbacksFromMainThread(){
 }
 
 #ifdef EMSCRIPTEN
-static void asyncFileLoadOnLoad(void*ctx, void *data, unsigned int size){
+static void asyncFileLoadOnLoad(void*ctx, void *data, unsigned *size){
     auto cb = reinterpret_cast<std::function<void(const char * data, int size)>*>(ctx);
-    (*cb)(reinterpret_cast<const char*>(data), size);
+    (*cb)(reinterpret_cast<const char*>(data), (size_t)size);
     delete cb;
 }
 static void asyncFileLoadOnError(void*ctx, int, const char*){
@@ -76,7 +76,7 @@ static void asyncFileLoadOnProgress(void*, int, int){
 void asyncFileLoad(const std::string &fileName,
                    const std::function<void(const char * data, int size)>&callback) {
     auto cb = new std::function<void(const char * data, int size)>(callback);
-    emscripten_async_wget2_data(fileName.c_str(), "GET", "", cb, true, &asyncFileLoadOnLoad, &asyncFileLoadOnError, asyncFileLoadOnProgress);
+    emscripten_async_wget2_data(fileName.c_str(), "GET", "", cb, true, (em_async_wget2_data_onload_func)&asyncFileLoadOnLoad, &asyncFileLoadOnError, asyncFileLoadOnProgress);
 }
 #else
 namespace {
