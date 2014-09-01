@@ -51,6 +51,7 @@ private:
 class OpenGLCanvas : public Canvas {
 
     void createRectArray(OpenGLImage *img, const Rect &src, const Rect &dst);
+    void createSpriteRectArray();
 
     GLuint compileShader(const GLchar *src, const char *name, int type);
    
@@ -90,6 +91,7 @@ public:
 
     virtual void clear();
 
+    GLuint spriteVBO;
     GLuint vbo;
     GLint positionLocation;
     GLint texCoordLocation;

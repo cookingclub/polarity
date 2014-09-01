@@ -1,6 +1,7 @@
 #include "opengl_canvas.hpp"
 #include "display_list.hpp"
 #include "main/main.hpp"
+#include "graphics/matrix4x4.hpp"
 
 namespace Polarity {
 
@@ -97,6 +98,32 @@ void OpenGLImage::downloadAndLoad() {
                                       &OpenGLImage::loadImageOpenGL,
                                       std::placeholders::_1,
                                       std::placeholders::_2));
+}
+
+
+void OpenGLCanvas::createSpriteRectArray() {
+    Rect texcoords = Rect(0, 0, 1, 1);
+    Rect dst = Rect(-0.5, -0.5, 1, 1);
+    const GLfloat data[] = {
+        dst.left(), dst.bottom(), 0,
+        dst.right(), dst.bottom(), 0,
+        dst.left(), dst.top(), 0,
+        dst.right(), dst.top(), 0,
+        dst.left(), dst.top(), 0,
+        dst.right(), dst.bottom(), 0,
+        texcoords.left(), texcoords.bottom(),
+        texcoords.right(), texcoords.bottom(),
+        texcoords.left(), texcoords.top(),
+        texcoords.right(), texcoords.top(),
+        texcoords.left(), texcoords.top(),
+        texcoords.right(), texcoords.bottom()
+    };
+    glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+    GLfloat *offset = 0;
+    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset));
+    glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset + 6 * 3));
+    glEnableVertexAttribArray(positionLocation);
+    glEnableVertexAttribArray(texCoordLocation);
 }
 
 
@@ -238,6 +265,12 @@ void main() {\n\
     glUseProgram(program);
     matrixLocation = glGetUniformLocation(program, "u_matrix");
     sampTextureLocation = glGetUniformLocation(program, "samp_texture");
+
+    glGenBuffers(1, &spriteVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, spriteVBO);
+
+    createSpriteRectArray();
+
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
@@ -294,9 +327,34 @@ void OpenGLCanvas::drawSprite(Image *image,
     if (!image->isLoaded()) {
         return;
     }
-    drawSpriteSrc(image, Rect(0, 0, image->width(), image->height()),
-            centerX, centerY, scaleX, scaleY, angle);
+    OpenGLImage* ogl_image = static_cast<OpenGLImage*>(image);
+
+    glUseProgram(program);
+    glBindTexture(GL_TEXTURE_2D, ogl_image->texture());
+    glActiveTexture(GL_TEXTURE0 + sampTexture);
+
+    GLMatrix4x4 screen_coords_adjustment = {
+        2.f / (GLfloat)width(), 0, 0, 0,
+        0, -2.f / (GLfloat)height(), 0, 0,
+        0, 0, 1, 0,
+        -1, 1, 0, 1
+    };
+
+    GLMatrix4x4 mat = screen_coords_adjustment;
+    mat *= GLMatrix4x4::translation(centerX, centerY, 0);
+    mat *= GLMatrix4x4::rotationZ(angle);
+    mat *= GLMatrix4x4::scalar(scaleX, scaleY, 1);
+
+    glUniformMatrix4fv(matrixLocation, 1, GL_FALSE, mat.values());
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    glBindBuffer(GL_ARRAY_BUFFER, spriteVBO);
+    GLfloat *offset = 0;
+    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset));
+    glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset + 6 * 3));
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
+
 void OpenGLCanvas::drawSpriteSrc(Image *image, const Rect &src,
                               float centerX, float centerY,
                               float scaleX, float scaleY,
@@ -305,18 +363,22 @@ void OpenGLCanvas::drawSpriteSrc(Image *image, const Rect &src,
 
     glUseProgram(program);
     Rect dst (centerX - scaleX / 2, centerY - scaleY / 2, scaleX, scaleY);
-    createRectArray(ogl_image, src, dst);
     glBindTexture(GL_TEXTURE_2D, ogl_image->texture());
     glActiveTexture(GL_TEXTURE0 + sampTexture);
-    const GLfloat positionMatrix[] = {
+
+    GLMatrix4x4 screen_coords_adjustment = {
         2, 0, 0, 0,
         0, -2, 0, 0,
-        0, 0, 2, 0,
+        0, 0, 1, 0,
         -1, 1, 0, 1
     };
-    glUniformMatrix4fv(matrixLocation, 1, GL_FALSE, positionMatrix);
+
+    GLMatrix4x4 mat = screen_coords_adjustment;
+
+    glUniformMatrix4fv(matrixLocation, 1, GL_FALSE, mat.values());
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
+    createRectArray(ogl_image, src, dst);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
