@@ -15,15 +15,6 @@
 
 namespace Polarity {
 
-class OpenGLDisplayList : public DisplayList {
-    std::vector<Image::BlitDescription> blits;
-    std::shared_ptr<Image> image;
-public:
-    OpenGLDisplayList(const std::vector<Image::BlitDescription> &blits);
-    virtual void draw(Canvas *canvas, int x, int y) const;
-    virtual void attach(const std::shared_ptr<Image> &newImage);
-};
-
 class OpenGLImage : public Image {
     friend class OpenGLCanvas;
 public:
@@ -48,9 +39,21 @@ private:
     int h;
 };
 
+class OpenGLDisplayList : public DisplayList {
+    std::vector<Image::BlitDescription> blits;
+    std::shared_ptr<OpenGLImage> image;
+    GLuint vbo;
+    mutable bool uploaded;
+
+    void uploadVertexArray() const;
+public:
+    OpenGLDisplayList(const std::vector<Image::BlitDescription> &blits);
+    virtual void draw(Canvas *canvas, int x, int y) const;
+    virtual void attach(const std::shared_ptr<Image> &newImage);
+};
+
 class OpenGLCanvas : public Canvas {
 
-    void createRectArray(OpenGLImage *img, const Rect &src, const Rect &dst);
     void createSpriteRectArray();
 
     GLuint compileShader(const GLchar *src, const char *name, int type);
@@ -58,11 +61,6 @@ class OpenGLCanvas : public Canvas {
     void deleteProgram(GLuint program);
 
     void createRectProgram();
-
-    void drawSpriteSrc(Image *image, const Rect &src,
-                            float centerX, float centerY,
-                            float scaleX, float scaleY,
-                            float angle);
 
     friend class OpenGLDisplayList;
 
@@ -92,7 +90,6 @@ public:
     virtual void clear();
 
     GLuint spriteVBO;
-    GLuint vbo;
     GLint positionLocation;
     GLint texCoordLocation;
     GLint matrixLocation;

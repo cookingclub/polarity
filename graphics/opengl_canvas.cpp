@@ -7,18 +7,88 @@ namespace Polarity {
 
 OpenGLDisplayList::OpenGLDisplayList(
     const std::vector<Image::BlitDescription> &blits)
-    : blits(blits) {
+    : blits(blits), uploaded(false) {
+
+    glGenBuffers(1, &vbo);
+}
+
+void OpenGLDisplayList::uploadVertexArray() const {
+    if (!image->isLoaded()) {
+        std::cerr << "not loaded: " << image->sourceUrl() << std::endl;
+        return;
+    }
+    if (image->width() <= 0 || image->height() <= 0) {
+        std::cerr << "invalid width! " << image->sourceUrl() << std::endl;
+        return;
+    }
+    GLfloat data[blits.size() * 6 * 5];
+    int i = 0;
+    for (const auto &blit : blits) {
+        Rect texcoords = Rect(
+            (float)blit.src.left() / image->width(),
+            (float)blit.src.top() / image->height(),
+            (float)blit.src.width() / image->width(),
+            (float)blit.src.height() / image->height());
+        Rect dst (
+            blit.centerX - (float)blit.scaleX / 2,
+            blit.centerY - (float)blit.scaleY / 2,
+            blit.scaleX,
+            blit.scaleY);
+        GLfloat thisRect[6 * 5] = {
+            dst.left(), dst.bottom(), 0, texcoords.left(), texcoords.bottom(),
+            dst.right(), dst.bottom(), 0,  texcoords.right(), texcoords.bottom(),
+            dst.left(), dst.top(), 0, texcoords.left(), texcoords.top(),
+            dst.right(), dst.top(), 0, texcoords.right(), texcoords.top(),
+            dst.left(), dst.top(), 0, texcoords.left(), texcoords.top(),
+            dst.right(), dst.bottom(), 0, texcoords.right(), texcoords.bottom()
+        };
+        std::copy(thisRect, thisRect + 6 * 5, data + i);
+        i += 6 * 5;
+    }
+/* = ;*/
+    glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+    uploaded = true;
 }
 
 void OpenGLDisplayList::draw(Canvas *canvas, int x, int y) const {
-    for (const auto& blit : blits) {
-        static_cast<OpenGLCanvas*>(canvas)->drawSpriteSrc(image.get(), blit.src, blit.centerX + x, blit.centerY + y,
-                           blit.scaleX, blit.scaleY, blit.angle);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    if (!uploaded) {
+        uploadVertexArray();
     }
+    if (!uploaded) {
+        return;
+    }
+    OpenGLCanvas *ogl_canvas = static_cast<OpenGLCanvas*> (canvas);
+    glUseProgram(ogl_canvas->program);
+    glBindTexture(GL_TEXTURE_2D, image->texture());
+    glActiveTexture(GL_TEXTURE0 + ogl_canvas->sampTexture);
+
+    GLMatrix4x4 screen_coords_adjustment = {
+        2.f / (GLfloat)ogl_canvas->width(), 0, 0, 0,
+        0, -2.f / (GLfloat)ogl_canvas->height(), 0, 0,
+        0, 0, 1, 0,
+        -1 + 2 * x / (GLfloat)ogl_canvas->width(), 1 - 2 * y / (GLfloat)ogl_canvas->height(), 0, 1
+    };
+
+    GLMatrix4x4 mat = screen_coords_adjustment;
+    //mat *= GLMatrix4x4::translation(centerX, centerY, 0);
+    //mat *= GLMatrix4x4::rotationZ(angle);
+    //mat *= GLMatrix4x4::scalar(scaleX, scaleY, 1);
+
+    glUniformMatrix4fv(ogl_canvas->matrixLocation, 1, GL_FALSE, mat.values());
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    GLfloat *offset = 0;
+    glVertexAttribPointer(ogl_canvas->positionLocation, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset));
+    glVertexAttribPointer(ogl_canvas->texCoordLocation, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset + 3));
+    glEnableVertexAttribArray(ogl_canvas->positionLocation);
+    glEnableVertexAttribArray(ogl_canvas->texCoordLocation);
+    glDrawArrays(GL_TRIANGLES, 0, blits.size() * 6);
 }
 
 void OpenGLDisplayList::attach(const std::shared_ptr<Image> &newImage) {
-    image = newImage;
+    image = std::static_pointer_cast<OpenGLImage>(newImage);
+    uploaded = false;
 }
 
 OpenGLImage::OpenGLImage(const std::string &filename)
@@ -105,69 +175,21 @@ void OpenGLCanvas::createSpriteRectArray() {
     Rect texcoords = Rect(0, 0, 1, 1);
     Rect dst = Rect(-0.5, -0.5, 1, 1);
     const GLfloat data[] = {
-        dst.left(), dst.bottom(), 0,
-        dst.right(), dst.bottom(), 0,
-        dst.left(), dst.top(), 0,
-        dst.right(), dst.top(), 0,
-        dst.left(), dst.top(), 0,
-        dst.right(), dst.bottom(), 0,
-        texcoords.left(), texcoords.bottom(),
-        texcoords.right(), texcoords.bottom(),
-        texcoords.left(), texcoords.top(),
-        texcoords.right(), texcoords.top(),
-        texcoords.left(), texcoords.top(),
-        texcoords.right(), texcoords.bottom()
+        dst.left(), dst.bottom(), 0, texcoords.left(), texcoords.bottom(),
+        dst.right(), dst.bottom(), 0, texcoords.right(), texcoords.bottom(),
+        dst.left(), dst.top(), 0, texcoords.left(), texcoords.top(),
+        dst.right(), dst.top(), 0, texcoords.right(), texcoords.top(),
+        dst.left(), dst.top(), 0, texcoords.left(), texcoords.top(),
+        dst.right(), dst.bottom(), 0, texcoords.right(), texcoords.bottom()
     };
     glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
     GLfloat *offset = 0;
-    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset));
-    glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset + 6 * 3));
+    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset));
+    glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset + 3));
     glEnableVertexAttribArray(positionLocation);
     glEnableVertexAttribArray(texCoordLocation);
 }
 
-
-void OpenGLCanvas::createRectArray(OpenGLImage *img, const Rect &src, const Rect &dstPixels) {
-    if (!img->isLoaded()) {
-        std::cerr << "not loaded: " << img->sourceUrl() << std::endl;
-        return;
-    }
-    if (img->width() <= 0 || img->height() <= 0) {
-        std::cerr << "invalid width! " << img->sourceUrl() << std::endl;
-        return;
-    }
-    Rect texcoords = Rect(
-        (float)src.left() / img->width(),
-        (float)src.top() / img->height(),
-        (float)src.width() / img->width(),
-        (float)src.height() / img->height());
-    Rect dst = Rect(
-        (float)dstPixels.left() / screen->w,
-        (float)dstPixels.top() / screen->h,
-        (float)dstPixels.width() / screen->w,
-        (float)dstPixels.height() / screen->h);
-    const GLfloat data[] = {
-        dst.left(), dst.bottom(), 0,
-        dst.right(), dst.bottom(), 0,
-        dst.left(), dst.top(), 0,
-        dst.right(), dst.top(), 0,
-        dst.left(), dst.top(), 0,
-        dst.right(), dst.bottom(), 0,
-        texcoords.left(), texcoords.bottom(),
-        texcoords.right(), texcoords.bottom(),
-        texcoords.left(), texcoords.top(),
-        texcoords.right(), texcoords.top(),
-        texcoords.left(), texcoords.top(),
-        texcoords.right(), texcoords.bottom()
-    };
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_DYNAMIC_DRAW);
-    GLfloat *offset = 0;
-    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset));
-    glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset + 6 * 3));
-    glEnableVertexAttribArray(positionLocation);
-    glEnableVertexAttribArray(texCoordLocation);
-}
 
 GLuint OpenGLCanvas::compileShader(const GLchar *src, const char *name, int type) {
     GLuint shader = glCreateShader(type);
@@ -271,9 +293,6 @@ void main() {\n\
 
     createSpriteRectArray();
 
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
     sampTexture = 0;
     glUniform1i(sampTextureLocation, 0);
 }
@@ -350,35 +369,8 @@ void OpenGLCanvas::drawSprite(Image *image,
     glEnable(GL_BLEND);
     glBindBuffer(GL_ARRAY_BUFFER, spriteVBO);
     GLfloat *offset = 0;
-    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset));
-    glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset + 6 * 3));
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-}
-
-void OpenGLCanvas::drawSpriteSrc(Image *image, const Rect &src,
-                              float centerX, float centerY,
-                              float scaleX, float scaleY,
-                              float angle) {
-    OpenGLImage* ogl_image = static_cast<OpenGLImage*>(image);
-
-    glUseProgram(program);
-    Rect dst (centerX - scaleX / 2, centerY - scaleY / 2, scaleX, scaleY);
-    glBindTexture(GL_TEXTURE_2D, ogl_image->texture());
-    glActiveTexture(GL_TEXTURE0 + sampTexture);
-
-    GLMatrix4x4 screen_coords_adjustment = {
-        2, 0, 0, 0,
-        0, -2, 0, 0,
-        0, 0, 1, 0,
-        -1, 1, 0, 1
-    };
-
-    GLMatrix4x4 mat = screen_coords_adjustment;
-
-    glUniformMatrix4fv(matrixLocation, 1, GL_FALSE, mat.values());
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-    createRectArray(ogl_image, src, dst);
+    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset));
+    glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset + 3));
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
