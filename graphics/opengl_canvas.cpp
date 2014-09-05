@@ -22,30 +22,46 @@ void OpenGLDisplayList::uploadVertexArray() const {
         return;
     }
     GLfloat data[blits.size() * 6 * 5];
-    int i = 0;
+    GLfloat *thisTri = data;
     for (const auto &blit : blits) {
         Rect texcoords = Rect(
             (float)blit.src.left() / image->width(),
             (float)blit.src.top() / image->height(),
             (float)blit.src.width() / image->width(),
             (float)blit.src.height() / image->height());
+
+        GLMatrix4x4 mat = GLMatrix4x4::translation(blit.centerX, blit.centerY, 0);
+        mat *= GLMatrix4x4::rotationZ(blit.angle);
+        mat *= GLMatrix4x4::scalar(0.5 * blit.scaleX, 0.5 * blit.scaleY, 1);
+
         Rect dst (
-            blit.centerX - (float)blit.scaleX / 2,
-            blit.centerY - (float)blit.scaleY / 2,
-            blit.scaleX,
-            blit.scaleY);
-        GLfloat thisRect[6 * 5] = {
-            dst.left(), dst.bottom(), 0, texcoords.left(), texcoords.bottom(),
-            dst.right(), dst.bottom(), 0,  texcoords.right(), texcoords.bottom(),
-            dst.left(), dst.top(), 0, texcoords.left(), texcoords.top(),
-            dst.right(), dst.top(), 0, texcoords.right(), texcoords.top(),
-            dst.left(), dst.top(), 0, texcoords.left(), texcoords.top(),
-            dst.right(), dst.bottom(), 0, texcoords.right(), texcoords.bottom()
+            -0.5,
+            -0.5,
+            1,
+            1);
+        GLVec4 vecs[6] = {
+            mat * GLVec4(-1, 1, 0, 1),
+            mat * GLVec4(1, 1, 0, 1),
+            mat * GLVec4(-1, -1, 0, 1),
+            mat * GLVec4(1, -1, 0, 1),
+            mat * GLVec4(-1, -1, 0, 1),
+            mat * GLVec4(1, 1, 0, 1)
         };
-        std::copy(thisRect, thisRect + 6 * 5, data + i);
-        i += 6 * 5;
+        GLfloat uv[12] = {
+            texcoords.left(), texcoords.bottom(),
+            texcoords.right(), texcoords.bottom(),
+            texcoords.left(), texcoords.top(),
+            texcoords.right(), texcoords.top(),
+            texcoords.left(), texcoords.top(),
+            texcoords.right(), texcoords.bottom()
+        };
+        for (int j = 0; j < 6; j++) {
+            std::copy(vecs[j].values(), vecs[j].values() + 3, thisTri);
+            thisTri[3] = uv[j * 2];
+            thisTri[4] = uv[j * 2 + 1];
+            thisTri += 5;
+        };
     }
-/* = ;*/
     glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
     uploaded = true;
 }

@@ -6,6 +6,42 @@
 
 namespace Polarity {
 
+template <class Val> class Vec4 {
+public:
+    union {
+        Val vec[4];
+        struct {
+            Val x, y, z, w;
+        } coord;
+    } u;
+
+    Vec4(Val x, Val y, Val z, Val w) {
+        u.coord.x = x;
+        u.coord.y = y;
+        u.coord.z = z;
+        u.coord.w = w;
+    }
+
+    Vec4 (std::initializer_list<Val> list) {
+        assert(list == 4);
+        if (list.size() > 4) {
+            return;
+        }
+        std::copy(list.begin(), list.end(), u.vec);
+    }
+
+    Val& operator[] (int i) {
+        return u.vec[i];
+    }
+    Val operator[] (int i) const {
+        return u.vec[i];
+    }
+
+    const Val* values() const {
+        return &u.vec[0];
+    }
+};
+
 template <class Val> class Matrix4x4 {
 
     enum {
@@ -33,7 +69,7 @@ public:
         return mat[i];
     }
 
-    const GLfloat* values() const {
+    const Val* values() const {
         return &mat[0];
     }
 
@@ -47,6 +83,14 @@ public:
             }
         }
         return c;
+    }
+
+    Vec4<Val> operator*(const Vec4<Val> &v) const {
+        return Vec4<Val> (
+            v[0] * mat[0] + v[1] * mat[4] + v[2] * mat[8] + v[3] * mat[12],
+            v[0] * mat[1] + v[1] * mat[5] + v[2] * mat[9] + v[3] * mat[13],
+            v[0] * mat[2] + v[1] * mat[6] + v[2] * mat[10] + v[3] * mat[14],
+            v[0] * mat[3] + v[1] * mat[7] + v[2] * mat[11] + v[3] * mat[15]);
     }
 
     Matrix4x4& operator*= (const Matrix4x4&b) {
@@ -131,15 +175,30 @@ public:
 
 template <class Val>
 std::ostream &operator << (std::ostream &os, const Matrix4x4<Val> &mat) {
+    os << "Mat4[[";
     for (int i = 0; i < 16; i += 4) {
+        i && os << "][";
         for (int j = 0; j < 4; j++) {
-            os << mat[i + j] << ",";
+            j && os << ",";
+            os << mat[i + j];
         }
-        os << ";";
     }
+    os << "]]";
     return os;
 }
 
+template <class Val>
+std::ostream &operator << (std::ostream &os, const Vec4<Val> &vec) {
+    os << "<";
+    for (int i = 0; i < 4; i ++) {
+        i && os << ",";
+        os << vec[i];
+    }
+    os << ">";
+    return os;
+}
+
+typedef Vec4<GLfloat> GLVec4;
 typedef Matrix4x4<GLfloat> GLMatrix4x4;
 
 }
