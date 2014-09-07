@@ -1,12 +1,9 @@
 *.orig
-*.o
-*.a
-*.swp
+.objs
 *~
 polarity.data
+polarity
 polarity.html
 polarity.html.map
 polarity.js
-libs/libext.a
-libs/*.o
 .DS_Store

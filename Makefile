@@ -3,19 +3,27 @@ ARSRCS = $(wildcard libs/box2d/Box2D/Box2D/Collision/Shapes/*.cpp libs/box2d/Box
 
 SRCS = $(wildcard graphics/*.cpp physics/*.cpp main/*.cpp world/*.cpp libs/libtmxparser/src/*.cpp )
 # audio/*.cpp
+
+O_EXT = .o
+AR_EXT = .a
+
+OBJ_NATIVE = .objs/native
+EXE_NATIVE = polarity
+OBJ_EM = .objs/em
+EXE_EM = polarity.html
+
 ifdef NATIVE
-O_EXT = .native.o
-EXE_EXT =
-AR_EXT = .native.a
+OBJ_DIR = $(OBJ_NATIVE)
+EXE = $(EXE_NATIVE)
 
 CC = gcc
 CXX = g++
 AR = ar
 LDFLAGS = -lSDL -lSDL_mixer -lSDL_gfx -lSDL_image -lSDL_ttf $(EXTERNALS)
 else
-O_EXT = .em.o
-EXE_EXT = .html
-AR_EXT = .em.a
+OBJ_DIR = $(OBJ_EM)
+EXE = $(EXE_EM)
+
 CC = emcc
 CXX = em++
 AR = emar
@@ -24,18 +32,20 @@ LDFLAGS = -s TOTAL_MEMORY=134217728 $(EXTERNALS)
 endif
 
 EXE = polarity$(EXE_EXT)
-EXTERNALS = libs/libext$(AR_EXT)
+EXTERNALS = $(OBJ_DIR)/libext$(AR_EXT)
 
-AROBJS = $(patsubst %.c, %$(O_EXT), $(patsubst %.cpp, %$(O_EXT), $(ARSRCS))) libs/tinyxml2/tinyxml2$(O_EXT)
-OBJS = $(patsubst %.cpp, %$(O_EXT), $(SRCS))
+AROBJS = $(patsubst %.c, $(OBJ_DIR)/%$(O_EXT), $(patsubst %.cpp, $(OBJ_DIR)/%$(O_EXT), $(ARSRCS))) $(OBJ_DIR)/libs/tinyxml2/tinyxml2$(O_EXT)
+OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%$(O_EXT), $(SRCS))
 
 CFLAGS = -fno-exceptions -pthread -g -Wall -Wextra -Wno-unused-parameter -Wno-warn-absolute-paths -I $(CURDIR) -I$(CURDIR)/libs/box2d/Box2D/ -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/libtmxparser/src -I$(CURDIR)/libs/zlib -I$(CURDIR)/libs/libpng
 CXXFLAGS = -std=gnu++11 $(CFLAGS)
 
-%$(O_EXT): %.cpp
+$(OBJ_DIR)/%$(O_EXT): %.cpp
+	mkdir -p `dirname $@`
 	$(CXX) $(CXXFLAGS) $< -c -o $@
 
-%$(O_EXT): %.c
+$(OBJ_DIR)/%$(O_EXT): %.c
+	mkdir -p `dirname $@`
 	$(CC) $(CFLAGS) $< -c -o $@
 
 $(EXE): $(OBJS) $(wildcard assets/*) $(EXTERNALS)
@@ -47,7 +57,9 @@ $(EXTERNALS): $(AROBJS)
 $(OBJS): $(INCLUDES) Makefile
 
 clean:
-	rm -f $(OBJS) $(AROBJS)
-	rm -f $(EXTERNALS)
+	rm -f $(patsubst %.c, %.*o, $(patsubst %.cpp, %.*o, $(ARSRCS))) libs/tinyxml2/tinyxml2.*o
+	rm -f $(patsubst %.cpp, %.*o, $(SRCS))
+	rm -f libs/libext.*a graphics/sprite.o libext.a physics/behavior.o physics/physics.o
+	rm -f $(OBJS) $(AROBJS) $(EXTERNALS)
 	rm -f $(EXE)
 
