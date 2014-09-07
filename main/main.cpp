@@ -63,22 +63,32 @@ void completeAllPendingCallbacksFromMainThread(){
 }
 
 #ifdef EMSCRIPTEN
-static void asyncFileLoadOnLoad(void*ctx, void *data, unsigned *size){
+static void asyncFileLoadOnLoad(unsigned handle, void*ctx, void *data, size_t size){
     auto cb = reinterpret_cast<std::function<void(const char * data, int size)>*>(ctx);
     (*cb)(reinterpret_cast<const char*>(data), (size_t)size);
     delete cb;
 }
-static void asyncFileLoadOnError(void*ctx, int, const char*){
+static void asyncFileLoadOnError(unsigned handle, void*ctx, int, const char*){
     auto cb = reinterpret_cast<std::function<void(const char * data, int size)>*>(ctx);
     (*cb)(nullptr, -1);
     delete cb;
 }
-static void asyncFileLoadOnProgress(void*, int, int){
+
+// Compatibility APIs.
+static void asyncFileLoadOnLoad(void*ctx, void *data, unsigned *size){
+    asyncFileLoadOnLoad(0, ctx, data, reinterpret_cast<size_t>(size));
 }
+static void asyncFileLoadOnLoad(void*ctx, void *data, unsigned size){
+    asyncFileLoadOnLoad(0, ctx, data, size);
+}
+static void asyncFileLoadOnError(void*ctx, int size, const char*data){
+    asyncFileLoadOnError(0, ctx, size, data);
+}
+
 void asyncFileLoad(const std::string &fileName,
                    const std::function<void(const char * data, int size)>&callback) {
     auto cb = new std::function<void(const char * data, int size)>(callback);
-    emscripten_async_wget2_data(fileName.c_str(), "GET", "", cb, true, (em_async_wget2_data_onload_func)&asyncFileLoadOnLoad, &asyncFileLoadOnError, asyncFileLoadOnProgress);
+    emscripten_async_wget2_data(fileName.c_str(), "GET", "", cb, true, (em_async_wget2_data_onload_func)&asyncFileLoadOnLoad, &asyncFileLoadOnError, 0);
 }
 void platformExitProgram() {
 }

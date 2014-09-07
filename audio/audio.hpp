@@ -76,20 +76,35 @@ public:
         string id;
         string filePath;
     };
-    static void oncomplete(void*ud, const char* fileName) {
+
+    static void oncomplete(unsigned handle, void*ud, const char* fileName) {
         std::cerr << "audone: " << reinterpret_cast<UserData*>(ud)->filePath << " "<<fileName<< std::endl;
         std::unique_ptr<UserData> userData(reinterpret_cast<UserData*>(ud));
         std::cerr << "loaded audio: " << userData->filePath << std::endl;
         queueLoadHelper(userData->aplayer, userData->id, userData->filePath);
     }
-    static void onprogress(void*userData, int code) {
+    static void onprogress(unsigned handle, void*userData, int code) {
         std::cerr << "progress audio: " << reinterpret_cast<UserData*>(userData)->filePath << " " << code << std::endl;
     }
-    static void onerror(void*ud, int code) {
+    static void onerror(unsigned, void*ud, int code) {
         std::unique_ptr<UserData> userData(reinterpret_cast<UserData*>(ud));
 
         std::cerr << "x failed to load " << reinterpret_cast<UserData*>(ud)->filePath << std::endl;
     }
+
+    // Compatibility APIs.
+    static void oncomplete(void*ud, const char* fileName) {
+        oncomplete(0, ud, fileName);
+    }
+
+    static void onprogress(void*userData, int code) {
+        onprogress(0, userData, code);
+    }
+
+    static void onerror(void*ud, int code) {
+        onerror(0, ud, code);
+    }
+
     static void queueLoad(const std::weak_ptr<AudioChannelPlayer>&aplayer,
                           string id, string filePath) {
         std::cerr<< "preparing to load "<<filePath<<std::endl;
