@@ -31,7 +31,6 @@ LDFLAGS = -s TOTAL_MEMORY=134217728 $(EXTERNALS)
 # --preload-file assets
 endif
 
-EXE = polarity$(EXE_EXT)
 EXTERNALS = $(OBJ_DIR)/libext$(AR_EXT)
 
 AROBJS = $(patsubst %.c, $(OBJ_DIR)/%$(O_EXT), $(patsubst %.cpp, $(OBJ_DIR)/%$(O_EXT), $(ARSRCS))) $(OBJ_DIR)/libs/tinyxml2/tinyxml2$(O_EXT)
