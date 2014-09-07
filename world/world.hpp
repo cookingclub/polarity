@@ -37,6 +37,9 @@ class World {
 
     std::weak_ptr<World> wthis;
 public:
+    virtual ~World(){
+        std::cerr << "destructing world" << std::endl;
+    }
     //int pn = 1; //player polarity, this should prob be set in player state
     //int EMoff = 1; //EM force ON or OFF
     GameObject*player;

@@ -6,8 +6,10 @@
 #include <thread>
 #include <deque>
 #include <condition_variable>
-
+#ifdef EMSCRIPTEN
 #include "graphics/opengl_canvas.hpp"
+#endif
+#include <SDL/SDL_timer.h>
 #include "graphics/sdl_canvas.hpp"
 #include "audio/audio.hpp"
 #include "main/main.hpp"
@@ -78,6 +80,8 @@ void asyncFileLoad(const std::string &fileName,
     auto cb = new std::function<void(const char * data, int size)>(callback);
     emscripten_async_wget2_data(fileName.c_str(), "GET", "", cb, true, (em_async_wget2_data_onload_func)&asyncFileLoadOnLoad, &asyncFileLoadOnError, asyncFileLoadOnProgress);
 }
+void platformExitProgram() {
+}
 #else
 namespace {
 mutex workerWorkMutex;
@@ -85,6 +89,17 @@ std::condition_variable workerWorkCondition;
 }
 std::deque<std::function<void()> >work;
 std::vector<std::thread> workers;
+void platformExitProgram() {
+    for (size_t i=0;i<workers.size();++i) {
+        std::unique_lock<mutex> workLock(workerWorkMutex);
+        work.emplace_back(function<void()>());
+	workerWorkCondition.notify_all();
+    }
+    for (size_t i=0;i<workers.size();++i) {
+        workers[i].join();
+    }
+}
+
 void worker() {
     while (true) {
         std::function<void()> f;
@@ -136,6 +151,17 @@ void asyncFileLoad(const std::string &fileName,
     workerWorkCondition.notify_all();
 }
 #endif
+void exitProgram() {
+    platformExitProgram();
+    Polarity::world.reset();
+    {
+        LOCK_MAIN_THREAD_CALLBACK_MUTEX();
+        functionsToCallOnMainThread.clear();
+    }
+#ifdef EMSCRIPTEN
+    SDL_Quit();
+#endif
+}
 void mainThreadCallback(const std::function<void()>&&function) {
     LOCK_MAIN_THREAD_CALLBACK_MUTEX();
     functionsToCallOnMainThread.push_back(std::move(function));
@@ -160,6 +186,7 @@ void mainloop() {
 #else
 void mainloop() {
     atexit(SDL_Quit);
+    Uint32 time = SDL_GetTicks();
     while (true) {
         screen->clear();
         if (!loopIter(screen.get())) {
@@ -167,7 +194,12 @@ void mainloop() {
         } else {
             screen->swapBuffers();
         }
-        usleep(10000);
+        Uint32 newTime = SDL_GetTicks();
+        Uint32 curDelay = newTime - time;
+        if (curDelay < 1000/60) {
+            SDL_Delay(1000/60 - curDelay);
+	}
+        time = SDL_GetTicks();
     }
 }
 #endif
@@ -235,4 +267,6 @@ int main(int argc, char**argv) {
     Polarity::world->addObject(new Polarity::KeyboardBehavior(), bodyDef2, fixtureDef);
 */
     Polarity::mainloop();
+    std::cerr<<"Game over, man"<<std::endl;
+    return 0;
 }

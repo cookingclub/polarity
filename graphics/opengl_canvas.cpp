@@ -1,10 +1,12 @@
+#ifdef EMSCRIPTEN
 #include "opengl_canvas.hpp"
+#endif
 #include "display_list.hpp"
 #include "main/main.hpp"
 #include "graphics/matrix4x4.hpp"
 
 namespace Polarity {
-
+#ifdef EMSCRIPTEN
 OpenGLDisplayList::OpenGLDisplayList(
     const std::vector<Image::BlitDescription> &blits)
     : blits(blits), uploaded(false) {
@@ -401,5 +403,5 @@ void OpenGLCanvas::swapBuffers() {
     glFlush();
     SDL_GL_SwapBuffers();
 }
-
+#endif
 }

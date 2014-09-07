@@ -45,7 +45,7 @@ public:
 private:
     Charge polarityCharge;
     Actions currentAction;
-    Behavior * behavior;
+    std::unique_ptr<Behavior> behavior;
     std::string name;
     PropertyMap properties;
     Type type;

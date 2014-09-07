@@ -55,6 +55,10 @@ bool loopIter(Canvas *screen) {
         if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
             vector<bool> lastKeyState = world->getKeyState();
             if (event.type == SDL_KEYDOWN) {
+	        if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    Polarity::exitProgram();
+                    return false;
+	        }
                 world->keyEvent(event.key.keysym.sym, true);
             } else {
                 keyUps.push_back(event.key.keysym.sym);

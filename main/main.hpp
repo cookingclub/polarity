@@ -14,6 +14,7 @@ namespace Polarity {
     void asyncFileLoad(const std::string &fname,
                        const std::function<void(const char *data, int size)>&callback);
     bool loopIter(Canvas *screen);
+    void exitProgram();
 }
 
 #endif

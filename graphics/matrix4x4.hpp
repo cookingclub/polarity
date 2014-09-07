@@ -124,8 +124,8 @@ public:
 
     static Matrix4x4 rotationZ(Val radians) {
         return {
-            std::cosf(radians), -std::sinf(radians), 0, 0,
-            std::sinf(radians), std::cosf(radians), 0, 0,
+            std::cos(radians), -std::sin(radians), 0, 0,
+            std::sin(radians), std::cos(radians), 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1
         };
@@ -133,9 +133,9 @@ public:
 
     static Matrix4x4 rotationY(Val radians) {
         return {
-            std::cosf(radians), 0, std::sinf(radians), 0,
+            std::cos(radians), 0, std::sin(radians), 0,
             0, 1, 0, 0,
-            -std::sinf(radians), 0, std::cosf(radians), 0,
+            -std::sin(radians), 0, std::cos(radians), 0,
             0, 0, 1, 0,
             0, 0, 0, 1
         };
@@ -144,8 +144,8 @@ public:
     static Matrix4x4 rotationX(Val radians) {
         return {
             1, 0, 0, 0,
-            0, std::cosf(radians), -std::sinf(radians), 0,
-            0, std::sinf(radians), std::cosf(radians), 0,
+            0, std::cos(radians), -std::sin(radians), 0,
+            0, std::sin(radians), std::cos(radians), 0,
             0, 0, 0, 1
         };
     }
@@ -198,8 +198,8 @@ std::ostream &operator << (std::ostream &os, const Vec4<Val> &vec) {
     return os;
 }
 
-typedef Vec4<GLfloat> GLVec4;
-typedef Matrix4x4<GLfloat> GLMatrix4x4;
+typedef Vec4<float> GLVec4;
+typedef Matrix4x4<float> GLMatrix4x4;
 
 }
 #endif

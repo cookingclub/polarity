@@ -1,8 +1,10 @@
 #ifndef POLARITY_GRAPHICS_OPENGL_CANVAS_HPP__
 #define POLARITY_GRAPHICS_OPENGL_CANVAS_HPP__
-
+#ifdef EMSCRIPTEN
 #include "GLES2/gl2.h"
-
+#else
+#include <GL/gl.h>
+#endif
 #include "SDL/SDL.h"
 #include "SDL/SDL_video.h"
 #include "SDL/SDL_image.h"
