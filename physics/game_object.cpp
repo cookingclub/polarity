@@ -20,10 +20,11 @@ GameObject::Type GameObject::parseTypeStr(const std::string& typeStr) {
     return TERRAIN;
 }
 
-GameObject::GameObject(const std::shared_ptr<Canvas> &canvas, b2World *world, Behavior *behavior, const b2BodyDef &bdef, const std::vector<b2FixtureDef> &fixtures, const std::string &name, Type type, const PropertyMap &props)
+GameObject::GameObject(const std::shared_ptr<Canvas> &canvas, World *world, Behavior *behavior, const b2BodyDef &bdef, const std::vector<b2FixtureDef> &fixtures, const std::string &name, Type type, const PropertyMap &props)
         : behavior(behavior), name(name), properties(props), type(type) {
+    this->wworld = world->weak_ptr();
     currentAction = IDLE;
-    groundBody = world->CreateBody(&bdef);
+    groundBody = world->getPhysicsWorld()->CreateBody(&bdef);
     groundBody->SetUserData(this);
     for (auto &fixture : fixtures) {
         Trigger* trig = static_cast<Trigger*const>(fixture.userData);
@@ -159,6 +160,19 @@ float GameObject::polarityForceMultiplier(Charge a, Charge b) {
         return 0;
     }
 }
-
+GameObject::~GameObject() {
+    b2Fixture* fixture = groundBody->GetFixtureList();
+    while (fixture != nullptr) {
+        const Trigger * trigger = static_cast<Trigger*>(fixture->GetUserData());
+        if (trigger != nullptr) {
+            delete trigger;
+        }
+        fixture = fixture->GetNext();
+    }
+    std::shared_ptr<World> world(wworld.lock());
+    if (world) {
+        world->getPhysicsWorld()->DestroyBody(groundBody);    
+    }
+}
 }
 

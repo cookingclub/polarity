@@ -53,7 +53,12 @@ public:
         fAllocatedChans(0) {
         fNumAvailableChans = Mix_AllocateChannels(channels);
     }
-
+    ~AudioChannelPlayer() {
+        for (map<string, Mix_Chunk*>::iterator i = fChunks.begin(), ie = fChunks.end(); i != ie; ++i) {
+            Mix_FreeChunk(i->second);
+            i->second = nullptr;
+        }
+    }
     static Polarity::AudioFileError addChannel(std::shared_ptr<AudioChannelPlayer> thus, string id, string filePath, int num) {
         if (thus->fAllocatedChans >= thus->fNumChans) {
             cerr << "All channels allocated, can't allocate another one" << endl;

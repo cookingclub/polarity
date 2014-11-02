@@ -55,7 +55,7 @@ void World::addObject(Behavior *behavior, const b2BodyDef&bdef, const std::vecto
     if (behavior == nullptr) {
         behavior = new Behavior();
     }
-    GameObject * object = new GameObject(getGraphicsContext(), &physics, behavior, bdef, fixture, name, type, properties);
+    GameObject * object = new GameObject(getGraphicsContext(), this, behavior, bdef, fixture, name, type, properties);
     objects.emplace_back(object);
     behavior->addedToWorld(this, object);
 
@@ -256,5 +256,9 @@ void World::finalizeLoad(const std::weak_ptr<World> &weakThis,
 void World::load(const std::string &tmxFile) {
     std::cerr << "start async load " << tmxFile << std::endl;
     Polarity::asyncFileLoad(tmxFile, std::bind(&World::load_async, wthis, tmxFile, std::placeholders::_1, std::placeholders::_2));
+}
+
+World::~World() {
+    std::cerr << "destructing world" << std::endl;
 }
 }

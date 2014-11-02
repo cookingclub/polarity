@@ -86,8 +86,12 @@ void readPngImage(png_structp pngState, png_infop infoPtr, Image::DecodedImage *
 void configurePngHeader(png_structp pngState, png_infop infoPtr, bool addAlpha,
                         Image::DecodedImage*png) {
     int format, depth;
+    png_uint_32 w = 0;
+    png_uint_32 h = 0;
     png_read_info(pngState, infoPtr);
-    png_get_IHDR(pngState, infoPtr, &png->width, &png->height, &depth, &format, nullptr, nullptr, nullptr);
+    png_get_IHDR(pngState, infoPtr, &w, &h, &depth, &format, nullptr, nullptr, nullptr);
+    png->width = w;
+    png->height = h;
     if (png_get_valid(pngState, infoPtr, PNG_INFO_tRNS)) {
         png_set_tRNS_to_alpha(pngState); // Up 0/1 alpha channel to 8 bits
     }
@@ -104,7 +108,9 @@ void configurePngHeader(png_structp pngState, png_infop infoPtr, bool addAlpha,
     if (depth < 8) {
         png_set_packing(pngState); // align to 8 bit
     } else if (depth == 16) {
+#if PNG_LIBPNG_VER_RELEASE > 46
         png_set_scale_16(pngState);
+#endif
     }
     png_read_update_info(pngState, infoPtr);
 

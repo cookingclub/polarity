@@ -164,6 +164,7 @@ void asyncFileLoad(const std::string &fileName,
 void exitProgram() {
     platformExitProgram();
     Polarity::world.reset();
+    Polarity::screen.reset();
     {
         LOCK_MAIN_THREAD_CALLBACK_MUTEX();
         functionsToCallOnMainThread.clear();
@@ -194,8 +195,13 @@ void mainloop() {
 }
 
 #else
+void fast_shutdown() {
+    Polarity::world.reset();
+    Polarity::screen.reset();
+    SDL_Quit();
+}
 void mainloop() {
-    atexit(SDL_Quit);
+    atexit(fast_shutdown);
     Uint32 time = SDL_GetTicks();
     while (true) {
         screen->clear();
@@ -277,6 +283,7 @@ int main(int argc, char**argv) {
     Polarity::world->addObject(new Polarity::KeyboardBehavior(), bodyDef2, fixtureDef);
 */
     Polarity::mainloop();
+    Polarity::screen.reset();
     std::cerr<<"Game over, man"<<std::endl;
     return 0;
 }

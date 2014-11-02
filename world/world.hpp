@@ -37,9 +37,7 @@ class World {
 
     std::weak_ptr<World> wthis;
 public:
-    virtual ~World(){
-        std::cerr << "destructing world" << std::endl;
-    }
+    virtual ~World();
     //int pn = 1; //player polarity, this should prob be set in player state
     //int EMoff = 1; //EM force ON or OFF
     GameObject*player;
@@ -58,7 +56,7 @@ public:
     void clearJustPressedStates();
     bool isKeyDown(int keyCode);
     bool wasKeyJustPressed(int keyCode);
-
+    std::weak_ptr<World> weak_ptr()const {return wthis;}
     const shared_ptr<Canvas> &getGraphicsContext() const {
         return graphicsContext;
     }
@@ -91,6 +89,9 @@ public:
 
     b2Vec2 physicsToGraphics(const b2Vec2 &vec, float isBounds=-1) {
         return b2Vec2(vec.x * graphicsScale.x, vec.y * graphicsScale.y * isBounds);
+    }
+    b2World *getPhysicsWorld() {
+        return &physics;
     }
 };
 extern std::shared_ptr<World> world;

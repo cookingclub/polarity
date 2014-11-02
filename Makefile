@@ -19,7 +19,7 @@ EXE = $(EXE_NATIVE)
 CC = gcc
 CXX = g++
 AR = ar
-LDFLAGS = -lSDL -lSDL_mixer -lSDL_gfx -lSDL_image -lSDL_ttf $(EXTERNALS)
+LDFLAGS = -L$(CURDIR)/libs/libsdl/lib -lSDL -lSDL_mixer -lSDL_gfx -lSDL_image -lSDL_ttf $(EXTERNALS)
 else
 OBJ_DIR = $(OBJ_EM)
 EXE = $(EXE_EM)
@@ -36,7 +36,7 @@ EXTERNALS = $(OBJ_DIR)/libext$(AR_EXT)
 AROBJS = $(patsubst %.c, $(OBJ_DIR)/%$(O_EXT), $(patsubst %.cpp, $(OBJ_DIR)/%$(O_EXT), $(ARSRCS))) $(OBJ_DIR)/libs/tinyxml2/tinyxml2$(O_EXT)
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%$(O_EXT), $(SRCS))
 
-CFLAGS = -fno-exceptions -pthread -g -Wall -Wextra -Wno-unused-parameter -Wno-warn-absolute-paths -I $(CURDIR) -I$(CURDIR)/libs/box2d/Box2D/ -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/libtmxparser/src -I$(CURDIR)/libs/zlib -I$(CURDIR)/libs/libpng
+CFLAGS = -fno-exceptions -pthread -g -Wall -Wextra -Wno-unused-parameter -Wno-warn-absolute-paths -I $(CURDIR) -I$(CURDIR)/libs/box2d/Box2D/ -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/libtmxparser/src -I$(CURDIR)/libs/zlib -I$(CURDIR)/libs/libpng -I$(CURDIR)/libs/libsdl/include
 CXXFLAGS = -std=gnu++11 $(CFLAGS)
 
 $(OBJ_DIR)/%$(O_EXT): %.cpp

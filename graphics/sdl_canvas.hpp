@@ -137,7 +137,9 @@ public:
                 width, height, 0,
                 SDL_HWSURFACE | SDL_RESIZABLE);
     }
-
+    ~SDLCanvas() {
+        SDL_FreeSurface(screen);
+    }
     virtual int width() { return screen->w; }
     virtual int height() { return screen->h; }
 
@@ -202,6 +204,7 @@ public:
                 }
             }
         }
+        ~SDLDisplayList(){}
     };
     class SDLImageCacheDisplayList : public SDLDisplayList {
         Rect bounds;
@@ -237,6 +240,10 @@ public:
               bounds(bound),
               cache(makeBlankDrawableSurface(bound.w, bound.h)) {
             loadImage();
+        }
+        ~SDLImageCacheDisplayList(){
+            cache.reset();
+            std::cerr<<"Destructing icdl"<<std::endl;
         }
         void loadImage() {
             std::shared_ptr<Image> img(image.lock());
