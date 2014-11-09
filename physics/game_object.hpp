@@ -13,7 +13,6 @@
 namespace Polarity {
 class Behavior;
 class World;
-class Trigger;
 class Canvas;
 
 typedef std::unordered_map<std::string, std::string> PropertyMap;
@@ -42,6 +41,14 @@ public:
 	};
     static Type parseTypeStr(const std::string &str);
     static float polarityForceMultiplier(Charge a, Charge b);
+    static inline GameObject *getContactObjectA(b2Contact *contact) {
+        return static_cast<GameObject*>(
+                contact->GetFixtureA()->GetBody()->GetUserData());
+    }
+    static inline GameObject *getContactObjectB(b2Contact *contact) {
+        return static_cast<GameObject*>(
+                contact->GetFixtureB()->GetBody()->GetUserData());
+    }
 private:
     Charge polarityCharge;
     Actions currentAction;
@@ -49,7 +56,6 @@ private:
     std::string name;
     PropertyMap properties;
     Type type;
-    bool collidable;
     int jumpCooldown;
     std::weak_ptr<World> wworld;
     std::shared_ptr<Animation> idle;
@@ -66,7 +72,20 @@ public:
     bool isJumpable() const { return jumpCooldown == 0; }
     void setJumpable(bool canJump) { jumpCooldown = canJump ? 0 : -1; }
     void setJumpCooldown(bool canJump) { jumpCooldown = canJump; }
-    bool isCollidable() const { return collidable; }
+    void onBeginCollision(World *world, b2Contact *contact);
+    void onEndCollision(World *world, b2Contact *contact);
+    inline b2Fixture *localFixture(b2Contact *contact) {
+        return getContactObjectA(contact) == this ?
+            contact->GetFixtureA() : contact->GetFixtureB();
+    }
+    inline b2Fixture *remoteFixture(b2Contact *contact) {
+        return getContactObjectA(contact) == this ?
+            contact->GetFixtureB() : contact->GetFixtureA();
+    }
+    inline GameObject *remoteObject(b2Contact *contact) {
+        return static_cast<GameObject*>(
+                remoteFixture(contact)->GetBody()->GetUserData());
+    }
     const std::string& getName() const { return name; }
     b2Body*groundBody;
     float printPosition();

@@ -3,10 +3,11 @@
 #include <libgen.h>
 #include "SDL/SDL.h"
 #include "world.hpp"
-#include "world/trigger.hpp"
 #include "physics/player_behavior.hpp"
 #include "physics/magnetic_behavior.hpp"
 #include "graphics/canvas.hpp"
+#include "physics/jumping_behavior.hpp"
+#include "world/door_behavior.hpp"
 #include "main/main.hpp"
 #include "tmxparser.h"
 
@@ -200,8 +201,6 @@ void World::finalizeLoad(const std::weak_ptr<World> &weakThis,
                 Behavior *behavior = nullptr;
                 std::vector<b2FixtureDef> fixtures;
                 if (type == GameObject::PLAYER) {
-                    behavior = new Polarity::PlayerBehavior();
-                    std::cerr<<"Making dynamic "<<std::endl;
                     body_def.type = b2_dynamicBody;
                 } else {
                     body_def.type = b2_staticBody;
@@ -226,28 +225,25 @@ void World::finalizeLoad(const std::weak_ptr<World> &weakThis,
                 fixtures.back().shape = &dynamic_box;
                 fixtures.back().density = 1.0f;
                 fixtures.back().friction = 1.0f;
-                if (type == GameObject::DOOR || type == GameObject::TRIGGER) {
+                if (type == GameObject::TRIGGER) {
                     fixtures.back().isSensor = true;
-                    auto it = oit.propertyMap.find("trigger");
-                    if (it != oit.propertyMap.end()) {
-                        fixtures.back().userData = Trigger::create(
-                                it->second, oit.propertyMap);
-                    } else if (type == GameObject::DOOR) {
-                        fixtures.back().userData = Trigger::create(
-                                "door", oit.propertyMap);
-                    }
-                }
-                if (type == GameObject::PLAYER) {
+                } else if (type == GameObject::DOOR) {
+                    fixtures.back().isSensor = true;
+                    behavior = new Polarity::DoorBehavior();
+                } else if (type == GameObject::PLAYER) {
+                    behavior = new Polarity::CombiningBehavior(
+                            new Polarity::PlayerBehavior(),
+                            new Polarity::JumpingBehavior());
                     polygon_box.SetAsBox(0.25, 0.25, b2Vec2(0, -wh.y + 0.125), 0);
                     fixtures.push_back(b2FixtureDef());
                     fixtures.back().isSensor = true;
-                    fixtures.back().userData = Trigger::create("feet", std::unordered_map<std::string,std::string>());
+                    fixtures.back().userData = (void*)JumpingBehavior::FEET_FIXTURE;
                     fixtures.back().shape = &polygon_box;
-                 }
+                }
 
-                 world->addObject(behavior, body_def, fixtures, oit.name, type, oit.propertyMap);
+                world->addObject(behavior, body_def, fixtures, oit.name, type, oit.propertyMap);
 
-                 std::cerr << "object name = " << oit.name << std::endl;
+                std::cerr << "object name = " << oit.name << std::endl;
             }
         }
     }

@@ -7,8 +7,8 @@ namespace Polarity {
 
 class PlayerBehavior : public Behavior{
 public:
-    virtual void addedToWorld(World * world, GameObject *obj);
-    virtual void tick(World * world, GameObject *obj);
+    virtual void addedToWorld(World * world, GameObject *obj) override;
+    virtual void tick(World * world, GameObject *obj) override;
 
     void handleMusicByPlayerColor(World *world, GameObject *obj);
 };

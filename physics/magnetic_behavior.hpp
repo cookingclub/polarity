@@ -9,7 +9,7 @@ namespace Polarity {
 
 class MagneticBehavior : public Behavior {
 public:
-    void tick(World * world, GameObject* obj){
+    void tick(World * world, GameObject* obj) override {
         if (obj == world->player) {
             return;
         }

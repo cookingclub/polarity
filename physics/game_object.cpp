@@ -1,5 +1,4 @@
 #include "world/world.hpp"
-#include "world/trigger.hpp"
 #include "graphics/animation.hpp"
 
 using namespace std;
@@ -27,14 +26,9 @@ GameObject::GameObject(const std::shared_ptr<Canvas> &canvas, World *world, Beha
     groundBody = world->getPhysicsWorld()->CreateBody(&bdef);
     groundBody->SetUserData(this);
     for (auto &fixture : fixtures) {
-        Trigger* trig = static_cast<Trigger*const>(fixture.userData);
-        if (trig) {
-            trig->setOwner(this);
-        }
         groundBody->CreateFixture(&fixture);
     }
     jumpCooldown = -1;
-    collidable = true; // deprecated: use b2FixtureDef::isSensor
 
     idle = nullptr;
 
@@ -101,6 +95,18 @@ void GameObject::tick(World *world) {
     }
 }
 
+void GameObject::onBeginCollision(World *world, b2Contact *contact) {
+    if (behavior) {
+        behavior->onBeginCollision(world, this, contact);
+    }
+}
+
+void GameObject::onEndCollision(World *world, b2Contact *contact) {
+    if (behavior) {
+        behavior->onEndCollision(world, this, contact);
+    }
+}
+
 b2AABB GameObject::getBounds() const{
     b2Transform transform;
     transform.SetIdentity();
@@ -161,14 +167,6 @@ float GameObject::polarityForceMultiplier(Charge a, Charge b) {
     }
 }
 GameObject::~GameObject() {
-    b2Fixture* fixture = groundBody->GetFixtureList();
-    while (fixture != nullptr) {
-        const Trigger * trigger = static_cast<Trigger*>(fixture->GetUserData());
-        if (trigger != nullptr) {
-            delete trigger;
-        }
-        fixture = fixture->GetNext();
-    }
     std::shared_ptr<World> world(wworld.lock());
     if (world) {
         world->getPhysicsWorld()->DestroyBody(groundBody);    
