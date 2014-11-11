@@ -2848,6 +2848,7 @@
   <object name="door" type="door" x="1312" y="416" width="128" height="160">
    <properties>
     <property name="door" value="door"/>
+    <property name="level" value="assets/levels/level2.tmx"/>
     <property name="open" value="assets/graphics/door_frame-13.png"/>
    </properties>
   </object>

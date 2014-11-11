@@ -86,6 +86,13 @@ public:
         return static_cast<GameObject*>(
                 remoteFixture(contact)->GetBody()->GetUserData());
     }
+    std::string getProperty(const std::string &key) const {
+        auto it = properties.find(key);
+        if (it == properties.end()) {
+            return std::string();
+        }
+        return it->second;
+    }
     const std::string& getName() const { return name; }
     b2Body*groundBody;
     float printPosition();

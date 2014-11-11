@@ -6,9 +6,13 @@
 namespace Polarity {
 
 class DoorBehavior : public Behavior {
+
+    std::shared_ptr<World> newWorld;
+
     void onBeginCollision(World *world, GameObject *self, b2Contact* contact) override;
     void onEndCollision(World *world, GameObject *self, b2Contact* contact) override;
-public:
+
+    void tick(World *world, GameObject *self) override;
 };
 
 }

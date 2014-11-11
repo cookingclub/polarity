@@ -18,7 +18,8 @@ std::shared_ptr<World> world;
 
 World::World(const shared_ptr<Canvas> &canvas, std::shared_ptr<AudioChannelPlayer> _audioPlayer,
             shared_ptr<PlayerState> _playerState, shared_ptr<GameState> _gameState)
-        : physics(b2Vec2(0.0f, -10.0f)),
+        : loaded(false),
+        physics(b2Vec2(0.0f, -10.0f)),
         graphicsScale(b2Vec2(96, 96)),
         camera(0, 300), //FIXME hard coded
         contactListener(this),
@@ -42,8 +43,20 @@ void World::init(const shared_ptr<Canvas> &canvas, shared_ptr<AudioChannelPlayer
     World *w = new World(canvas, audioPlayer, playerState, gameState);
     std::shared_ptr<World> sworld(w);
     w->wthis = sworld;
-    world = sworld;
     w->load(tmxFile);
+    switchToWorld(sworld);
+}
+
+std::shared_ptr<World> World::loadNewWorld(const std::string& tmxFile) {
+    World *w = new World(graphicsContext, fAudioPlayer, fPlayerState, fGameState);
+    std::shared_ptr<World> sworld(w);
+    w->wthis = sworld;
+    w->load(tmxFile);
+    return sworld;
+}
+
+void World::switchToWorld(shared_ptr<World> newWorld) {
+    world = newWorld;
 }
 
 void World::addObject(Behavior *behavior, const b2BodyDef&bdef, const std::vector<b2FixtureDef>&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties) {
@@ -120,19 +133,7 @@ void World::updateCamera(GameObject *obj, b2Vec2 player) {
 }
 
 void World::tick() {
-    if (keyState['a']) {
-        camera.x -=1;
-    }
-    if (keyState['d']) {
-        camera.x +=1;
-    }
-    if (keyState['w']) {
-        camera.y +=1;
-    }
-    if (keyState['s']) {
-        camera.y -=1;
-    }
-    
+
     // timeStep, velocityIterations, positionIterations
     physics.Step(0.0166666, 8, 4);
     for (auto &obj : objects) {
@@ -246,6 +247,7 @@ void World::finalizeLoad(const std::weak_ptr<World> &weakThis,
                 std::cerr << "object name = " << oit.name << std::endl;
             }
         }
+        world->loaded = true;
     }
 
 }

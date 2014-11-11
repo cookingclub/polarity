@@ -4244,6 +4244,7 @@
    <properties>
     <property name="idle" value="assets/graphics/door_frame-01.png"/>
     <property name="open" value="assets/graphics/door_frame-13.png"/>
+    <property name="level" value="assets/levels/level3a.tmx"/>
    </properties>
   </object>
   <object type="start" x="128" y="416" width="64" height="160">

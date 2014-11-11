@@ -19,6 +19,7 @@ namespace Polarity {
 class Canvas;
 
 class World {
+    bool loaded;
     b2World physics;
     b2Vec2 graphicsScale;
     b2Vec2 camera;
@@ -46,8 +47,9 @@ public:
     }
     void updateCamera(GameObject *obj, b2Vec2 player);
     static void init(const shared_ptr<Canvas> &canvas, shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState);
+    shared_ptr<World> loadNewWorld(const std::string& tmxFile);
+    static void switchToWorld(shared_ptr<World> newWorld);
     World(const shared_ptr<Canvas> &canvas, std::shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> _playerState, shared_ptr<GameState> _gameState);
-    void load(const std::string& tmxFile);
     void addObject(Behavior*behavior, const b2BodyDef&, const std::vector<b2FixtureDef>&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties);
     void tick();
     void draw(Canvas *screen);
@@ -61,11 +63,10 @@ public:
         return graphicsContext;
     }
     class TmxMapWrapper;
-    static void load_async(const std::weak_ptr<World> &weakThis, const std::string &tmxFile,
-                           const char * data, int size);
-    static void finalizeLoad(const std::weak_ptr<World> &weakThis,
-                             const std::string &tmxFile,
-                             TmxMapWrapper *data);
+
+    bool isLoaded() const {
+        return loaded;
+    }
 
     vector<bool> getKeyState() const {
         return keyState;
@@ -93,6 +94,14 @@ public:
     b2World *getPhysicsWorld() {
         return &physics;
     }
+
+private:
+    void load(const std::string& tmxFile);
+    static void load_async(const std::weak_ptr<World> &weakThis, const std::string &tmxFile,
+                           const char * data, int size);
+    static void finalizeLoad(const std::weak_ptr<World> &weakThis,
+                             const std::string &tmxFile,
+                             TmxMapWrapper *data);
 };
 extern std::shared_ptr<World> world;
 }

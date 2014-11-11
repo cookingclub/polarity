@@ -45,7 +45,7 @@ void PlayerBehavior::tick(World *world, GameObject *obj) {
     // get the vectors for L, R, U (this is 3x redundant but easy)
     b2Vec2 forceDirectionR = phyobj->GetWorldVector( b2Vec2(1,0) );
     b2Vec2 forceDirectionL = phyobj->GetWorldVector( b2Vec2(-1,0) );
-    b2Vec2 forceDirectionU = phyobj->GetWorldVector( b2Vec2(0,1) );
+    b2Vec2 forceDirectionU = phyobj->GetWorldVector( b2Vec2(0,1.5) );
 
     if (left) {
         obj->setAction(GameObject::WALK);

@@ -50,6 +50,8 @@ void loadAssets() {
 bool loopIter(Canvas *screen) {
     SDL_Event event;
     std::vector<int> keyUps;
+    // Maintain a strong reference to world so we can handle world changes.
+    std::shared_ptr<World> currentWorldRef (world);
     // SDL_FillRect(screen, NULL, 0xffffffff);
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
