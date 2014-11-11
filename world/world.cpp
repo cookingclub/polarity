@@ -44,7 +44,7 @@ void World::init(const shared_ptr<Canvas> &canvas, shared_ptr<AudioChannelPlayer
     std::shared_ptr<World> sworld(w);
     w->wthis = sworld;
     w->load(tmxFile);
-    switchToWorld(sworld);
+    world = sworld;
 }
 
 std::shared_ptr<World> World::loadNewWorld(const std::string& tmxFile) {
@@ -55,8 +55,15 @@ std::shared_ptr<World> World::loadNewWorld(const std::string& tmxFile) {
     return sworld;
 }
 
-void World::switchToWorld(shared_ptr<World> newWorld) {
-    world = newWorld;
+void World::setBackgroundWorld(shared_ptr<World> newWorld) {
+    backgroundWorld = newWorld;
+}
+
+void World::switchToBackgroundWorld() {
+    if (backgroundWorld) {
+        world = backgroundWorld;
+        backgroundWorld.reset();
+    }
 }
 
 void World::addObject(Behavior *behavior, const b2BodyDef&bdef, const std::vector<b2FixtureDef>&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties) {
@@ -143,6 +150,9 @@ void World::tick() {
 }
 
 void World::draw(Canvas *screen) {
+    if (backgroundWorld) {
+        backgroundWorld->draw(screen);
+    }
     if (layers) {
         for (auto& layer : layers->layers) {
             layer->draw(screen, -camera.x, -camera.y);

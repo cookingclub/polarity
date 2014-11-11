@@ -65,6 +65,9 @@ public:
     void setPolarity(Charge polarity) { polarityCharge = polarity; }
     void flipPolarity() { setPolarity((Charge)-getPolarity()); }
     void setAction(Actions a);
+    Actions getAction() {
+        return currentAction;
+    }
     b2AABB getBounds()const;
     virtual void tick(World*world);
     void draw(World * world, Canvas* surface);

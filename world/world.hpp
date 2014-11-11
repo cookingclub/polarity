@@ -36,6 +36,7 @@ class World {
 
     shared_ptr<Canvas> graphicsContext;
 
+    std::shared_ptr<World> backgroundWorld;
     std::weak_ptr<World> wthis;
 public:
     virtual ~World();
@@ -48,7 +49,8 @@ public:
     void updateCamera(GameObject *obj, b2Vec2 player);
     static void init(const shared_ptr<Canvas> &canvas, shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState);
     shared_ptr<World> loadNewWorld(const std::string& tmxFile);
-    static void switchToWorld(shared_ptr<World> newWorld);
+    void setBackgroundWorld(shared_ptr<World> newWorld);
+    void switchToBackgroundWorld();
     World(const shared_ptr<Canvas> &canvas, std::shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> _playerState, shared_ptr<GameState> _gameState);
     void addObject(Behavior*behavior, const b2BodyDef&, const std::vector<b2FixtureDef>&fixture, const std::string &name, GameObject::Type type, const PropertyMap &properties);
     void tick();

@@ -2,12 +2,17 @@
 #include "world/world.hpp"
 #include "physics/game_object.hpp"
 
+#include "SDL/SDL.h" // SDL_GetTicks()
+
 namespace Polarity {
 
 void DoorBehavior::onBeginCollision(World *world, GameObject *self, b2Contact* contact) {
-    if (self->remoteObject(contact)->getType() == GameObject::PLAYER) {
+    GameObject *other = self->remoteObject(contact);
+    if (other->getType() == GameObject::PLAYER) {
+        ticksToNewWorld = (int) SDL_GetTicks() + 800;
         self->setAction(GameObject::OPEN);
-        World::switchToWorld(newWorld);
+        other->setAction(GameObject::OPEN);
+        world->setBackgroundWorld(newWorld);
         //other->groundBody->SetGravityScale(0);
         //other->groundBody->SetLinearVelocity(
         //        (other->groundBody->GetPosition() - owner->groundBody->GetPosition()));
@@ -16,9 +21,6 @@ void DoorBehavior::onBeginCollision(World *world, GameObject *self, b2Contact* c
 }
 
 void DoorBehavior::onEndCollision(World *world, GameObject *self, b2Contact* contact) {
-    if (self->remoteObject(contact)->getType() == GameObject::PLAYER) {
-        self->setAction(GameObject::IDLE);
-    }
 }
 
 void DoorBehavior::tick(World *world, GameObject *self) {
@@ -26,6 +28,12 @@ void DoorBehavior::tick(World *world, GameObject *self) {
         std::string dest = self->getProperty("level");
         if (!dest.empty()) {
             newWorld = world->loadNewWorld(dest);
+        }
+    }
+    if (self->getAction() == GameObject::OPEN) {
+        if ((int)SDL_GetTicks() > ticksToNewWorld && newWorld->isLoaded()) {
+            world->switchToBackgroundWorld();
+            self->setAction(GameObject::IDLE);
         }
     }
 }

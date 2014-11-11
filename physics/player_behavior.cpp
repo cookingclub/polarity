@@ -47,7 +47,9 @@ void PlayerBehavior::tick(World *world, GameObject *obj) {
     b2Vec2 forceDirectionL = phyobj->GetWorldVector( b2Vec2(-1,0) );
     b2Vec2 forceDirectionU = phyobj->GetWorldVector( b2Vec2(0,1.5) );
 
-    if (left) {
+    bool immobile = obj->getAction() == GameObject::OPEN;
+
+    if (left && !immobile) {
         obj->setAction(GameObject::WALK);
         phyobj->ApplyLinearImpulse( forceDirectionL, phyobj->GetWorldCenter(), true); // moves backwards
         //phyobj->ApplyLinearImpulse( b2Vec2(-1,0), phyobj->GetWorldCenter(), true);
@@ -55,7 +57,7 @@ void PlayerBehavior::tick(World *world, GameObject *obj) {
     }
 
     
-   if (jump && obj->isJumpable()) {
+   if (jump && !immobile && obj->isJumpable()) {
 //      phyobj->ApplyForce( b2Vec2(0,50), phyobj->GetWorldCenter(), true);
 //      b2ContactEdge* contact = phyobj->GetContactList();
 //      b2Contact* contact = phyobj->GetContactList();
@@ -69,18 +71,21 @@ void PlayerBehavior::tick(World *world, GameObject *obj) {
         world->audio()->playChannel("jump", 0);
 //        }
     }
-    if (right) {
+    if (right && !immobile) {
         obj->setAction(GameObject::WALK);
         phyobj->ApplyLinearImpulse( forceDirectionR, phyobj->GetWorldCenter(), true);
         //phyobj->ApplyLinearImpulse( b2Vec2(1,0), phyobj->GetWorldCenter(), true);
         world->audio()->playChannel("step-stone", -1);
     }
     b2Vec2 vel = phyobj->GetLinearVelocity();
-    if (vel.LengthSquared() < .1) { // and contact
+    if (vel.LengthSquared() < .1 && !immobile) { // and contact
         obj->setAction(GameObject::IDLE);
     }
     if (abs(vel.x) > MAX_VELOCITY) {
         phyobj->SetLinearVelocity(b2Vec2(MAX_VELOCITY * vel.x / abs(vel.x), vel.y));
+    }
+    if (immobile) {
+        phyobj->SetLinearVelocity(b2Vec2(0, vel.y));
     }
     if (toggleMute) {
         cerr << "Toggling music mute" << endl;
@@ -90,7 +95,7 @@ void PlayerBehavior::tick(World *world, GameObject *obj) {
             world->audio()->stopChannel("black-music");
         } else {
             world->audio()->playChannel("white-music");
-            world->audio()->playChannel("black-music");            
+            world->audio()->playChannel("black-music");
         }
     }
 
