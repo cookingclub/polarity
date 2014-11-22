@@ -1,12 +1,18 @@
 #ifndef POLARITY_GRAPHICS_SDL_CANVAS_HPP__
 #define POLARITY_GRAPHICS_SDL_CANVAS_HPP__
+#ifdef USE_SDL2
+#include "SDL2/SDL_version.h"
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_video.h"
+#else
+#include "SDL/SDL_version.h"
 #include "SDL/SDL.h"
 #include "SDL/SDL_video.h"
 #include "SDL/SDL_image.h"
 #include "SDL/SDL_ttf.h"
 #include "SDL/SDL_mixer.h"
 #include "SDL/SDL_rotozoom.h"
-
+#endif
 #include "image.hpp"
 #include "canvas.hpp"
 #include "display_list.hpp"
@@ -67,13 +73,19 @@ class SDLImage : public Image {
                 } else {
                     std::cerr << "Unable to lock surface " << filename << std::endl;
                 }
+                thus->w = image->width;
+                thus->h = image->height;
                 //tmpImage = IMG_Load(filename.c_str());
                 if (!tmpImage) {
                     thus->stage = FAILED;
                 } else {
                     //thus->surf = SDL_ConvertSurface(tmpImage, canvas->surface->pixels, 0);
+#if SDL_MAJOR_VERSION >= 2
+                    thus->surf = tmpImage;
+#else
                     thus->surf = SDL_DisplayFormatAlpha(tmpImage);
                     SDL_FreeSurface(tmpImage);
+#endif
                     thus->stage = COMPLETE;
                 }
             }
@@ -91,8 +103,11 @@ class SDLImage : public Image {
     }
 public:
     //    explicit SDLImage(SDL_Surface* surf) : surf(surf) {}
-    SDLImage(const std::string&filename) : Image(filename) {
+    SDLImage(const std::string&filename) : Image(filename), w(0), h(0) {
         surf = nullptr;
+#if SDL_MAJOR_VERSION >= 2
+        texture = nullptr;
+#endif
         if (!filename.empty()) {
             downloadAndLoad();
         }
@@ -101,10 +116,15 @@ public:
         if (surf != nullptr) {
             SDL_FreeSurface(surf);
         }
+#if SDL_MAJOR_VERSION >= 2
+        if (texture != nullptr) {
+            SDL_DestroyTexture(texture);
+        }
+#endif
     }
 
-    virtual int width() { return surf ? surf->w : 0; }
-    virtual int height() { return surf ? surf->h : 0; }
+    virtual int width() { return w; }
+    virtual int height() { return h; }
     virtual void enableAlphaBlend() {
         if (surf != nullptr) {
 #ifdef SDL_SRCALPHA
@@ -124,24 +144,80 @@ public:
         }
     }
 private:
+    int w;
+    int h;
     SDL_Surface *surf;
+#if SDL_MAJOR_VERSION >= 2
+    // either surf or texture will be null
+    SDL_Texture *texture;
+#else
+    void *dummy; // to keep same struct size
+#endif
+};
+
+class SDLContext {
+public:
+    SDLContext(const SDLContext&) = delete;
+    SDLContext& operator=(const SDLContext&) = delete;
+#if SDL_MAJOR_VERSION >= 2
+    SDLContext():window(nullptr), renderer(nullptr) {}
+    ~SDLContext() {
+        if (renderer != nullptr) {
+            SDL_DestroyRenderer(renderer);
+        }
+        if (window != nullptr) {
+            SDL_DestroyWindow(window);
+        }
+    }
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+#else
+    SDLContext() {}
+    void *dummyA;
+    void *dummyB;
+#endif
 };
 
 class SDLCanvas : public Canvas {
 public:
-    SDLCanvas(SDL_Surface* surf)
-        : screen(surf) {
+#if SDL_MAJOR_VERSION >= 2
+    typedef SDL_Texture SDLRenderTargetType;
+#else
+    typedef SDL_Surface SDLRenderTargetType;
+#endif
+    SDLCanvas(
+              SDLRenderTargetType*surf,
+              int width,
+              int height,
+              SDLCanvas *parent) : screen(surf), context(parent->context) {
+        w = width;
+        h = height;
     }
-    SDLCanvas(int width, int height) {
+    SDLCanvas(int width, int height) : w(width), h(height), context(new SDLContext()) {
+#if SDL_MAJOR_VERSION >= 2
+        context->window = SDL_CreateWindow("Polarity",
+            SDL_WINDOWPOS_UNDEFINED,
+            SDL_WINDOWPOS_UNDEFINED,
+            width, height,
+            SDL_WINDOW_INPUT_GRABBED | SDL_WINDOW_RESIZABLE);
+        context->renderer = SDL_CreateRenderer(context->window, -1, 0);
+#else
         screen = SDL_SetVideoMode(
                 width, height, 0,
                 SDL_HWSURFACE | SDL_RESIZABLE);
+#endif
     }
     ~SDLCanvas() {
+#if SDL_MAJOR_VERSION >= 2
+        if (screen != nullptr) {
+            SDL_DestroyTexture(screen);
+        }
+#else
         SDL_FreeSurface(screen);
+#endif
     }
-    virtual int width() { return screen->w; }
-    virtual int height() { return screen->h; }
+    virtual int width() { return w; }
+    virtual int height() { return h; }
 
 private:
     static SDL_Rect rectToSDL(const Rect& rect) {
@@ -209,7 +285,7 @@ public:
     class SDLImageCacheDisplayList : public SDLDisplayList {
         Rect bounds;
         std::unique_ptr<SDLCanvas> cache;
-        static SDLCanvas * makeBlankDrawableSurface(int w, int h) {
+        static SDLCanvas * makeBlankDrawableSurface(int w, int h, SDLCanvas *parent) {
             unsigned char rmask[4] = {0xff,0x0,0x0,0x0};
             unsigned char gmask[4] = {0x0,0xff,0x0,0x0};
             unsigned char bmask[4] = {0x0,0x0,0xff,0x0};
@@ -219,6 +295,16 @@ public:
             memcpy(&mask[1], gmask, 4);
             memcpy(&mask[2], bmask, 4);
             memcpy(&mask[3], amask, 4);
+#if SDL_MAJOR_VERSION >= 2
+            SDLCanvas * retval = new SDLCanvas(SDL_CreateTexture(parent->context->renderer,
+                                                                 SDL_PIXELFORMAT_ABGR8888,
+                                                                 SDL_TEXTUREACCESS_TARGET,
+                                                                 w,
+                                                                 h),
+                                               w,
+                                               h,
+                                               parent);
+#else
             SDL_Surface *tmpImage = SDL_CreateRGBSurface(0, //FLAGS
                                  w,
                                  h,
@@ -227,8 +313,9 @@ public:
                                  mask[1],
                                  mask[2],
                                  mask[3]);
-            SDLCanvas * retval = new SDLCanvas(SDL_DisplayFormatAlpha(tmpImage));
+            SDLCanvas * retval = new SDLCanvas(SDL_DisplayFormatAlpha(tmpImage), w, h, parent);
             SDL_FreeSurface(tmpImage);
+#endif
             return retval;
         }
     public:
@@ -238,7 +325,7 @@ public:
                                   const Rect &bound)
             : SDLDisplayList(canvas, image, lst),
               bounds(bound),
-              cache(makeBlankDrawableSurface(bound.w, bound.h)) {
+              cache(makeBlankDrawableSurface(bound.w, bound.h, canvas)) {
             loadImage();
         }
         ~SDLImageCacheDisplayList(){
@@ -264,9 +351,15 @@ public:
             SDL_Rect full;
             full.x = 0;
             full.y = 0;
-            full.w = cache->screen->w;
-            full.h = cache->screen->h;
+            full.w = cache->width();
+            full.h = cache->height();
+#if SDL_MAJOR_VERSION >= 2
+            SDL_SetRenderTarget(cache->context->renderer, cache->screen);
+            SDL_RenderClear(cache->context->renderer);
+            SDL_SetRenderTarget(cache->context->renderer, cache->screen);
+#else
             SDL_FillRect(cache->screen, &full, 0);
+#endif
             loadImage();
         }
         void attach(const std::shared_ptr<Image> &newImage) {
@@ -278,13 +371,18 @@ public:
             SDL_Rect dest;
             src.x = 0;
             src.y = 0;
-            src.w = cache->screen->w;
-            src.h = cache->screen->h;
+            src.w = cache->width();
+            src.h = cache->height();
             dest.x = static_cast<int>(x + bounds.x);
             dest.y = static_cast<int>(y + bounds.y);
             dest.w = src.w;
             dest.h = src.h;
+#if SDL_MAJOR_VERSION >= 2
+            SDL_RenderCopy(static_cast<SDLCanvas*>(canvas)->context->renderer,
+                           cache->screen, &src, &dest);
+#else
             SDL_BlitSurface(cache->screen, &src, static_cast<SDLCanvas*>(canvas)->screen, &dest);
+#endif
         }
     };
     virtual DisplayList *makeDisplayList(const std::shared_ptr<Image> &image,
@@ -307,12 +405,8 @@ public:
                             float centerX, float centerY,
                             float scaleX, float scaleY,
                             float angle) {
-        SDLImage* sdl_image = static_cast<SDLImage*>(image);
-        SDL_Surface * surf = sdl_image->surf;
-        if (!surf) {
-            return;
-        }
-        drawSpriteSrc(image, Rect(0, 0, surf->w, surf->h),
+        //SDLImage* sdl_image = static_cast<SDLImage*>(image);
+        drawSpriteSrc(image, Rect(0, 0, image->width(), image->height()),
                       centerX, centerY, scaleX, scaleY, angle);
     }
     void drawSpriteSrc(Image *image,
@@ -323,13 +417,44 @@ public:
         if (!image->isLoaded()) {
             return;
         }
+        SDLImage* sdl_image = static_cast<SDLImage*>(image);
         if (similar(angle, 0, 3.1415926536 / 180.0)) {
             angle = 0; // if something is almost straight up: just optimize
         }
-        SDLImage* sdl_image = static_cast<SDLImage*>(image);
+#if SDL_MAJOR_VERSION >= 2
+        if (sdl_image->surf) {
+            sdl_image->texture = SDL_CreateTextureFromSurface(context->renderer, sdl_image->surf);
+            SDL_FreeSurface(sdl_image->surf);
+            sdl_image->surf = nullptr;
+        }
+        if (!sdl_image->texture) {
+            return;
+        }
+        if (screen) {
+            SDL_SetRenderTarget(context->renderer, screen);
+        }
+        SDL_Rect sdlsrc(SDLCanvas::rectToSDL(src));
+        SDL_Rect sdldest;
+        sdldest.x = centerX - scaleX / 2;
+        sdldest.y = centerY - scaleY / 2;
+        sdldest.w = sdlsrc.w;
+        sdldest.h = sdlsrc.h;
+        if (angle == 0) {
+            SDL_RenderCopy(context->renderer, sdl_image->texture, &sdlsrc, &sdldest);
+        } else {
+            SDL_RenderCopyEx(context->renderer, sdl_image->texture, &sdlsrc, &sdldest,
+                             angle, NULL, SDL_FLIP_NONE);
+        }
+        if (screen) {
+            SDL_SetRenderTarget(context->renderer, NULL);
+        }
+#else
         SDL_Surface * surf = sdl_image->surf;
+        if (!surf) {
+            return;
+        }
         if (angle == 0 && scaleX == src.w && scaleY == src.h) {
-            SDL_Rect sdlsrc (rectToSDL(src));
+            SDL_Rect sdlsrc (SDLCanvas::rectToSDL(src));
             SDL_Rect sdldest;
             sdldest.x = centerX - scaleX / 2;
             sdldest.y = centerY - scaleY / 2;
@@ -363,33 +488,8 @@ public:
         if ((angle == 0 && zoom != 1.0) || !SDLCanvas::similar(scaleX * surf->h, scaleY * surf->w,
                                                                0.25f * (surf->h + surf->w))) {
             SDL_Surface *tmpImage = nullptr;
-#if 0
-            // for some reason SDL doesn't support stretchBlit but does support zoom
-            tmpImage = SDL_CreateRGBSurface(0, //FLAGS
-                                                         scaleX,
-                                                         scaleY,
-                                                         surf->format->BytesPerPixel * 8,
-                                                         surf->format->Rmask,
-                                                         surf->format->Gmask,
-                                                         surf->format->Bmask,
-                                                         surf->format->Amask);
-            if (tmpImage->format->format != surf->format->format) {
-                std::cerr << "Made RGB surface the same way and got different format "
-                          << tmpImage->format->format << " != " << surf->format->format
-                          << std::endl;
-            }
-            SDL_Rect srcr;
-            SDL_Rect dstr;
-            srcr.x = 0; srcr.y = 0;
-            srcr.w = surf->w; srcr.h = surf->h;
-            dstr.x = 0; dstr.y = 0;
-            dstr.w = tmpImage->w; dstr.h = tmpImage->h;
-            SDL_SoftStretch(surf, &srcr, tmpImage, &dstr);
-            std::cerr << "Soft stretch not supported" << std::endl;
-#else
             // std::cerr<< "Zoom " <<scaleX / surf->w<<","<< scaleY / surf->h << std::endl;
             tmpImage = zoomSurface(surf, scaleX / surf->w, scaleY / surf->h, true);
-#endif
             if (surf != sdl_image->surf) {
                 SDL_FreeSurface(surf); // this is if asymmetric zoom was necessary
             }
@@ -420,14 +520,42 @@ public:
         if (surf != sdl_image->surf) {
             SDL_FreeSurface(surf); // this is if asymmetric zoom was necessary
         }
-    }
-    virtual void swapBuffers() {
-#ifndef EMSCRIPTEN
-        SDL_Flip(screen);
 #endif
     }
+    virtual void beginFrame() {
+#if SDL_MAJOR_VERSION >= 2
+        if (screen == nullptr) {
+            SDL_GetWindowSize(context->window,
+                              &w, &h);
+        } else {
+            int access; Uint32 format;
+            SDL_QueryTexture(screen,
+                             &format, &access, &w, &h);
 
+        }
+#else
+        w = screen->w;
+        h = screen->h;
+#endif
+    }
+    virtual void endFrame() {
+#if SDL_MAJOR_VERSION >= 2
+        if (screen == nullptr) {
+            SDL_RenderPresent(context->renderer);
+        }
+#else
+# ifndef EMSCRIPTEN
+        SDL_Flip(screen);
+# endif
+#endif
+    }
+#if SDL_MAJOR_VERSION >= 2
+    SDL_Texture* screen;
+#else
     SDL_Surface* screen;
+#endif
+    int w, h;
+    std::shared_ptr<SDLContext> context;
 };
 
 }

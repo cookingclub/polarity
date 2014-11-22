@@ -5,12 +5,17 @@
 #else
 #include <GL/gl.h>
 #endif
+#ifdef USE_SDL2
+#include "SDL2/SDL_version.h"
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_video.h"
+#else
 #include "SDL/SDL.h"
 #include "SDL/SDL_video.h"
 #include "SDL/SDL_image.h"
 #include "SDL/SDL_ttf.h"
 #include "SDL/SDL_mixer.h"
-
+#endif
 #include "display_list.hpp"
 #include "image.hpp"
 #include "canvas.hpp"
@@ -101,7 +106,8 @@ public:
 
     virtual void drawDisplayList(const DisplayList *dl, int x, int y);
 
-    virtual void swapBuffers();
+    virtual void beginFrame();
+    virtual void endFrame();
 
     virtual void clear();
 
@@ -113,7 +119,15 @@ public:
     GLuint sampTexture;
     int buf;
     GLuint program;
+    int w;
+    int h;
+#if SDL_MAJOR_VERSION >= 2
+    SDL_Window *window;
+    SDL_GLContext renderer;
+#else
     SDL_Surface* screen;
+    void *dummy;
+#endif
     std::set<OpenGLDisplayList*> displayLists;
 };
 

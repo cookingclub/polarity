@@ -7,8 +7,7 @@ namespace Polarity {
 class World;
 
 class ContactListener : public b2ContactListener {
-
-    World *world;
+    World * world;
 public:
     ContactListener(World* world);
 

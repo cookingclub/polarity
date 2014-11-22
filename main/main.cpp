@@ -183,11 +183,12 @@ void mainThreadCallback(const std::function<void()>&&function) {
 
 #ifdef EMSCRIPTEN
 void emLoopIter() {
+    screen->beginFrame();
     screen->clear();
     if (!loopIter(screen.get())) {
         SDL_Quit();
     }
-    screen->swapBuffers();
+    screen->endFrame();
 }
 
 void mainloop() {
@@ -245,12 +246,15 @@ int main(int argc, char**argv) {
         cerr << "Failed to init SDL" << endl;
         return 1;
     }
-
+#if 0
     if (TTF_Init()) {
         cerr << "Failed to init TTF" << endl;
         return 1;
     }
+#endif
+#if SDL_MAJOR_VERSION < 2
     SDL_EnableUNICODE(SDL_ENABLE);
+#endif
     if (Mix_OpenAudio(AUDIO_RATE, AUDIO_S16, 2, 4096)) {
         cerr << "Failed to init Audio" << endl;
         //return 1;

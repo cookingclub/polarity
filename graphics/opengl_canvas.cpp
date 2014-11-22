@@ -28,7 +28,6 @@ void onContextRestored() {
 #endif
 
 namespace Polarity {
-#ifdef EMSCRIPTEN
 OpenGLDisplayList::OpenGLDisplayList(
         OpenGLCanvas *canvas,
         const std::vector<Image::BlitDescription> &blits)
@@ -357,15 +356,25 @@ void main() {\n\
     glUniform1i(sampTextureLocation, 0);
 }
 
-OpenGLCanvas::OpenGLCanvas(int width, int height) {
+OpenGLCanvas::OpenGLCanvas(int width, int height): w(width), h(height) {
     SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 8 );
     SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 8 );
     SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 8 );
     SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
     SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+#if SDL_MAJOR_VERSION >= 2
+    window = SDL_CreateWindow("Polarity",
+                              SDL_WINDOWPOS_UNDEFINED,
+                              SDL_WINDOWPOS_UNDEFINED,
+                              640, 480,
+                              SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+    renderer = SDL_GL_CreateContext(window);
+    SDL_GL_GetDrawableSize(window, &w, &h);
+#else
     screen = SDL_SetVideoMode(
         width, height, 0,
         SDL_HWSURFACE | SDL_RESIZABLE | SDL_OPENGL );
+#endif
     reinitialize();
     allCanvases.insert(this);
 }
@@ -375,6 +384,9 @@ OpenGLCanvas::~OpenGLCanvas() {
     if (it != allCanvases.end()) {
         allCanvases.erase(it);
     }
+#if SDL_MAJOR_VERISON >= 2
+    SDL_GL_DeleteContext(context);
+#endif
 }
 
 void OpenGLCanvas::reinitialize() {
@@ -387,11 +399,11 @@ void OpenGLCanvas::reinitialize() {
 }
 
 int OpenGLCanvas::width() {
-    return screen->w;
+    return w;
 }
 
 int OpenGLCanvas::height() {
-    return screen->h;
+    return h;
 }
 
 OpenGLImage *OpenGLCanvas::loadImage(const std::string &filename) {
@@ -456,10 +468,31 @@ void OpenGLCanvas::clear() {
     glClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
     glFlush();
 }
-
-void OpenGLCanvas::swapBuffers() {
-    glFlush();
-    SDL_GL_SwapBuffers();
-}
+void OpenGLCanvas::beginFrame() {
+#if SDL_MAJOR_VERSION >= 2
+    int screenw = 0, screenh =0;
+    SDL_GL_GetDrawableSize(window, &screenw, &screenh);
+    if (w != screenw || h != screenh) {
+        w = screenw;
+        h = screenh;
+        glViewport(0, 0, w, h);
+    }
+#else
+    if (w != screen->w || h != screen->h) {
+        w = screen->w;
+        h = screen->h;
+        glViewport(0, 0, w, h);
+    }
 #endif
 }
+void OpenGLCanvas::endFrame() {
+    glFlush();
+#if SDL_MAJOR_VERSION >= 2
+    SDL_GL_SwapWindow(window);
+#else
+    SDL_GL_SwapBuffers();
+#endif
+}
+
+}
+
