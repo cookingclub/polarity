@@ -89,7 +89,30 @@
         }
       };
       Module.setStatus('Downloading...');
+
+      document.getElementById('canvas').addEventListener("webglcontextlost",function(e) {
+        e.preventDefault();
+        Module._onContextLost();
+      },true);
+      document.getElementById('canvas').addEventListener("webglcontextrestored",function(e) {
+        Module._onContextRestored();
+      },true);
+
+      function getLoseContextExtension() {
+        return document.getElementById('canvas').getContext("webgl").getExtension("WEBGL_lose_context");
+      }
+      function loseContext() {
+        window.losecontext = getLoseContextExtension();
+        losecontext.loseContext();
+      }
+      function restoreContext() {
+        losecontext.restoreContext();
+      }
     </script>
     <script async type="text/javascript" src="polarity.js"></script>
+    <br />
+    <button onclick="loseContext()">Lose context</button>
+    <button onclick="restoreContext();">Restore context</button>
+    <button onclick="loseContext(); setTimeout(function(){restoreContext()},0);">Lose and restore context</button>
   </body>
 </html>

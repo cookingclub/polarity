@@ -290,7 +290,7 @@ public:
     virtual DisplayList *makeDisplayList(const std::shared_ptr<Image> &image,
                                          const std::vector<Image::BlitDescription> &draws,
                                          const Rect&bounds) {
-        if (bounds.w && bounds.h) {
+        if (false && bounds.w && bounds.h) {
             return new SDLImageCacheDisplayList(this, image, draws, bounds);
         } else {
             return new SDLDisplayList(this, image, draws);

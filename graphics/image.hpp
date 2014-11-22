@@ -64,6 +64,7 @@ public:
 
     virtual ~Image() {}
 
+    static void forEachImage(std::function<void(const std::shared_ptr<Image>&)> func);
     static std::shared_ptr<Image> get(Canvas *canvas, const std::string &filename);
     void draw(Canvas *screen, int x, int y, float angle);
     struct BlitDescription {

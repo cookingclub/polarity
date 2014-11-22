@@ -8,6 +8,16 @@
 namespace Polarity {
 
 std::unordered_map<std::string, std::weak_ptr<Image>> imagesCache;
+
+void Image::forEachImage(std::function<void(const std::shared_ptr<Image>&)> func) {
+    for (auto val : imagesCache) {
+        std::shared_ptr<Image> img = val.second.lock();
+        if (img) {
+            func(img);
+        }
+    }
+}
+
 std::shared_ptr<Image> Image::getValidImage(const std::string &filename) {
     auto where = imagesCache.find(filename);
     if (where != imagesCache.end()) {

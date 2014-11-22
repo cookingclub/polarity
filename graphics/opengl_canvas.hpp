@@ -15,7 +15,11 @@
 #include "image.hpp"
 #include "canvas.hpp"
 
+#include <set>
+
 namespace Polarity {
+
+class OpenGLCanvas;
 
 class OpenGLImage : public Image {
     friend class OpenGLCanvas;
@@ -24,6 +28,8 @@ public:
     virtual ~OpenGLImage();
 
     void downloadAndLoad();
+    void reload();
+    static void reloadImage(const std::shared_ptr<Image> &image);
     static void loadImageOpenGL(Image *super, const std::string &filename,
                          const std::shared_ptr<DecodedImage> &image);
 
@@ -44,12 +50,17 @@ private:
 class OpenGLDisplayList : public DisplayList {
     std::vector<Image::BlitDescription> blits;
     std::shared_ptr<OpenGLImage> image;
+    OpenGLCanvas *canvas;
     GLuint vbo;
     mutable bool uploaded;
 
     void uploadVertexArray() const;
 public:
-    OpenGLDisplayList(const std::vector<Image::BlitDescription> &blits);
+    OpenGLDisplayList(OpenGLCanvas *canvas,
+            const std::vector<Image::BlitDescription> &blits);
+    ~OpenGLDisplayList();
+
+    void reinitialize();
     virtual void draw(Canvas *canvas, int x, int y) const;
     virtual void attach(const std::shared_ptr<Image> &newImage);
 };
@@ -68,6 +79,9 @@ class OpenGLCanvas : public Canvas {
 
 public:
     OpenGLCanvas(int width, int height);
+    ~OpenGLCanvas();
+
+    void reinitialize();
 
     virtual int width();
     virtual int height();
@@ -100,6 +114,7 @@ public:
     int buf;
     GLuint program;
     SDL_Surface* screen;
+    std::set<OpenGLDisplayList*> displayLists;
 };
 
 }

@@ -27,7 +27,7 @@ EXE = $(EXE_EM)
 CC = emcc
 CXX = em++
 AR = emar
-LDFLAGS = -s TOTAL_MEMORY=134217728 $(EXTERNALS)
+LDFLAGS = -s EXPORTED_FUNCTIONS="['_main','_onContextLost','_onContextRestored']" -s TOTAL_MEMORY=134217728 $(EXTERNALS)
 # --preload-file assets
 endif
 

@@ -1,3 +1,4 @@
+#include <set>
 #ifdef EMSCRIPTEN
 #include "opengl_canvas.hpp"
 #endif
@@ -5,13 +6,45 @@
 #include "main/main.hpp"
 #include "graphics/matrix4x4.hpp"
 
+
+#ifdef EMSCRIPTEN
+
+namespace {
+    std::set<Polarity::OpenGLCanvas*> allCanvases;
+}
+
+extern "C"
+void onContextLost() {
+    std::cerr << "Context lost" << std::endl;
+}
+
+extern "C"
+void onContextRestored() {
+    std::cerr << "Context restored" << std::endl;
+    for (Polarity::OpenGLCanvas *canvas : allCanvases) {
+        canvas->reinitialize();
+    }
+}
+#endif
+
 namespace Polarity {
 #ifdef EMSCRIPTEN
 OpenGLDisplayList::OpenGLDisplayList(
-    const std::vector<Image::BlitDescription> &blits)
-    : blits(blits), uploaded(false) {
+        OpenGLCanvas *canvas,
+        const std::vector<Image::BlitDescription> &blits)
+    : blits(blits), canvas(canvas), vbo(-1), uploaded(false) {
+    reinitialize();
+    canvas->displayLists.insert(this);
+}
 
+OpenGLDisplayList::~OpenGLDisplayList() {
+    auto it = canvas->displayLists.find(this);
+    canvas->displayLists.erase(it);
+}
+
+void OpenGLDisplayList::reinitialize() {
     glGenBuffers(1, &vbo);
+    uploaded = false;
 }
 
 void OpenGLDisplayList::uploadVertexArray() const {
@@ -188,6 +221,15 @@ void OpenGLImage::downloadAndLoad() {
                                       std::placeholders::_2));
 }
 
+void OpenGLImage::reload() {
+    stage = LOADING;
+    tex = -1;
+    downloadAndLoad();
+}
+
+void OpenGLImage::reloadImage(const std::shared_ptr<Image> &image) {
+    static_cast<OpenGLImage*>(image.get())->reload();
+}
 
 void OpenGLCanvas::createSpriteRectArray() {
     Rect texcoords = Rect(0, 0, 1, 1);
@@ -324,8 +366,24 @@ OpenGLCanvas::OpenGLCanvas(int width, int height) {
     screen = SDL_SetVideoMode(
         width, height, 0,
         SDL_HWSURFACE | SDL_RESIZABLE | SDL_OPENGL );
+    reinitialize();
+    allCanvases.insert(this);
+}
+
+OpenGLCanvas::~OpenGLCanvas() {
+    auto it = allCanvases.find(this);
+    if (it != allCanvases.end()) {
+        allCanvases.erase(it);
+    }
+}
+
+void OpenGLCanvas::reinitialize() {
     createRectProgram();
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, width(), height());
+    Image::forEachImage(OpenGLImage::reloadImage);
+    for (OpenGLDisplayList *dl : displayLists) {
+        dl->reinitialize();
+    }
 }
 
 int OpenGLCanvas::width() {
@@ -344,7 +402,7 @@ OpenGLImage *OpenGLCanvas::loadImage(const std::string &filename) {
 DisplayList *OpenGLCanvas::makeDisplayList(const std::shared_ptr<Image> &image,
                                            const std::vector<Image::BlitDescription> &draws,
                                            const Rect&bounds) {
-    OpenGLDisplayList *list = new OpenGLDisplayList(draws);
+    OpenGLDisplayList *list = new OpenGLDisplayList(this, draws);
     list->attach(image);
     return list;
 }
