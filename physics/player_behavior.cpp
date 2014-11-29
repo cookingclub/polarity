@@ -113,7 +113,6 @@ void PlayerBehavior::tick(World *world, GameObject *obj) {
         world->audio()->stopChannel("jump");
     }
     world->updateCamera(obj, phyobj->GetWorldCenter());
-    world->clearJustPressedStates();
 }
 
 }

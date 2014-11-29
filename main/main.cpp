@@ -9,7 +9,11 @@
 #ifdef EMSCRIPTEN
 #include "graphics/opengl_canvas.hpp"
 #endif
+#ifdef USE_SDL2
+#include <SDL2/SDL_timer.h>
+#else
 #include <SDL/SDL_timer.h>
+#endif
 #include "graphics/sdl_canvas.hpp"
 #include "audio/audio.hpp"
 #include "main/main.hpp"
@@ -161,6 +165,7 @@ void asyncFileLoad(const std::string &fileName,
     workerWorkCondition.notify_all();
 }
 #endif
+
 void exitProgram() {
     platformExitProgram();
     Polarity::world.reset();
@@ -169,9 +174,6 @@ void exitProgram() {
         LOCK_MAIN_THREAD_CALLBACK_MUTEX();
         functionsToCallOnMainThread.clear();
     }
-#ifdef EMSCRIPTEN
-    SDL_Quit();
-#endif
 }
 void mainThreadCallback(const std::function<void()>&&function) {
     LOCK_MAIN_THREAD_CALLBACK_MUTEX();
@@ -183,12 +185,10 @@ void mainThreadCallback(const std::function<void()>&&function) {
 
 #ifdef EMSCRIPTEN
 void emLoopIter() {
-    screen->beginFrame();
-    screen->clear();
     if (!loopIter(screen.get())) {
+        exitProgram();
         SDL_Quit();
     }
-    screen->endFrame();
 }
 
 void mainloop() {
@@ -196,28 +196,21 @@ void mainloop() {
 }
 
 #else
-void fast_shutdown() {
-    Polarity::world.reset();
-    Polarity::screen.reset();
-    SDL_Quit();
-}
 void mainloop() {
-    atexit(fast_shutdown);
+    atexit(SDL_Quit);
     Uint32 time = SDL_GetTicks();
     while (true) {
-        screen->clear();
         if (!loopIter(screen.get())) {
             break;
-        } else {
-            screen->swapBuffers();
         }
         Uint32 newTime = SDL_GetTicks();
         Uint32 curDelay = newTime - time;
         if (curDelay < 1000/60) {
             SDL_Delay(1000/60 - curDelay);
-	}
+        }
         time = SDL_GetTicks();
     }
+    exitProgram();
 }
 #endif
 }
@@ -255,10 +248,6 @@ int main(int argc, char**argv) {
 #if SDL_MAJOR_VERSION < 2
     SDL_EnableUNICODE(SDL_ENABLE);
 #endif
-    if (Mix_OpenAudio(AUDIO_RATE, AUDIO_S16, 2, 4096)) {
-        cerr << "Failed to init Audio" << endl;
-        //return 1;
-    }
 
     Polarity::screen.reset(new Polarity::SDLCanvas(CANVAS_WIDTH, CANVAS_HEIGHT));
     //Polarity::screen.reset(new Polarity::OpenGLCanvas(CANVAS_WIDTH, CANVAS_HEIGHT));

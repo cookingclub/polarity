@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <assert.h>
 
 namespace Polarity {
 

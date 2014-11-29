@@ -7,7 +7,11 @@
 #include "behavior.hpp"
 #include "graphics/animation.hpp"
 
+#ifdef USE_SDL2
+#include "SDL2/SDL.h"
+#else
 #include "SDL/SDL.h"
+#endif
 
 
 namespace Polarity {

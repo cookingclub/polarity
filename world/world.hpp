@@ -10,10 +10,12 @@
 #include "player.hpp"
 #include <memory>
 #include <vector>
+#include <set>
 
 using std::shared_ptr;
 using std::unique_ptr;
 using std::vector;
+using std::set;
 
 namespace Polarity {
 class Canvas;
@@ -26,8 +28,8 @@ class World {
     ContactListener contactListener;
     b2Vec2 screenDimensions;
     b2Vec2 mapDimensions;
-    vector<bool> keyState;
-    vector<bool> keyPressedThisTick;
+    std::set<int> keyState;
+    std::set<int> keyPressedThisTick;
     vector< unique_ptr<GameObject> > objects;
     unique_ptr<LayerCollection> layers;
     shared_ptr<AudioChannelPlayer> fAudioPlayer;
@@ -56,8 +58,6 @@ public:
     void tick();
     void draw(Canvas *screen);
     void keyEvent(int keyCode, bool pressed);
-    void findKeysJustPressed(const vector<bool> &prevStates);
-    void clearJustPressedStates();
     bool isKeyDown(int keyCode);
     bool wasKeyJustPressed(int keyCode);
     std::weak_ptr<World> weak_ptr()const {return wthis;}
@@ -70,7 +70,7 @@ public:
         return loaded;
     }
 
-    vector<bool> getKeyState() const {
+    const std::set<int> &getKeyState() const {
         return keyState;
     }
 

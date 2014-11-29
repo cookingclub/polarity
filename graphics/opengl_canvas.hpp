@@ -3,7 +3,7 @@
 #ifdef EMSCRIPTEN
 #include "GLES2/gl2.h"
 #else
-#include <GL/gl.h>
+#include <GLES2/gl2.h>
 #endif
 #ifdef USE_SDL2
 #include "SDL2/SDL_version.h"

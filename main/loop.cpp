@@ -48,6 +48,8 @@ void loadAssets() {
 }
 
 bool loopIter(Canvas *screen) {
+    screen->beginFrame();
+    screen->clear();
     SDL_Event event;
     std::vector<int> keyUps;
     // Maintain a strong reference to world so we can handle world changes.
@@ -55,17 +57,14 @@ bool loopIter(Canvas *screen) {
     // SDL_FillRect(screen, NULL, 0xffffffff);
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-            vector<bool> lastKeyState = world->getKeyState();
             if (event.type == SDL_KEYDOWN) {
-	        if (event.key.keysym.sym == SDLK_ESCAPE) {
-                    Polarity::exitProgram();
+                if (event.key.keysym.sym == SDLK_ESCAPE) {
                     return false;
-	        }
+                }
                 world->keyEvent(event.key.keysym.sym, true);
             } else {
                 keyUps.push_back(event.key.keysym.sym);
             }
-            world->findKeysJustPressed(lastKeyState);
         }
     }
     world->tick();
@@ -75,6 +74,7 @@ bool loopIter(Canvas *screen) {
     for (auto &key : keyUps) {
       world->keyEvent(key, false);
     }
+    screen->endFrame();
     return true;
 }
 }

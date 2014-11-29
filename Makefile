@@ -19,7 +19,7 @@ EXE = $(EXE_NATIVE)
 CC = gcc
 CXX = g++
 AR = ar
-LDFLAGS = -L$(CURDIR)/libs/libsdl/lib -lSDL -lSDL_mixer -lSDL_gfx -lSDL_image -lSDL_ttf $(EXTERNALS)
+LDFLAGS = -lSDL2 -lSDL2_mixer -lSDL2main $(EXTERNALS) -lGLESv2
 else
 OBJ_DIR = $(OBJ_EM)
 EXE = $(EXE_EM)

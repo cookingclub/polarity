@@ -13,9 +13,15 @@
 #include <tuple>
 #include <vector>
 #include <memory>
+#ifdef USE_SDL2
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_audio.h>
+#else
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_audio.h>
+#endif
 #ifdef EMSCRIPTEN
 #include <sys/stat.h>
 #include <emscripten.h>
@@ -46,18 +52,24 @@ enum CurrentAudioState {
 
 
 class AudioChannelPlayer {
+    static constexpr int AUDIO_RATE = 44100; // FIXME: Does this matter?
 public:
 
     AudioChannelPlayer(int channels) :
-        fNumChans(channels),
-        fAllocatedChans(0) {
+            fNumChans(channels),
+            fAllocatedChans(0) {
+        if (Mix_OpenAudio(AUDIO_RATE, AUDIO_S16, 2, 4096)) {
+            std::cerr << "Failed to init Audio" << std::endl;
+        }
         fNumAvailableChans = Mix_AllocateChannels(channels);
     }
     ~AudioChannelPlayer() {
+        Mix_AllocateChannels(0);
         for (map<string, Mix_Chunk*>::iterator i = fChunks.begin(), ie = fChunks.end(); i != ie; ++i) {
             Mix_FreeChunk(i->second);
             i->second = nullptr;
         }
+        Mix_CloseAudio();
     }
     static Polarity::AudioFileError addChannel(std::shared_ptr<AudioChannelPlayer> thus, string id, string filePath, int num) {
         if (thus->fAllocatedChans >= thus->fNumChans) {

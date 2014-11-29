@@ -1,7 +1,5 @@
 #include <set>
-#ifdef EMSCRIPTEN
 #include "opengl_canvas.hpp"
-#endif
 #include "display_list.hpp"
 #include "main/main.hpp"
 #include "graphics/matrix4x4.hpp"
@@ -164,23 +162,18 @@ void OpenGLImage::loadImageOpenGL(Image *super,
             std::cerr << "Failed to load image: " << filename << std::endl;
             thus->stage = FAILED;
         } else {
-            int nOfColors = 0;
             int texture_format = 0;
             switch (image->format) {
             case DecodedImage::L:
-                nOfColors = 1;
                 texture_format = GL_LUMINANCE;
                 break;
             case DecodedImage::LA:
-                nOfColors = 2;
                 texture_format = GL_LUMINANCE_ALPHA;
                 break;
             case DecodedImage::RGB:
-                nOfColors = 3;
                 texture_format = GL_RGB;
                 break;
             case DecodedImage::RGBA:
-                nOfColors = 4;
                 texture_format = GL_RGBA;
                 break;
             }
@@ -376,14 +369,18 @@ OpenGLCanvas::OpenGLCanvas(int width, int height): w(width), h(height) {
         SDL_HWSURFACE | SDL_RESIZABLE | SDL_OPENGL );
 #endif
     reinitialize();
+#ifdef EMSCRIPTEN
     allCanvases.insert(this);
+#endif
 }
 
 OpenGLCanvas::~OpenGLCanvas() {
+#ifdef EMSCRIPTEN
     auto it = allCanvases.find(this);
     if (it != allCanvases.end()) {
         allCanvases.erase(it);
     }
+#endif
 #if SDL_MAJOR_VERISON >= 2
     SDL_GL_DeleteContext(context);
 #endif

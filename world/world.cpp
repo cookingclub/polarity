@@ -1,7 +1,11 @@
 #include <iostream>
-#include <iostream>
+#include <algorithm>
 #include <libgen.h>
+#ifdef USE_SDL2
+#include "SDL2/SDL.h"
+#else
 #include "SDL/SDL.h"
+#endif
 #include "world.hpp"
 #include "physics/player_behavior.hpp"
 #include "physics/magnetic_behavior.hpp"
@@ -24,17 +28,14 @@ World::World(const shared_ptr<Canvas> &canvas, std::shared_ptr<AudioChannelPlaye
         camera(0, 300), //FIXME hard coded
         contactListener(this),
         screenDimensions(canvas->width(), canvas->height()),
-        keyState(SDLK_LAST),
-        keyPressedThisTick(SDLK_LAST, false),
+        keyState(),
+        keyPressedThisTick(),
         layers(nullptr),
         fAudioPlayer(_audioPlayer),
         fPlayerState(_playerState),
         fGameState(_gameState),
         graphicsContext(canvas) {
     std::cerr << "World has started"<<std::endl;
-    for (int i=0; i< SDLK_LAST; ++i) {
-        keyState[i] = false;
-    }
     physics.SetContactListener(&contactListener);
 }
 
@@ -86,30 +87,20 @@ void World::addObject(Behavior *behavior, const b2BodyDef&bdef, const std::vecto
 }
 
 bool World::wasKeyJustPressed(int keyCode) {
-    return keyPressedThisTick[keyCode];
+    return keyPressedThisTick.find(keyCode) != keyPressedThisTick.end();
 }
 
 bool World::isKeyDown(int keyCode) {
-    return keyState[keyCode];
+    return keyState.find(keyCode) != keyState.end();
 }
 
 void World::keyEvent(int keyCode, bool pressed) {
-    if (keyCode < SDLK_LAST) {
-        keyState[keyCode] = pressed;
-    }else {
-        std::cerr << "Key code out of range "<<keyCode<<"\n";
+    if (pressed) {
+        keyState.insert(keyCode);
+        keyPressedThisTick.insert(keyCode);
+    } else {
+        keyState.erase(keyCode);
     }
-}
-
-void World::findKeysJustPressed(const vector<bool> &prevStates) {
-    assert(prevStates.size() == keyState.size());
-    for (size_t k = 0; k < prevStates.size(); k++) {
-        keyPressedThisTick[k] = (prevStates[k] != keyState[k]) && keyState[k];
-    }
-}
-
-void World::clearJustPressedStates() {
-    keyPressedThisTick = vector<bool>(keyState.size(), false);
 }
 
 void World::updateCamera(GameObject *obj, b2Vec2 player) {
@@ -147,6 +138,7 @@ void World::tick() {
         obj->tick(this);
         //std::cerr << obj->printPosition()<<std::endl;
     }
+    keyPressedThisTick.clear();
 }
 
 void World::draw(Canvas *screen) {

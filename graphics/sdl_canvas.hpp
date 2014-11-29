@@ -200,7 +200,9 @@ public:
             SDL_WINDOWPOS_UNDEFINED,
             width, height,
             SDL_WINDOW_INPUT_GRABBED | SDL_WINDOW_RESIZABLE);
+        SDL_SetWindowGrab(context->window, SDL_FALSE);
         context->renderer = SDL_CreateRenderer(context->window, -1, 0);
+        screen = nullptr;
 #else
         screen = SDL_SetVideoMode(
                 width, height, 0,
@@ -348,16 +350,16 @@ public:
             static_cast<SDLImage*>(img.get())->enableAlphaBlend();
         }
         void reloadImage() {
-            SDL_Rect full;
-            full.x = 0;
-            full.y = 0;
-            full.w = cache->width();
-            full.h = cache->height();
 #if SDL_MAJOR_VERSION >= 2
             SDL_SetRenderTarget(cache->context->renderer, cache->screen);
             SDL_RenderClear(cache->context->renderer);
             SDL_SetRenderTarget(cache->context->renderer, cache->screen);
 #else
+            SDL_Rect full;
+            full.x = 0;
+            full.y = 0;
+            full.w = cache->width();
+            full.h = cache->height();
             SDL_FillRect(cache->screen, &full, 0);
 #endif
             loadImage();

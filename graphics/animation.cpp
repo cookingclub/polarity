@@ -2,7 +2,11 @@
 #include "graphics/animation.hpp"
 #include <unordered_map>
 
+#ifdef USE_SDL2
+#include "SDL2/SDL.h" // SDL_GetTicks()
+#else
 #include "SDL/SDL.h" // SDL_GetTicks()
+#endif
 
 namespace Polarity {
 
