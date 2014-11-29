@@ -19,7 +19,7 @@ EXE = $(EXE_NATIVE)
 CC = gcc
 CXX = g++
 AR = ar
-LDFLAGS = -lSDL2 -lSDL2_mixer -lSDL2main $(EXTERNALS) -lGLESv2
+LDFLAGS = -lSDL2 -lSDL2_mixer -lSDL2main $(EXTERNALS) -lGL
 PLATFORM_CFLAGS = -DUSE_SDL2
 else
 OBJ_DIR = $(OBJ_EM)

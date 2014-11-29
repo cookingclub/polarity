@@ -3,7 +3,9 @@
 #ifdef EMSCRIPTEN
 #include "GLES2/gl2.h"
 #else
-#include <GLES2/gl2.h>
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#include <GL/glext.h>
 #endif
 #ifdef USE_SDL2
 #include "SDL2/SDL_version.h"

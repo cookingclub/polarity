@@ -359,7 +359,7 @@ OpenGLCanvas::OpenGLCanvas(int width, int height): w(width), h(height) {
     window = SDL_CreateWindow("Polarity",
                               SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED,
-                              640, 480,
+                              width, height,
                               SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
     renderer = SDL_GL_CreateContext(window);
     SDL_GL_GetDrawableSize(window, &w, &h);
