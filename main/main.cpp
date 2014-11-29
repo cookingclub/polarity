@@ -6,22 +6,19 @@
 #include <thread>
 #include <deque>
 #include <condition_variable>
-#ifdef EMSCRIPTEN
-#include "graphics/opengl_canvas.hpp"
-#endif
 #ifdef USE_SDL2
 #include <SDL2/SDL_timer.h>
 #else
 #include <SDL/SDL_timer.h>
 #endif
 #include "graphics/sdl_canvas.hpp"
+#include "graphics/opengl_canvas.hpp"
 #include "audio/audio.hpp"
 #include "main/main.hpp"
 #include "world/world.hpp"
 #include "physics/behavior.hpp"
 using namespace std;
 
-const int AUDIO_RATE = 44100; // FIXME: Does this matter?
 const int CANVAS_WIDTH = 1280;
 const int CANVAS_HEIGHT = 720;
 

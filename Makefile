@@ -20,6 +20,7 @@ CC = gcc
 CXX = g++
 AR = ar
 LDFLAGS = -lSDL2 -lSDL2_mixer -lSDL2main $(EXTERNALS) -lGLESv2
+PLATFORM_CFLAGS = -DUSE_SDL2
 else
 OBJ_DIR = $(OBJ_EM)
 EXE = $(EXE_EM)
@@ -27,7 +28,8 @@ EXE = $(EXE_EM)
 CC = emcc
 CXX = em++
 AR = emar
-LDFLAGS = -s EXPORTED_FUNCTIONS="['_main','_onContextLost','_onContextRestored']" -s TOTAL_MEMORY=134217728 $(EXTERNALS) -Llibs/libsdl/lib -lSDL2 -lSDL2_mixer  -lSDL2main
+LDFLAGS = -s EXPORTED_FUNCTIONS="['_main','_onContextLost','_onContextRestored']" -s TOTAL_MEMORY=134217728 $(EXTERNALS)
+PLATFORM_CFLAGS =
 # --preload-file assets
 endif
 
@@ -36,7 +38,7 @@ EXTERNALS = $(OBJ_DIR)/libext$(AR_EXT)
 AROBJS = $(patsubst %.c, $(OBJ_DIR)/%$(O_EXT), $(patsubst %.cpp, $(OBJ_DIR)/%$(O_EXT), $(ARSRCS))) $(OBJ_DIR)/libs/tinyxml2/tinyxml2$(O_EXT)
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%$(O_EXT), $(SRCS))
 
-CFLAGS = -DUSE_SDL2 -fno-exceptions -pthread -g -Wall -Wextra -Wno-unused-parameter -Wno-warn-absolute-paths -I $(CURDIR) -I$(CURDIR)/libs/box2d/Box2D/ -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/libtmxparser/src -I$(CURDIR)/libs/zlib -I$(CURDIR)/libs/libpng -I$(CURDIR)/libs/libsdl/include
+CFLAGS = $(PLATFORM_CFLAGS) -fno-exceptions -pthread -g -Wall -Wextra -Wno-unused-parameter -Wno-warn-absolute-paths -I $(CURDIR) -I$(CURDIR)/libs/box2d/Box2D/ -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/libtmxparser/src -I$(CURDIR)/libs/zlib -I$(CURDIR)/libs/libpng -I$(CURDIR)/libs/libsdl/include
 CXXFLAGS = -std=gnu++11 $(CFLAGS)
 
 $(OBJ_DIR)/%$(O_EXT): %.cpp
