@@ -29,7 +29,7 @@ CC = emcc
 CXX = em++
 AR = emar
 LDFLAGS = -s EXPORTED_FUNCTIONS="['_main','_onContextLost','_onContextRestored']" -s TOTAL_MEMORY=134217728 $(EXTERNALS)
-PLATFORM_CFLAGS =
+PLATFORM_CFLAGS = -DUSE_GLES
 # --preload-file assets
 endif
 

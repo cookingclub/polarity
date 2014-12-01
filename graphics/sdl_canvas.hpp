@@ -102,7 +102,17 @@ class SDLImage : public Image {
                                           std::placeholders::_2));
     }
 public:
-    //    explicit SDLImage(SDL_Surface* surf) : surf(surf) {}
+    explicit SDLImage(SDL_Surface* surf) :
+        Image(std::string()),
+        w(surf->w),
+        h(surf->h),
+        surf(surf)
+#if SDL_MAJOR_VERSION >= 2
+        ,texture(nullptr)
+#endif
+    {
+        this->stage = COMPLETE;
+    }
     SDLImage(const std::string&filename) : Image(filename), w(0), h(0) {
         surf = nullptr;
 #if SDL_MAJOR_VERSION >= 2
@@ -251,6 +261,9 @@ private:
 
 public:
 
+    SDLImage *loadImageFromSurface(SDL_Surface *surf) {
+        return new SDLImage(surf);
+    }
     SDLImage *loadImage(const std::string &filename) {
         SDLImage *retval = new SDLImage(filename);
         return retval;

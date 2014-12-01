@@ -139,10 +139,64 @@ void OpenGLDisplayList::attach(const std::shared_ptr<Image> &newImage) {
     uploaded = false;
 }
 
+static GLuint genTexture() {
+    GLuint texture = 0;
+    // Have OpenGL generate a texture object handle for us
+    glGenTextures( 1, &texture );
+
+    // Bind the texture object
+    glBindTexture( GL_TEXTURE_2D, texture );
+
+    // Set the texture's stretching properties
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+    return texture;
+}
+
 OpenGLImage::OpenGLImage(const std::string &filename)
     : Image(filename), tex(0), w(0), h(0) {
     if (!filename.empty()) {
         downloadAndLoad();
+    }
+}
+
+OpenGLImage::OpenGLImage(SDL_Surface *surface)
+    : Image(std::string()), tex(0), w(surface->w), h(surface->h) {
+    int texture_format;
+    switch (surface->format->format) {
+#ifndef USE_GLES
+    case (uint32_t)SDL_PIXELFORMAT_ARGB8888:
+        texture_format = GL_BGRA;
+        break;
+#endif
+    case (uint32_t)SDL_PIXELFORMAT_ABGR8888:
+        texture_format = GL_RGBA;
+        break;
+#ifndef USE_GLES
+    case (uint32_t)SDL_PIXELFORMAT_RGB888:
+        texture_format = GL_BGR;
+        break;
+#endif
+    case (uint32_t)SDL_PIXELFORMAT_BGR888:
+        texture_format = GL_RGB;
+        break;
+    default:
+        texture_format = GL_RGBA;
+        SDL_Surface *newSurf = SDL_ConvertSurfaceFormat(
+                surface, SDL_PIXELFORMAT_BGRA8888, 0);
+        SDL_FreeSurface(surface);
+        surface = newSurf;
+    }
+
+    tex = genTexture();
+
+    if (!SDL_LockSurface(surface)) {
+        glTexImage2D( GL_TEXTURE_2D, 0, texture_format, w, h, 0,
+                      texture_format, GL_UNSIGNED_BYTE, surface->pixels);
+        stage = COMPLETE;
+        SDL_UnlockSurface(surface);
     }
 }
 
@@ -178,18 +232,7 @@ void OpenGLImage::loadImageOpenGL(Image *super,
                 break;
             }
             // get the number of channels in the SDL surface
-            GLuint texture = 0;
-            // Have OpenGL generate a texture object handle for us
-            glGenTextures( 1, &texture );
-
-            // Bind the texture object
-            glBindTexture( GL_TEXTURE_2D, texture );
-
-            // Set the texture's stretching properties
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+            GLuint texture = genTexture();
 
             // Edit the texture object's image data using the information SDL_Surface gives us
             glTexImage2D( GL_TEXTURE_2D, 0, texture_format, image->width, image->height, 0,
@@ -401,6 +444,11 @@ int OpenGLCanvas::width() {
 
 int OpenGLCanvas::height() {
     return h;
+}
+
+OpenGLImage *OpenGLCanvas::loadImageFromSurface(SDL_Surface *surf) {
+    OpenGLImage *retval = new OpenGLImage(surf);
+    return retval;
 }
 
 OpenGLImage *OpenGLCanvas::loadImage(const std::string &filename) {

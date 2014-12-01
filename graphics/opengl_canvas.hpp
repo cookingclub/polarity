@@ -1,6 +1,7 @@
 #ifndef POLARITY_GRAPHICS_OPENGL_CANVAS_HPP__
 #define POLARITY_GRAPHICS_OPENGL_CANVAS_HPP__
-#ifdef EMSCRIPTEN
+
+#ifdef USE_GLES
 #include "GLES2/gl2.h"
 #else
 #define GL_GLEXT_PROTOTYPES
@@ -31,6 +32,7 @@ class OpenGLCanvas;
 class OpenGLImage : public Image {
     friend class OpenGLCanvas;
 public:
+    explicit OpenGLImage(SDL_Surface *surf);
     explicit OpenGLImage(const std::string &filename);
     virtual ~OpenGLImage();
 
@@ -93,6 +95,7 @@ public:
     virtual int width();
     virtual int height();
 
+    OpenGLImage *loadImageFromSurface(SDL_Surface *surf);
     OpenGLImage *loadImage(const std::string &filename);
 
     virtual void drawSprite(Image *image,

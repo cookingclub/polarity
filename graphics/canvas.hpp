@@ -3,6 +3,8 @@
 
 #include "image.hpp"
 
+struct SDL_Surface;
+
 namespace Polarity {
 class Canvas {
     Canvas& operator= (const Canvas&) = delete;
@@ -15,6 +17,8 @@ public:
 
     virtual ~Canvas() {}
 
+    // Manages lifetime of the surface from here on.
+    virtual Image *loadImageFromSurface(SDL_Surface *surf) = 0;
     virtual Image *loadImage(const std::string &filename) = 0;
     virtual void drawSprite(Image *image,
                             float centerX, float centerY,
