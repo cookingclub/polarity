@@ -165,6 +165,7 @@ OpenGLImage::OpenGLImage(const std::string &filename)
 OpenGLImage::OpenGLImage(SDL_Surface *surface)
     : Image(std::string()), tex(0), w(surface->w), h(surface->h) {
     int texture_format;
+#if USE_SDL2
     switch (surface->format->format) {
 #ifndef USE_GLES
     case (uint32_t)SDL_PIXELFORMAT_ARGB8888:
@@ -184,11 +185,54 @@ OpenGLImage::OpenGLImage(SDL_Surface *surface)
         break;
     default:
         texture_format = GL_RGBA;
-        SDL_Surface *newSurf = SDL_ConvertSurfaceFormat(
-                surface, SDL_PIXELFORMAT_BGRA8888, 0);
+        SDL_Surface *newSurf;
+        newSurf = SDL_ConvertSurfaceFormat(
+                surface, SDL_PIXELFORMAT_ABGR8888, 0);
         SDL_FreeSurface(surface);
         surface = newSurf;
     }
+#else
+    uint32_t v255shift24 = 255;
+    v255shift24 <<= 24;
+    bool colorNoAlpha = (surface->format->BitsPerPixel == 24 && surface->format->BytesPerPixel==3);
+    bool colorAlpha = (surface->format->BitsPerPixel == 21 && surface->format->BytesPerPixel==4);
+    if (colorNoAlpha && surface->format->Bmask == 255 && surface->format->Gmask == (255 << 8) && surface->format->Rmask == (255 << 16)) {
+        texture_format = GL_RGB;
+#ifndef USE_GLES
+    } else if (colorNoAlpha && surface->format->Rmask == 255 && surface->format->Gmask == (255 << 8) && surface->format->Bmask == (255 << 16)) {
+        texture_format = GL_BGR;
+    } else if (colorAlpha && surface->format->Amask == 255 && surface->format->Rmask == (255 << 8) && surface->format->Gmask == (255 << 16)  && surface->format->Bmask == v255shift24) {
+        texture_format = GL_BGRA;
+#endif
+    } else if (colorAlpha && surface->format->Amask == 255 && surface->format->Bmask == (255 << 8) && surface->format->Gmask == (255 << 16)  && surface->format->Rmask == v255shift24) {
+        texture_format = GL_RGBA;
+    } else {
+        SDL_PixelFormat pf = {NULL, 0, 0,
+                              0, 0, 0, 0,
+                              0, 0, 0, 0,
+                              0, 0, 0, 0, 0, 0};
+        pf.BitsPerPixel = 32;
+        pf.BytesPerPixel = 4;
+        pf.Rloss = 0;
+        pf.Gloss = 0;
+        pf.Bloss = 0;
+        pf.Aloss = 0;
+        pf.Rshift = 24;
+        pf.Gshift = 16;
+        pf.Bshift = 8;
+        pf.Ashift = 0;
+        pf.Amask = 255;
+        pf.Bmask = (255 << 8);
+        pf.Gmask = (255 << 16);
+        pf.Rmask = v255shift24;
+        SDL_Surface *newSurf;
+        newSurf = SDL_ConvertSurface(
+                surface, &pf, 0);
+        SDL_FreeSurface(surface);
+        surface = newSurf;
+
+    }
+#endif
 
     tex = genTexture();
 
