@@ -3,6 +3,8 @@
 
 #include "graphics/canvas.hpp"
 
+#include "util/lru_map.hpp"
+
 #include <iostream>
 
 #ifdef USE_SDL2
@@ -20,10 +22,10 @@ namespace Polarity {
 class FontRenderer {
 public:
 
-    FontRenderer(const std::string &name, int ptSize) {
-        font = TTF_OpenFont(name.c_str(), ptSize);
+    FontRenderer(const std::string &fontName, int ptSize) {
+        font = TTF_OpenFont(fontName.c_str(), ptSize);
         if (!font) {
-            std::cerr << "Failed to open font " << name << " size "
+            std::cerr << "Failed to open font " << fontName << " size "
                       << ptSize << ": " << TTF_GetError() << std::endl;
         }
     }
@@ -36,24 +38,17 @@ public:
         return (font != nullptr);
     }
 
-    void draw(Canvas *canvas, Rect rect, SDL_Color color,
-              const std::string &message) {
+    Image *render(Canvas *canvas, SDL_Color color, const std::string &message) {
         if (!isLoaded()) {
-            return;
+            return nullptr;
         }
         SDL_Surface *surf = TTF_RenderUTF8_Blended(font, message.c_str(), color);
-        std::shared_ptr<Image> image (canvas->loadImageFromSurface(surf));
-        canvas->drawSprite(image.get(),
-                           rect.left() + image->width() / 2,
-                           rect.top() - image->height() / 2,
-                           image->width(), image->height(), 0);
+        return canvas->loadImageFromSurface(surf);
     }
 
 private:
 
     TTF_Font *font;
-
-    // std::unordered_map<std::string, std::shared_ptr<Image> > textCache;
 
 };
 }

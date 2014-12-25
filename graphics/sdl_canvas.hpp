@@ -17,6 +17,8 @@
 #include "canvas.hpp"
 #include "display_list.hpp"
 #include "main/main.hpp"
+#include "font_manager.hpp"
+
 namespace Polarity {
 
 class SDLImage : public Image {
@@ -199,11 +201,15 @@ public:
               SDLRenderTargetType*surf,
               int width,
               int height,
-              SDLCanvas *parent) : screen(surf), context(parent->context) {
+              SDLCanvas *parent)
+            : screen(surf), context(parent->context),
+              mFontManager(FONT_CACHE_SIZE, TEXT_CACHE_SIZE) {
         w = width;
         h = height;
     }
-    SDLCanvas(int width, int height) : w(width), h(height), context(new SDLContext()) {
+    SDLCanvas(int width, int height)
+            : w(width), h(height), context(new SDLContext()),
+              mFontManager(FONT_CACHE_SIZE, TEXT_CACHE_SIZE) {
 #if SDL_MAJOR_VERSION >= 2
         context->window = SDL_CreateWindow("Polarity",
             SDL_WINDOWPOS_UNDEFINED,
@@ -230,6 +236,10 @@ public:
     }
     virtual int width() { return w; }
     virtual int height() { return h; }
+
+    virtual FontManager &fontManager() {
+        return mFontManager;
+    }
 
 private:
     static SDL_Rect rectToSDL(const Rect& rect) {
@@ -571,6 +581,8 @@ public:
 #endif
     int w, h;
     std::shared_ptr<SDLContext> context;
+
+    FontManager mFontManager;
 };
 
 }

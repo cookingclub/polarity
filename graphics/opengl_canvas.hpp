@@ -22,6 +22,7 @@
 #include "display_list.hpp"
 #include "image.hpp"
 #include "canvas.hpp"
+#include "font_manager.hpp"
 
 #include <set>
 
@@ -95,6 +96,10 @@ public:
     virtual int width();
     virtual int height();
 
+    virtual FontManager &fontManager() {
+        return mFontManager;
+    }
+
     OpenGLImage *loadImageFromSurface(SDL_Surface *surf);
     OpenGLImage *loadImage(const std::string &filename);
 
@@ -134,6 +139,8 @@ public:
     void *dummy;
 #endif
     std::set<OpenGLDisplayList*> displayLists;
+
+    FontManager mFontManager;
 };
 
 }

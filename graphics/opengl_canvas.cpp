@@ -409,7 +409,8 @@ void main() {\n\
     glUniform1i(sampTextureLocation, 0);
 }
 
-OpenGLCanvas::OpenGLCanvas(int width, int height): w(width), h(height) {
+OpenGLCanvas::OpenGLCanvas(int width, int height)
+        : w(width), h(height), mFontManager(FONT_CACHE_SIZE, TEXT_CACHE_SIZE) {
     SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 8 );
     SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 8 );
     SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 8 );

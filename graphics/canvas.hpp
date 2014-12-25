@@ -6,9 +6,21 @@
 struct SDL_Surface;
 
 namespace Polarity {
+
+class FontManager;
+
 class Canvas {
     Canvas& operator= (const Canvas&) = delete;
     Canvas(const Canvas&) = delete;
+protected:
+    enum {
+#ifdef EMSCRIPTEN
+        FONT_CACHE_SIZE=4096,
+#else
+        FONT_CACHE_SIZE=16,
+#endif
+        TEXT_CACHE_SIZE=4096
+    };
 public:
     Canvas() {}
 
@@ -16,6 +28,8 @@ public:
     virtual int height() = 0;
 
     virtual ~Canvas() {}
+
+    virtual FontManager &fontManager() = 0;
 
     // Manages lifetime of the surface from here on.
     virtual Image *loadImageFromSurface(SDL_Surface *surf) = 0;
