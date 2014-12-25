@@ -8,8 +8,10 @@
 #include <condition_variable>
 #ifdef USE_SDL2
 #include <SDL2/SDL_timer.h>
+#include <SDL2/SDL_ttf.h>
 #else
 #include <SDL/SDL_timer.h>
+#include <SDL/SDL_ttf.h>
 #endif
 #include "graphics/sdl_canvas.hpp"
 #include "graphics/opengl_canvas.hpp"
@@ -236,12 +238,10 @@ int main(int argc, char**argv) {
         cerr << "Failed to init SDL" << endl;
         return 1;
     }
-#if 0
     if (TTF_Init()) {
         cerr << "Failed to init TTF" << endl;
         return 1;
     }
-#endif
 #if SDL_MAJOR_VERSION < 2
     SDL_EnableUNICODE(SDL_ENABLE);
 #endif
@@ -274,6 +274,7 @@ int main(int argc, char**argv) {
 */
     Polarity::mainloop();
     Polarity::screen.reset();
+    TTF_Quit();
     std::cerr<<"Game over, man"<<std::endl;
     return 0;
 }

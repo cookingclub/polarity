@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unistd.h>
 #include <algorithm>
 #include <libgen.h>
 #ifdef USE_SDL2
@@ -10,6 +11,7 @@
 #include "physics/player_behavior.hpp"
 #include "physics/magnetic_behavior.hpp"
 #include "graphics/canvas.hpp"
+#include "graphics/font_renderer.hpp"
 #include "physics/jumping_behavior.hpp"
 #include "world/door_behavior.hpp"
 #include "main/main.hpp"
@@ -153,6 +155,17 @@ void World::draw(Canvas *screen) {
     for (auto& object : objects) {
         object->draw(this, screen);
     }
+    char cwd[1024];
+    getcwd(cwd, 1024);
+    // std::cout <<"CWD: " << cwd << std::endl;
+    // ("DejaVuSans.ttf", 64);
+#ifdef EMCRIPTEN
+    FontRenderer foobar ("sans-serif", 12);
+#else
+    FontRenderer foobar ("assets/fonts/TakaoPMincho.ttf", 12);
+#endif
+    foobar.draw(screen, Rect(200,200,500,100), {255,255,0,128},
+                "Hello, world! \xe4\xbb\x8a\xe6\x97\xa5\xe3\x81\xaf");
     screenDimensions.x = screen->width();
     screenDimensions.y = screen->height();
 }
