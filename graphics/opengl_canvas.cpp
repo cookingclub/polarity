@@ -330,13 +330,9 @@ GLuint OpenGLCanvas::compileShader(const GLchar *src, const char *name, int type
 }
    
 void OpenGLCanvas::deleteProgram(GLuint program) {
-    GLuint shaders[2];
-    GLsizei count = 0;
-    glGetAttachedShaders(program, 2, &count, shaders);
     glDeleteProgram(program);
-    for (GLsizei i = 0; i < count; i++) {
-        glDeleteShader(shaders[i]);
-    }
+    glDeleteShader(fragmentShader);
+    glDeleteShader(vertexShader);
 }
 
 void OpenGLCanvas::createRectProgram() {
@@ -365,12 +361,12 @@ void main() {\n\
 /* + 15.0*texture2D(samp_texture, v_texcoord) + vec4(0,0,0,1);*/\n\
 }\n\
 ";
-    GLuint vertexShader = compileShader(VERTEX_SHADER, "vertex",
+    vertexShader = compileShader(VERTEX_SHADER, "vertex",
                                         GL_VERTEX_SHADER);
     if (vertexShader == 0) {
         return;
     }
-    GLuint fragmentShader = compileShader(FRAGMENT_SHADER, "fragment",
+    fragmentShader = compileShader(FRAGMENT_SHADER, "fragment",
                                           GL_FRAGMENT_SHADER);
     if (fragmentShader == 0) {
         glDeleteShader(vertexShader);

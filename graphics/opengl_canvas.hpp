@@ -133,6 +133,8 @@ public:
     GLuint sampTexture;
     int buf;
     GLuint program;
+    GLuint vertexShader;
+    GLuint fragmentShader;
     int w;
     int h;
     bool lostContext;
