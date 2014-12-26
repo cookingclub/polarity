@@ -118,10 +118,11 @@
         if (type == '2d') {
           return GLctx;
         }
+        canvas.getContext = canvas.getContext_;
         GLctx.createTexture_=GLctx.createTexture;
         GLctx.createTexture = function() {
           var ret = GLctx.createTexture_();
-          if (!ret) {
+          if (ret === null) {
             console.log("createTexture returned null");
             return GLctx._lastGoodTex;
           }
@@ -130,7 +131,7 @@
         GLctx.createBuffer_=GLctx.createBuffer;
         GLctx.createBuffer = function() {
           var ret = GLctx.createBuffer_();
-          if (!ret) {
+          if (ret === null) {
             console.log("createBuffer returned null");
             return GLctx._lastGoodBuf;
           }
@@ -139,7 +140,7 @@
         GLctx.createRenderbuffer_=GLctx.createFramebuffer;
         GLctx.createRenderbuffer = function() {
           var ret = GLctx.createRenderbuffer_();
-          if (!ret) {
+          if (ret === null) {
             console.log("createRenderbuffer returned null");
             return GLctx._lastGoodRBuf;
           }
@@ -148,7 +149,7 @@
         GLctx.createFramebuffer_=GLctx.createFramebuffer;
         GLctx.createFramebuffer = function() {
           var ret = GLctx.createFramebuffer_();
-          if (!ret) {
+          if (ret === null) {
             console.log("createFramebuffer returned null");
             return GLctx._lastGoodFBuf;
           }
@@ -157,7 +158,7 @@
         GLctx.createProgram_=GLctx.createProgram;
         GLctx.createProgram = function() {
           var ret = GLctx.createProgram_();
-          if (!ret) {
+          if (ret === null) {
             console.log("createProgram returned null");
             return GLctx._lastGoodProgram;
           }
@@ -167,11 +168,36 @@
         GLctx.createShader_=GLctx.createShader;
         GLctx.createShader = function(type) {
           var ret = GLctx.createShader_(type);
-          if (!ret) {
+          if (ret === null) {
             console.log("createShader(" + type + ") returned null");
             return GLctx._lastGoodShaderByType[type];
           }
           return GLctx._lastGoodShaderByType[type] = ret;
+        };
+        GLctx.getProgramInfoLog_=GLctx.getProgramInfoLog;
+        GLctx.getProgramInfoLog = function(prog) {
+          var ret = GLctx.getProgramInfoLog_(prog);
+          if (ret === null || ret === undefined) {
+            return "Lost context";
+          }
+          return ret;
+        };
+        GLctx.getShaderInfoLog_=GLctx.getShaderInfoLog;
+        GLctx.getShaderInfoLog = function(shader) {
+          var ret = GLctx.getShaderInfoLog_(shader);
+          if (ret === null || ret === undefined) {
+            return "Lost context";
+          }
+          return ret;
+        };
+        GLctx.getActiveUniform_=GLctx.getActiveUniform;
+        GLctx.getActiveUniform = function(prog, index) {
+          var ret = GLctx.getActiveUniform_(prog, index);
+          if (ret === null || ret === undefined) {
+            console.log("getActiveUniform returned null");
+            return GLctx._lastGoodActiveInfo;
+          }
+          return GLctx._lastGoodActiveInfo = ret;
         };
         return GLctx;
       }
@@ -191,7 +217,7 @@
       }
       function testLoseIn() {
         function onrestore2() {
-          var numCalls = Math.floor(Math.random() * 100);
+          var numCalls = Math.floor(Math.random() * 1000);
           console.log("Losing context in num calls: " + numCalls);
           document.getElementById('canvas').loseContextInNCalls(numCalls);
           onrestorecb = onrestore;
@@ -206,6 +232,6 @@
     <button onclick="loseContext()">Lose context</button>
     <button onclick="restoreContext();">Restore context</button>
     <button onclick="loseContext(); setTimeout(function(){restoreContext()},0);">Lose and restore context</button>
-    <button onclick="testLoseIn(); ">Lose and lose again</button>
+    <button onclick="testLoseIn();">Lose in N calls (only if ?debug=1)</button>
   </body>
 </html>
