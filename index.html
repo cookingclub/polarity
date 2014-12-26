@@ -38,6 +38,14 @@
     </div>
     <textarea class="emscripten" id="output" rows="8"></textarea>
 -->
+    <script>
+      if (location.search.indexOf("debug=1")!=-1) {
+        document.write("<script type='text/javascript' " +
+                       "src='https://www.khronos.org/registry/webgl/sdk/debug/webgl-debug.js' " +
+                       "onload='WebGLDebugUtils.makeLostContextSimulatingCanvas(document.getElementById(\"canvas\"));'>" +
+                       "</scr" + "ipt>");
+      }
+    </script>
     <script type='text/javascript'>
       // connect to canvas
       var Module = {
@@ -90,23 +98,107 @@
       };
       Module.setStatus('Downloading...');
 
-      document.getElementById('canvas').addEventListener("webglcontextlost",function(e) {
+      var canvas = document.getElementById("canvas");
+
+      canvas.addEventListener("webglcontextlost",function(e) {
         e.preventDefault();
         Module._onContextLost();
       },true);
-      document.getElementById('canvas').addEventListener("webglcontextrestored",function(e) {
+      var onrestore = function(e) {
         Module._onContextRestored();
+      };
+      var onrestorecb = onrestore;
+      canvas.addEventListener("webglcontextrestored",function(e) {
+        onrestorecb();
       },true);
 
+      canvas.getContext_ = canvas.getContext;
+      canvas.getContext = function(type) {
+        var GLctx = canvas.getContext_(type);
+        if (type == '2d') {
+          return GLctx;
+        }
+        GLctx.createTexture_=GLctx.createTexture;
+        GLctx.createTexture = function() {
+          var ret = GLctx.createTexture_();
+          if (!ret) {
+            console.log("createTexture returned null");
+            return GLctx._lastGoodTex;
+          }
+          return GLctx._lastGoodTex = ret;
+        };
+        GLctx.createBuffer_=GLctx.createBuffer;
+        GLctx.createBuffer = function() {
+          var ret = GLctx.createBuffer_();
+          if (!ret) {
+            console.log("createBuffer returned null");
+            return GLctx._lastGoodBuf;
+          }
+          return GLctx._lastGoodBuf = ret;
+        };
+        GLctx.createRenderbuffer_=GLctx.createFramebuffer;
+        GLctx.createRenderbuffer = function() {
+          var ret = GLctx.createRenderbuffer_();
+          if (!ret) {
+            console.log("createRenderbuffer returned null");
+            return GLctx._lastGoodRBuf;
+          }
+          return GLctx._lastGoodRBuf = ret;
+        };
+        GLctx.createFramebuffer_=GLctx.createFramebuffer;
+        GLctx.createFramebuffer = function() {
+          var ret = GLctx.createFramebuffer_();
+          if (!ret) {
+            console.log("createFramebuffer returned null");
+            return GLctx._lastGoodFBuf;
+          }
+          return GLctx._lastGoodFBuf = ret;
+        };
+        GLctx.createProgram_=GLctx.createProgram;
+        GLctx.createProgram = function() {
+          var ret = GLctx.createProgram_();
+          if (!ret) {
+            console.log("createProgram returned null");
+            return GLctx._lastGoodProgram;
+          }
+          return GLctx._lastGoodProgram = ret;
+        };
+        GLctx._lastGoodShaderByType = {};
+        GLctx.createShader_=GLctx.createShader;
+        GLctx.createShader = function(type) {
+          var ret = GLctx.createShader_(type);
+          if (!ret) {
+            console.log("createShader(" + type + ") returned null");
+            return GLctx._lastGoodShaderByType[type];
+          }
+          return GLctx._lastGoodShaderByType[type] = ret;
+        };
+        return GLctx;
+      }
+
+      // debugging code.
       function getLoseContextExtension() {
         return document.getElementById('canvas').getContext("webgl").getExtension("WEBGL_lose_context");
       }
       function loseContext() {
-        window.losecontext = getLoseContextExtension();
-        losecontext.loseContext();
+        if (typeof GLctx.losecontext === "undefined") {
+          GLctx.losecontext = getLoseContextExtension();
+        }
+        GLctx.losecontext.loseContext();
       }
       function restoreContext() {
-        losecontext.restoreContext();
+        GLctx.losecontext.restoreContext();
+      }
+      function testLoseIn() {
+        function onrestore2() {
+          var numCalls = Math.floor(Math.random() * 100);
+          console.log("Losing context in num calls: " + numCalls);
+          document.getElementById('canvas').loseContextInNCalls(numCalls);
+          onrestorecb = onrestore;
+          Module._onContextRestored();
+        }
+        onrestorecb = onrestore2;
+        document.getElementById('canvas').loseContext();
       }
     </script>
     <script async type="text/javascript" src="polarity.js"></script>
@@ -114,5 +206,6 @@
     <button onclick="loseContext()">Lose context</button>
     <button onclick="restoreContext();">Restore context</button>
     <button onclick="loseContext(); setTimeout(function(){restoreContext()},0);">Lose and restore context</button>
+    <button onclick="testLoseIn(); ">Lose and lose again</button>
   </body>
 </html>

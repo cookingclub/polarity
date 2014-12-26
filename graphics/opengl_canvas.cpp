@@ -14,6 +14,9 @@ namespace {
 extern "C"
 void onContextLost() {
     std::cerr << "Context lost" << std::endl;
+    for (Polarity::OpenGLCanvas *canvas : allCanvases) {
+        canvas->onContextLost();
+    }
 }
 
 extern "C"
@@ -155,15 +158,19 @@ static GLuint genTexture() {
     return texture;
 }
 
-OpenGLImage::OpenGLImage(const std::string &filename)
+OpenGLImage::OpenGLImage(const std::string &filename, NoLoad)
     : Image(filename), tex(0), w(0), h(0) {
+}
+
+OpenGLImage::OpenGLImage(const std::string &filename)
+    : Image(filename), tex(genTexture()), w(0), h(0) {
     if (!filename.empty()) {
         downloadAndLoad();
     }
 }
 
 OpenGLImage::OpenGLImage(SDL_Surface *surface)
-    : Image(std::string()), tex(0), w(surface->w), h(surface->h) {
+    : Image(std::string()), tex(genTexture()), w(surface->w), h(surface->h) {
     int texture_format;
     bool colorNoAlpha = (surface->format->BitsPerPixel == 24 && surface->format->BytesPerPixel==3);
     bool colorAlpha = (surface->format->BitsPerPixel == 32 && surface->format->BytesPerPixel==4);
@@ -203,8 +210,6 @@ OpenGLImage::OpenGLImage(SDL_Surface *surface)
         colorNoAlpha = false;
         colorAlpha = true;
     }
-
-    tex = genTexture();
 
     if (!SDL_LockSurface(surface)) {
         glTexImage2D( GL_TEXTURE_2D, 0, colorAlpha ? GL_RGBA : GL_RGB, w, h, 0,
@@ -248,13 +253,11 @@ void OpenGLImage::loadImageOpenGL(Image *super,
                 texture_format = GL_RGBA;
                 break;
             }
-            // get the number of channels in the SDL surface
-            GLuint texture = genTexture();
+            glBindTexture( GL_TEXTURE_2D, thus->tex );
 
             // Edit the texture object's image data using the information SDL_Surface gives us
             glTexImage2D( GL_TEXTURE_2D, 0, texture_format, image->width, image->height, 0,
                           texture_format, GL_UNSIGNED_BYTE, &image->data[0]);
-            thus->tex = texture;
             thus->w = image->width;
             thus->h = image->height;
             thus->stage = COMPLETE;
@@ -275,7 +278,7 @@ void OpenGLImage::downloadAndLoad() {
 
 void OpenGLImage::reload() {
     stage = LOADING;
-    tex = -1;
+    tex = genTexture();
     downloadAndLoad();
 }
 
@@ -429,6 +432,7 @@ OpenGLCanvas::OpenGLCanvas(int width, int height)
         width, height, 0,
         SDL_HWSURFACE | SDL_RESIZABLE | SDL_OPENGL );
 #endif
+    lostContext = false;
     reinitialize();
 #ifdef EMSCRIPTEN
     allCanvases.insert(this);
@@ -447,13 +451,20 @@ OpenGLCanvas::~OpenGLCanvas() {
 #endif
 }
 
+void OpenGLCanvas::onContextLost() {
+    lostContext = true;
+    fontManager().clearTextCache();
+}
+
 void OpenGLCanvas::reinitialize() {
+    lostContext = false;
     createRectProgram();
     glViewport(0, 0, width(), height());
     Image::forEachImage(OpenGLImage::reloadImage);
     for (OpenGLDisplayList *dl : displayLists) {
         dl->reinitialize();
     }
+    fontManager().clearTextCache();
 }
 
 int OpenGLCanvas::width() {
@@ -465,11 +476,17 @@ int OpenGLCanvas::height() {
 }
 
 OpenGLImage *OpenGLCanvas::loadImageFromSurface(SDL_Surface *surf) {
+    if (lostContext) {
+        return new OpenGLImage(std::string(), OpenGLImage::NoLoad());
+    }
     OpenGLImage *retval = new OpenGLImage(surf);
     return retval;
 }
 
 OpenGLImage *OpenGLCanvas::loadImage(const std::string &filename) {
+    if (lostContext) {
+        return new OpenGLImage(filename, OpenGLImage::NoLoad());
+    }
     OpenGLImage *retval = new OpenGLImage(filename);
     return retval;
 }

@@ -1,0 +1,8 @@
+Emscripten bugs:
+
+- TTF_CloseFont leaks font objects instead of running delete;
+
+- SDL_UnlockSurface crashes if surface is not the screen, when used for reading.
+
+- exception thrown: TypeError: Cannot set property 'name' of null,TypeError: Cannot set property 'name' of null
+    at _glGenTextures (http://localhost/polarity/polarity.js:7482:22)

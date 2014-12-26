@@ -33,6 +33,9 @@ class OpenGLCanvas;
 class OpenGLImage : public Image {
     friend class OpenGLCanvas;
 public:
+    class NoLoad {};
+
+    explicit OpenGLImage(const std::string &filename, NoLoad);
     explicit OpenGLImage(SDL_Surface *surf);
     explicit OpenGLImage(const std::string &filename);
     virtual ~OpenGLImage();
@@ -91,6 +94,7 @@ public:
     OpenGLCanvas(int width, int height);
     ~OpenGLCanvas();
 
+    void onContextLost();
     void reinitialize();
 
     virtual int width();
@@ -131,6 +135,7 @@ public:
     GLuint program;
     int w;
     int h;
+    bool lostContext;
 #if SDL_MAJOR_VERSION >= 2
     SDL_Window *window;
     SDL_GLContext renderer;

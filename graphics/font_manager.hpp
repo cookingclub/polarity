@@ -106,6 +106,10 @@ public:
                            image->width(), image->height(), 0);
     }
 
+    void clearTextCache() {
+        textCache.clear();
+    }
+
 private:
 
     LRUMap<FontKey, std::unique_ptr<FontRenderer>, FontKey::Hash > fontCache;
