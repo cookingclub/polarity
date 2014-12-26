@@ -17,6 +17,19 @@
       /* border: 1px solid black; } */
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
       canvas.emscripten { border: 0px none; }
+
+    @font-face {
+        font-family: 'DroidSans';
+        src: url('assets/fonts/DroidSans.ttf') format('truetype');
+    }
+    @font-face {
+        font-family: 'DroidSansMono';
+        src: url('assets/fonts/DroidSansMono.ttf') format('truetype');
+    }
+    @font-face {
+        font-family: 'DroidSerif';
+        src: url('assets/fonts/DroidSerif.ttf') format('truetype');
+    }
     </style>
   </head>
   <body>
@@ -233,5 +246,11 @@
     <button onclick="restoreContext();">Restore context</button>
     <button onclick="loseContext(); setTimeout(function(){restoreContext()},0);">Lose and restore context</button>
     <button onclick="testLoseIn();">Lose in N calls (only if ?debug=1)</button>
+    <div style="text-indent: -100em;">
+        <!-- preload fonts -->
+        <span style="font-family: DroidSans">.</span>
+        <span style="font-family: DroidSansMono">.</span>
+        <span style="font-family: DroidSerif">.</span>
+    </div>
   </body>
 </html>

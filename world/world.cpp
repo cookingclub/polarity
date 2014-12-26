@@ -155,20 +155,9 @@ void World::draw(Canvas *screen) {
     for (auto& object : objects) {
         object->draw(this, screen);
     }
-    char cwd[1024];
-    getcwd(cwd, 1024);
-    // std::cout <<"CWD: " << cwd << std::endl;
-    // ("DejaVuSans.ttf", 64);
-#ifdef EMSCRIPTEN
-    auto fontName = rand() % 9 ? "serif" : "sans-serif";
-#else
-    auto fontName = rand() % 9 ? "assets/fonts/mikachan.ttf" : "assets/fonts/TakaoPMincho.ttf";
-#endif
-    std::string msg = "X Hello, world! \xe4\xbb\x8a\xe6\x97\xa5\xe3\x81\xaf";
-    msg[0] = '0' + (sqrt(rand() % 100));
     screen->fontManager().drawText(
-            screen, Rect(200,200,500,100), fontName, 12, {255,255,0,128},
-            msg);
+            screen, Rect(2,2,1000,100), "DroidSerif", 12, {128,255,64,255},
+            "Polarity version 0.1 alpha");
     screenDimensions.x = screen->width();
     screenDimensions.y = screen->height();
 }
