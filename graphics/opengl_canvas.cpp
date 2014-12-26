@@ -142,7 +142,7 @@ void OpenGLDisplayList::attach(const std::shared_ptr<Image> &newImage) {
     uploaded = false;
 }
 
-static GLuint genTexture() {
+static GLuint genTexture(bool use_nearest=false) {
     GLuint texture = 0;
     // Have OpenGL generate a texture object handle for us
     glGenTextures( 1, &texture );
@@ -151,8 +151,13 @@ static GLuint genTexture() {
     glBindTexture( GL_TEXTURE_2D, texture );
 
     // Set the texture's stretching properties
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    if (use_nearest) {
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    } else {
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    }
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
     return texture;
@@ -170,7 +175,7 @@ OpenGLImage::OpenGLImage(const std::string &filename)
 }
 
 OpenGLImage::OpenGLImage(SDL_Surface *surface)
-    : Image(std::string()), tex(genTexture()), w(surface->w), h(surface->h) {
+    : Image(std::string()), tex(genTexture(true)), w(surface->w), h(surface->h) {
     int texture_format;
     bool colorNoAlpha = (surface->format->BitsPerPixel == 24 && surface->format->BytesPerPixel==3);
     bool colorAlpha = (surface->format->BitsPerPixel == 32 && surface->format->BytesPerPixel==4);

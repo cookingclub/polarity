@@ -74,6 +74,11 @@ public:
     void drawText(Canvas *canvas, Rect rect, const std::string &fontName,
                   int ptSize, SDL_Color color, const std::string &message,
                   bool cacheText=true) {
+#ifdef USE_SDL2
+        color.a = 255;
+#else
+        color.unused = 255;
+#endif
         FontKey fcKey(fontName, ptSize);
         auto fontRendererPtr = fontCache.get(fcKey);
         FontRenderer *fontRenderer;
