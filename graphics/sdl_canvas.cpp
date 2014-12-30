@@ -154,7 +154,7 @@ void SDLImage::disableAlphaBlend() {
 
 SDLContext::SDLContext()
 #if SDL_MAJOR_VERSION >= 2
-   : window(nullptr), renderer(nullptr) {}
+   : window(nullptr), renderer(nullptr)
 #endif
 {
 
