@@ -85,7 +85,7 @@ void Layer::draw(Canvas *screen, int startx, int starty) {
     startx *= xparallax;
     starty *= yparallax;
     if (backgroundImage) {
-        backgroundImage->draw(screen, startx, starty, 0);
+        backgroundImage->draw(screen, startx, starty, 0, 1);
         return;
     }
     if (displayLists.empty()) {

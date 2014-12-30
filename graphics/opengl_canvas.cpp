@@ -127,6 +127,8 @@ void OpenGLDisplayList::draw(Canvas *canvas, int x, int y) const {
     //mat *= GLMatrix4x4::scalar(scaleX, scaleY, 1);
 
     glUniformMatrix4fv(ogl_canvas->matrixLocation, 1, GL_FALSE, mat.values());
+    float color[4] = {1,1,1,1};
+    glUniform4fv(ogl_canvas->colorLocation, 1, color);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     GLfloat *offset = 0;
@@ -358,10 +360,11 @@ void main() {\n\
     constexpr const GLchar FRAGMENT_SHADER[] = "\n\
 precision mediump float;\n\
 varying vec2 v_texcoord;\n\
+uniform vec4 u_color;\n\
 uniform sampler2D samp_texture;\n\
 \n\
 void main() {\n\
-    gl_FragColor = texture2D(samp_texture, v_texcoord);\n\
+    gl_FragColor = u_color * texture2D(samp_texture, v_texcoord);\n\
     /*gl_FragColor = vec4(abs(v_texcoord), 0.1, 1.0);*/\n\
 /* + 15.0*texture2D(samp_texture, v_texcoord) + vec4(0,0,0,1);*/\n\
 }\n\
@@ -402,6 +405,7 @@ void main() {\n\
     }
     glUseProgram(program);
     matrixLocation = glGetUniformLocation(program, "u_matrix");
+    colorLocation = glGetUniformLocation(program, "u_color");
     sampTextureLocation = glGetUniformLocation(program, "samp_texture");
 
     glGenBuffers(1, &spriteVBO);
@@ -511,7 +515,7 @@ void OpenGLCanvas::drawDisplayList(const DisplayList *dl, int x, int y) {
 void OpenGLCanvas::drawSprite(Image *image,
                               float centerX, float centerY,
                               float scaleX, float scaleY,
-                              float angle) {
+                              float angle, float alpha) {
     if (!image->isLoaded()) {
         return;
     }
@@ -532,8 +536,9 @@ void OpenGLCanvas::drawSprite(Image *image,
     mat *= GLMatrix4x4::translation(centerX, centerY, 0);
     mat *= GLMatrix4x4::rotationZ(angle);
     mat *= GLMatrix4x4::scalar(scaleX, scaleY, 1);
-
     glUniformMatrix4fv(matrixLocation, 1, GL_FALSE, mat.values());
+    float color[4] = {1, 1, 1, alpha};
+    glUniform4fv(colorLocation, 1, color);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     glBindBuffer(GL_ARRAY_BUFFER, spriteVBO);

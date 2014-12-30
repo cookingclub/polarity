@@ -37,7 +37,7 @@ public:
     virtual void drawSprite(Image *image,
                             float centerX, float centerY,
                             float scaleX, float scaleY,
-                            float angle) = 0;
+                            float angle, float alpha) = 0;
     virtual DisplayList *makeDisplayList(const std::shared_ptr<Image> &image,
                                          const std::vector<Image::BlitDescription> &draws,
                                          const Rect& bounds) = 0;

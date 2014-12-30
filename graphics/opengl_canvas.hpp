@@ -110,7 +110,7 @@ public:
     virtual void drawSprite(Image *image,
                             float centerX, float centerY,
                             float scaleX, float scaleY,
-                            float angle);
+                            float angle, float alpha);
 
     virtual DisplayList *makeDisplayList(const std::shared_ptr<Image> &image,
                                          const std::vector<Image::BlitDescription> &draws,
@@ -129,6 +129,7 @@ public:
     GLint positionLocation;
     GLint texCoordLocation;
     GLint matrixLocation;
+    GLint colorLocation;
     GLint sampTextureLocation;
     GLuint sampTexture;
     int buf;

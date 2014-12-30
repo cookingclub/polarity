@@ -101,10 +101,10 @@ size_t Animation::getFrame() {
 }
 void Animation::drawSprite(Canvas *screen,
                            float centerX, float centerY,
-                           float scaleX, float scaleY, float angle) {
+                           float scaleX, float scaleY, float angle, float alpha) {
     size_t frame = getFrame();
     if (!images.empty()) {
-        images[frame]->drawSprite(screen, centerX, centerY, scaleX, scaleY, angle);
+        images[frame]->drawSprite(screen, centerX, centerY, scaleX, scaleY, angle, alpha);
     }else {
         std::cerr << "No frames in surface: shouldn't happen." << std::endl;
     }

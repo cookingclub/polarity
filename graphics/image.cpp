@@ -41,12 +41,12 @@ std::shared_ptr<Image> Image::get(Canvas *canvas, const std::string& filename) {
 
 // angle unrestricted
 void Image::drawSprite(Canvas *screen,
-                       float centerX, float centerY, float scaleX, float scaleY, float angle) {
-    screen->drawSprite(this, centerX, centerY, scaleX, scaleY, angle);
+                       float centerX, float centerY, float scaleX, float scaleY, float angle, float alpha) {
+    screen->drawSprite(this, centerX, centerY, scaleX, scaleY, angle, alpha);
 }
 
-void Image::draw(Canvas *screen, int x, int y, float angle) {//angle should be multiple of PI/2
-    drawSprite(screen, x + width() / 2., y + height() / 2., width(), height(), angle);
+void Image::draw(Canvas *screen, int x, int y, float angle, float alpha) {//angle should be multiple of PI/2
+    drawSprite(screen, x + width() / 2., y + height() / 2., width(), height(), angle, alpha);
 }
 
 namespace {

@@ -246,8 +246,8 @@ int main(int argc, char**argv) {
     SDL_EnableUNICODE(SDL_ENABLE);
 #endif
 
-    //Polarity::screen.reset(new Polarity::SDLCanvas(CANVAS_WIDTH, CANVAS_HEIGHT));
-    Polarity::screen.reset(new Polarity::OpenGLCanvas(CANVAS_WIDTH, CANVAS_HEIGHT));
+    Polarity::screen.reset(new Polarity::SDLCanvas(CANVAS_WIDTH, CANVAS_HEIGHT));
+    //Polarity::screen.reset(new Polarity::OpenGLCanvas(CANVAS_WIDTH, CANVAS_HEIGHT));
 
     // SDL_MapRGB(screen->format, 65, 65, 65);
     srand(time(NULL));

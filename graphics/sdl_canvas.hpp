@@ -206,10 +206,12 @@ public:
               mFontManager(FONT_CACHE_SIZE, TEXT_CACHE_SIZE) {
         w = width;
         h = height;
+        temp_buffer = nullptr;
     }
     SDLCanvas(int width, int height)
             : w(width), h(height), context(new SDLContext()),
               mFontManager(FONT_CACHE_SIZE, TEXT_CACHE_SIZE) {
+        temp_buffer = nullptr;
 #if SDL_MAJOR_VERSION >= 2
         context->window = SDL_CreateWindow("Polarity",
             SDL_WINDOWPOS_UNDEFINED,
@@ -231,6 +233,9 @@ public:
             SDL_DestroyTexture(screen);
         }
 #else
+        if (temp_buffer) {
+            SDL_FreeSurface(temp_buffer);
+        }
         SDL_FreeSurface(screen);
 #endif
     }
@@ -301,7 +306,7 @@ public:
                 for (auto blit : dl) {
                     static_cast<SDLCanvas*>(canvas)->drawSpriteSrc(
                         img.get(), blit.src, blit.centerX + x, blit.centerY + y,
-                        blit.scaleX, blit.scaleY, blit.angle);
+                        blit.scaleX, blit.scaleY, blit.angle, 1.0);
                 }
             }
         }
@@ -367,7 +372,7 @@ public:
                         img.get(), blit.src,
                         blit.centerX - bounds.x,
                         blit.centerY - bounds.y,
-                        blit.scaleX, blit.scaleY, blit.angle);
+                        blit.scaleX, blit.scaleY, blit.angle, 1.0);
                 }
             }
             static_cast<SDLImage*>(img.get())->enableAlphaBlend();
@@ -429,16 +434,34 @@ public:
     virtual void drawSprite(Image *image,
                             float centerX, float centerY,
                             float scaleX, float scaleY,
-                            float angle) {
+                            float angle, float alpha /* from 0 - 1*/) {
         //SDLImage* sdl_image = static_cast<SDLImage*>(image);
         drawSpriteSrc(image, Rect(0, 0, image->width(), image->height()),
-                      centerX, centerY, scaleX, scaleY, angle);
+                      centerX, centerY, scaleX, scaleY, angle, alpha);
     }
+#if SDL_MAJOR_VERSION < 2
+    void setupAlphaBlit(float alpha, SDL_Rect sdldest) {
+        if (alpha != 1.0) {
+            if (temp_buffer == nullptr) {
+                temp_buffer = SDL_CreateRGBSurface(0, screen->w, screen->h, screen->format->BitsPerPixel,
+                                                   screen->format->Rmask, screen->format->Gmask, screen->format->Bmask,
+                                                   0);
+            }
+            SDL_BlitSurface(screen, &sdldest, temp_buffer, &sdldest);
+        }
+    }
+    void doAlphaBlit(float alpha, SDL_Rect sdldest) {
+        if (alpha != 1.0) {
+            SDL_SetAlpha(temp_buffer, SDL_SRCALPHA, (Uint8)(255 - 255 * alpha));
+            SDL_BlitSurface(temp_buffer, &sdldest, screen, &sdldest);
+        }
+    }
+#endif
     void drawSpriteSrc(Image *image,
                             const Rect &src,
                             float centerX, float centerY,
                             float scaleX, float scaleY,
-                            float angle) {
+                       float angle, float alpha /* from 0 - 1 */) {
         if (!image->isLoaded()) {
             return;
         }
@@ -452,6 +475,7 @@ public:
             SDL_FreeSurface(sdl_image->surf);
             sdl_image->surf = nullptr;
         }
+        SDL_SetTextureAlphaMod(sdl_image->texture, (Uint8)(alpha * 255));
         if (!sdl_image->texture) {
             return;
         }
@@ -468,7 +492,7 @@ public:
             SDL_RenderCopy(context->renderer, sdl_image->texture, &sdlsrc, &sdldest);
         } else {
             SDL_RenderCopyEx(context->renderer, sdl_image->texture, &sdlsrc, &sdldest,
-                             angle, NULL, SDL_FLIP_NONE);
+                             -angle * 180 / M_PI, NULL, SDL_FLIP_NONE);
         }
         if (screen) {
             SDL_SetRenderTarget(context->renderer, NULL);
@@ -486,6 +510,7 @@ public:
             sdldest.w = sdlsrc.w;
             sdldest.h = sdlsrc.h;
             SDL_BlitSurface(surf, &sdlsrc, screen, &sdldest);
+            doAlphaBlit(alpha, sdldest);
             return;
         }
         if (src.x != 0 || src.y != 0 || src.w != surf->w || src.h != surf->h) {
@@ -539,9 +564,11 @@ public:
         SDL_Rect sdldest;
         sdldest.x = centerX - surfw / 2;
         sdldest.y = centerY - surfh / 2;
-        sdldest.w = surfw / 2;
-        sdldest.h = surfh / 2;
+        sdldest.w = surfw;
+        sdldest.h = surfh;
+        setupAlphaBlit(alpha, sdldest);
         SDL_BlitSurface(surf, &sdlsrc, screen, &sdldest);
+        doAlphaBlit(alpha, sdldest);
         if (surf != sdl_image->surf) {
             SDL_FreeSurface(surf); // this is if asymmetric zoom was necessary
         }
@@ -576,8 +603,10 @@ public:
     }
 #if SDL_MAJOR_VERSION >= 2
     SDL_Texture* screen;
+    void * temp_buffer;
 #else
     SDL_Surface* screen;
+    SDL_Surface* temp_buffer; // for alpha compositing
 #endif
     int w, h;
     std::shared_ptr<SDLContext> context;

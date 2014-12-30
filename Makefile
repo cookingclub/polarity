@@ -23,8 +23,8 @@ AR = ar
 LDFLAGS = -lSDL -lSDL_mixer -lSDLmain $(EXTERNALS) -lGL -lSDL_gfx -lSDL_ttf
 PLATFORM_CFLAGS =
   else
-LDFLAGS = -lSDL2 -lSDL2_mixer -lSDL2main $(EXTERNALS) -lGL -lSDL2_ttf
-PLATFORM_CFLAGS = -DUSE_SDL2
+LDFLAGS = -Llibs/libsdl/lib  $(EXTERNALS)  -lSDL2_mixer -lGL -lSDL2_ttf -lSDL2 -lSDL2main -lrt -lfreetype
+PLATFORM_CFLAGS = -Ilibs/libsdl/include -DUSE_SDL2
   endif
 else
 OBJ_DIR = $(OBJ_EM)

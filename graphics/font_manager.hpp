@@ -108,7 +108,7 @@ public:
         canvas->drawSprite(image,
                            rect.left() + image->width() / 2,
                            rect.top() + image->height() / 2,
-                           image->width(), image->height(), 0);
+                           image->width(), image->height(), 0, 1);
     }
 
     void clearTextCache() {

@@ -35,7 +35,7 @@ public:
     float frameTime;
     static std::shared_ptr<Animation> get(Canvas *canvas, const std::string &filename);
     void drawSprite(Canvas *screen, float centerX, float centerY,
-                    float scaleX, float scaleY, float angle);
+                    float scaleX, float scaleY, float angle, float alpha);
 
     int width();
     int height();
