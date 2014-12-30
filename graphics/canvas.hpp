@@ -4,6 +4,7 @@
 #include "image.hpp"
 
 struct SDL_Surface;
+struct SDL_Color;
 
 namespace Polarity {
 
@@ -38,6 +39,7 @@ public:
                             float centerX, float centerY,
                             float scaleX, float scaleY,
                             float angle, float alpha) = 0;
+    virtual void drawLine(int x0, int y0, int x1, int y1, const SDL_Color& color, float alpha) = 0;
     virtual DisplayList *makeDisplayList(const std::shared_ptr<Image> &image,
                                          const std::vector<Image::BlitDescription> &draws,
                                          const Rect& bounds) = 0;

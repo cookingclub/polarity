@@ -417,6 +417,13 @@ void main() {\n\
     glUniform1i(sampTextureLocation, 0);
 }
 
+void OpenGLCanvas::createWhiteTexture() {
+    whiteTexture = genTexture(true);
+    uint8_t pixel[4] = {255, 255, 255, 255};
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0,
+                  GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+}
+
 OpenGLCanvas::OpenGLCanvas(int width, int height)
         : w(width), h(height), mFontManager(FONT_CACHE_SIZE, TEXT_CACHE_SIZE) {
     SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 8 );
@@ -464,6 +471,7 @@ void OpenGLCanvas::onContextLost() {
 void OpenGLCanvas::reinitialize() {
     lostContext = false;
     createRectProgram();
+    createWhiteTexture();
     glViewport(0, 0, width(), height());
     Image::forEachImage(OpenGLImage::reloadImage);
     for (OpenGLDisplayList *dl : displayLists) {
@@ -512,6 +520,20 @@ void OpenGLCanvas::drawDisplayList(const DisplayList *dl, int x, int y) {
     dl->draw(this, x, y);
 }
 
+namespace {
+
+GLMatrix4x4 getScreenCoordAdjustment(int width, int height) {
+    GLMatrix4x4 screen_coords_adjustment = {
+        2.f / (GLfloat)width, 0, 0, 0,
+        0, -2.f / (GLfloat)height, 0, 0,
+        0, 0, 1, 0,
+        -1, 1, 0, 1
+    };
+    return screen_coords_adjustment;
+}
+
+}
+
 void OpenGLCanvas::drawSprite(Image *image,
                               float centerX, float centerY,
                               float scaleX, float scaleY,
@@ -525,14 +547,8 @@ void OpenGLCanvas::drawSprite(Image *image,
     glBindTexture(GL_TEXTURE_2D, ogl_image->texture());
     glActiveTexture(GL_TEXTURE0 + sampTexture);
 
-    GLMatrix4x4 screen_coords_adjustment = {
-        2.f / (GLfloat)width(), 0, 0, 0,
-        0, -2.f / (GLfloat)height(), 0, 0,
-        0, 0, 1, 0,
-        -1, 1, 0, 1
-    };
 
-    GLMatrix4x4 mat = screen_coords_adjustment;
+    GLMatrix4x4 mat = getScreenCoordAdjustment(width(), height());
     mat *= GLMatrix4x4::translation(centerX, centerY, 0);
     mat *= GLMatrix4x4::rotationZ(angle);
     mat *= GLMatrix4x4::scalar(scaleX, scaleY, 1);
@@ -547,6 +563,29 @@ void OpenGLCanvas::drawSprite(Image *image,
     glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset + 3));
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
+
+void OpenGLCanvas::drawLine(int x0, int y0, int x1, int y1,
+                         const SDL_Color& color,
+                         float alpha) {
+    glUseProgram(program);
+    glBindTexture(GL_TEXTURE_2D, whiteTexture);
+    glActiveTexture(GL_TEXTURE0 + sampTexture);
+    GLMatrix4x4 mat = getScreenCoordAdjustment(width(), height());
+    mat *= GLMatrix4x4::translation((x0 + x1) / 2.0f, (y0 + y1) / 2.0f, 0);
+    mat *= GLMatrix4x4::scalar(x1 - x0, y1 - y0, 1);
+    glUniformMatrix4fv(matrixLocation, 1, GL_FALSE, mat.values());
+    float c[4] = {color.r/ 255.0f, color.g / 255.0f, color.b / 255.0f, alpha};
+    glUniform4fv(colorLocation, 1, c);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    glBindBuffer(GL_ARRAY_BUFFER, spriteVBO);
+    GLfloat *offset = 0;
+    // skip the next vertex by saying pixel size is 10!!
+    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset + 5));
+    glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(offset + 8));
+    glDrawArrays(GL_LINES, 0, 2);
+}
+
 
 void OpenGLCanvas::clear() {
     glFlush();

@@ -88,6 +88,8 @@ class OpenGLCanvas : public Canvas {
 
     void createRectProgram();
 
+    void createWhiteTexture();
+
     friend class OpenGLDisplayList;
 
 public:
@@ -111,7 +113,8 @@ public:
                             float centerX, float centerY,
                             float scaleX, float scaleY,
                             float angle, float alpha);
-
+    virtual void drawLine(int x0, int y0, int x1, int y1,
+                          const SDL_Color& color, float alpha);
     virtual DisplayList *makeDisplayList(const std::shared_ptr<Image> &image,
                                          const std::vector<Image::BlitDescription> &draws,
                                          const Rect&bounds);
@@ -136,6 +139,7 @@ public:
     GLuint program;
     GLuint vertexShader;
     GLuint fragmentShader;
+    GLuint whiteTexture;
     int w;
     int h;
     bool lostContext;

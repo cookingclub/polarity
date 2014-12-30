@@ -158,6 +158,9 @@ void World::draw(Canvas *screen) {
     screen->fontManager().drawText(
             screen, Rect(2,2,1000,100), "DroidSerif", 12, {128,128,64},
             "Polarity version 0.1 alpha");
+    screen->drawLine(10,10,20,100,{255,0,255, 255},0.125);
+    screen->drawLine(10,10,20,10,{255,0,255, 255},.75);
+
     screenDimensions.x = screen->width();
     screenDimensions.y = screen->height();
 }

@@ -10,6 +10,7 @@
 #include "SDL/SDL_ttf.h"
 #include "SDL/SDL_mixer.h"
 #include "SDL/SDL_rotozoom.h"
+#include "SDL/SDL_gfxPrimitives.h"
 #endif
 #include "image.hpp"
 #include "canvas.hpp"
@@ -401,6 +402,7 @@ void SDLCanvas::drawSprite(Image *image,
     drawSpriteSrc(image, Rect(0, 0, image->width(), image->height()),
                   centerX, centerY, scaleX, scaleY, angle, alpha);
 }
+
 #if SDL_MAJOR_VERSION < 2
 void SDLCanvas::setupAlphaBlit(SDL_Surface * surf, float alpha, SDL_Rect sdldest) {
 #ifndef EMSCRIPTEN
@@ -543,6 +545,21 @@ void SDLCanvas::drawSpriteSrc(Image *image,
     if (surf != sdl_image->surf) {
         SDL_FreeSurface(surf); // this is if asymmetric zoom was necessary
     }
+#endif
+}
+
+void SDLCanvas::drawLine(int x0, int y0, int x1, int y1,
+                         const SDL_Color& color,
+                         float alpha) {
+#if SDL_MAJOR_VERSION >= 2
+    if (screen) {
+        SDL_SetRenderTarget(context->renderer, screen);
+    }
+    SDL_SetRenderDrawColor(context->renderer, color.r, color.g, color.b, (Uint8)(255 * alpha));
+    SDL_SetRenderDrawBlendMode(context->renderer, SDL_BLENDMODE_BLEND);
+    SDL_RenderDrawLine(context->renderer, x0, y0, x1, y1);
+#else
+    lineRGBA(screen, x0, y0, x1, y1, color.r, color.g, color.b, (Uint8)(255 * alpha));
 #endif
 }
 void SDLCanvas::beginFrame() {

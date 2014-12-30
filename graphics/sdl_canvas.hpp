@@ -136,7 +136,9 @@ public:
                             const Rect &src,
                             float centerX, float centerY,
                             float scaleX, float scaleY,
-                       float angle, float alpha /* from 0 - 1 */);
+                           float angle, float alpha /* from 0 - 1 */);
+    virtual void drawLine(int x0, int y0, int x1, int y1,
+                          const SDL_Color& color, float alpha);
     virtual void beginFrame();
     virtual void endFrame();
 #if SDL_MAJOR_VERSION >= 2
