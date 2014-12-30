@@ -440,7 +440,8 @@ public:
                       centerX, centerY, scaleX, scaleY, angle, alpha);
     }
 #if SDL_MAJOR_VERSION < 2
-    void setupAlphaBlit(float alpha, SDL_Rect sdldest) {
+    void setupAlphaBlit(SDL_Surface * surf, float alpha, SDL_Rect sdldest) {
+#ifndef EMSCRIPTEN
         if (alpha != 1.0) {
             if (temp_buffer == nullptr) {
                 temp_buffer = SDL_CreateRGBSurface(0, screen->w, screen->h, screen->format->BitsPerPixel,
@@ -449,12 +450,19 @@ public:
             }
             SDL_BlitSurface(screen, &sdldest, temp_buffer, &sdldest);
         }
+#else
+        // EMSCRIPTEN disobeys the spec here and multiplies the per-pixel alpha with the constant per-surface alpha
+        // We use this to save 3x in rendering time
+        SDL_SetAlpha(surf, SDL_SRCALPHA, (Uint8)(255 * alpha));
+#endif
     }
-    void doAlphaBlit(float alpha, SDL_Rect sdldest) {
+    void doAlphaBlit(SDL_Surface *, float alpha, SDL_Rect sdldest) {
+#ifndef EMSCRIPTEN
         if (alpha != 1.0) {
             SDL_SetAlpha(temp_buffer, SDL_SRCALPHA, (Uint8)(255 - 255 * alpha));
             SDL_BlitSurface(temp_buffer, &sdldest, screen, &sdldest);
         }
+#endif
     }
 #endif
     void drawSpriteSrc(Image *image,
@@ -509,8 +517,9 @@ public:
             sdldest.y = centerY - scaleY / 2;
             sdldest.w = sdlsrc.w;
             sdldest.h = sdlsrc.h;
+            setupAlphaBlit(surf, alpha, sdldest);
             SDL_BlitSurface(surf, &sdlsrc, screen, &sdldest);
-            doAlphaBlit(alpha, sdldest);
+            doAlphaBlit(surf, alpha, sdldest);
             return;
         }
         if (src.x != 0 || src.y != 0 || src.w != surf->w || src.h != surf->h) {
@@ -566,9 +575,9 @@ public:
         sdldest.y = centerY - surfh / 2;
         sdldest.w = surfw;
         sdldest.h = surfh;
-        setupAlphaBlit(alpha, sdldest);
+        setupAlphaBlit(surf, alpha, sdldest);
         SDL_BlitSurface(surf, &sdlsrc, screen, &sdldest);
-        doAlphaBlit(alpha, sdldest);
+        doAlphaBlit(surf, alpha, sdldest);
         if (surf != sdl_image->surf) {
             SDL_FreeSurface(surf); // this is if asymmetric zoom was necessary
         }
