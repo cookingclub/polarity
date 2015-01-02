@@ -126,7 +126,7 @@ public:
     virtual void resize(int w, int h);
     virtual void beginFrame();
     virtual void endFrame();
-
+    virtual bool getNextEvent(SDL_Event* out_event);
     virtual void clear();
 
     GLuint spriteVBO;

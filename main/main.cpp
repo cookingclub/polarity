@@ -14,9 +14,8 @@
 #include <SDL/SDL_timer.h>
 #include <SDL/SDL_ttf.h>
 #endif
-#include "graphics/sdl_canvas.hpp"
-#include "graphics/opengl_canvas.hpp"
-#include "audio/audio.hpp"
+#include "graphics/init.hpp"
+#include "world/sounds.hpp"
 #include "main/main.hpp"
 #include "world/world.hpp"
 #include "physics/behavior.hpp"
@@ -34,7 +33,9 @@ std::shared_ptr<AudioChannelPlayer> audioPlayer;
 std::shared_ptr<PlayerState> playerState (new PlayerState());
 std::shared_ptr<GameState> gameState;
 
-extern void loadAssets();
+
+
+
 #ifdef EMSCRIPTEN
 #define LOCK_MAIN_THREAD_CALLBACK_MUTEX()
 #else
@@ -174,6 +175,7 @@ void exitProgram() {
         LOCK_MAIN_THREAD_CALLBACK_MUTEX();
         functionsToCallOnMainThread.clear();
     }
+    Polarity::destroyGraphicsSystem();
 }
 void mainThreadCallback(const std::function<void()>&&function) {
     LOCK_MAIN_THREAD_CALLBACK_MUTEX();
@@ -191,10 +193,11 @@ extern "C" {
 #endif
 
 #ifdef EMSCRIPTEN
+bool exited = false;
 void emLoopIter() {
-    if (!loopIter(screen.get())) {
+    if (exited == false && !loopIter(screen.get())) {
         exitProgram();
-        SDL_Quit();
+        exited = true;
     }
 }
 
@@ -204,7 +207,6 @@ void mainloop() {
 
 #else
 void mainloop() {
-    atexit(SDL_Quit);
     Uint32 time = SDL_GetTicks();
     while (true) {
         if (!loopIter(screen.get())) {
@@ -240,49 +242,18 @@ int main(int argc, char**argv) {
     if (!test0.lock()) {
         cerr << "OK0"<<std::endl;
     }
-    int retval = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO |
-                          SDL_INIT_TIMER);
-    if (retval) {
-        cerr << "Failed to init SDL" << endl;
-        return 1;
+    const char *renderer_type = "SDL";
+    if (argc > 1) {
+        renderer_type = argv[1];
     }
-    if (TTF_Init()) {
-        cerr << "Failed to init TTF" << endl;
-        return 1;
-    }
-#if SDL_MAJOR_VERSION < 2
-    SDL_EnableUNICODE(SDL_ENABLE);
-#endif
+    Polarity::initGraphicsSystem();
+    Polarity::screen.reset(Polarity::makeGraphicsCanvas(renderer_type, CANVAS_WIDTH, CANVAS_HEIGHT));
 
-    Polarity::screen.reset(new Polarity::SDLCanvas(CANVAS_WIDTH, CANVAS_HEIGHT));
-    //Polarity::screen.reset(new Polarity::OpenGLCanvas(CANVAS_WIDTH, CANVAS_HEIGHT));
-
-    // SDL_MapRGB(screen->format, 65, 65, 65);
     srand(time(NULL));
-    Polarity::loadAssets();
+    Polarity::audioPlayer = Polarity::loadAudioChannels();
     Polarity::World::init(Polarity::screen, Polarity::audioPlayer, Polarity::playerState, Polarity::gameState);
-/*
-    b2BodyDef bodyDef;
-    bodyDef.type = b2_dynamicBody;
-    bodyDef.position.Set(0.0f, 40.0f);
-    b2PolygonShape dynamicBox;
-    dynamicBox.SetAsBox(2.0f, 2.0f);
-
-    b2FixtureDef fixtureDef;
-    fixtureDef.shape = &dynamicBox;
-    fixtureDef.density = 1.0f;
-    fixtureDef.friction = 0.3f;
-
-    Polarity::world->addObject(new Polarity::KeyboardBehavior(), bodyDef, fixtureDef);
-
-    b2BodyDef bodyDef2;
-    bodyDef2.type = b2_staticBody;
-    bodyDef2.position.Set(0.0f, 10.0f);
-    Polarity::world->addObject(new Polarity::KeyboardBehavior(), bodyDef2, fixtureDef);
-*/
     Polarity::mainloop();
     Polarity::screen.reset();
-    TTF_Quit();
     std::cerr<<"Game over, man"<<std::endl;
     return 0;
 }

@@ -1,9 +1,8 @@
 #include <iostream>
 #include "player_behavior.hpp"
 #include "world/world.hpp"
-
 namespace Polarity {
-
+using namespace std;
 void PlayerBehavior::handleMusicByPlayerColor(World *world, GameObject *obj) {
     if (obj->getPolarity() > 0) {
         world->audio()->setChannelVolume("white-music", 1.0);

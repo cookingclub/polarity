@@ -142,6 +142,7 @@ public:
     virtual void resize(int w, int h);
     virtual void beginFrame();
     virtual void endFrame();
+    virtual bool getNextEvent(SDL_Event* out_event);
 #if SDL_MAJOR_VERSION >= 2
     SDL_Texture* screen;
     void * temp_buffer;

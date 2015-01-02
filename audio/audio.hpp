@@ -27,8 +27,6 @@
 #include <emscripten.h>
 #endif
 
-using namespace std;
-
 namespace Polarity {
 enum AudioFileError {
     OK = 0,
@@ -47,9 +45,6 @@ enum CurrentAudioState {
     PLAYING = 2,
     LOADED = 3
 };
-}
-
-
 
 class AudioChannelPlayer {
     static constexpr int AUDIO_RATE = 44100; // FIXME: Does this matter?
@@ -65,15 +60,15 @@ public:
     }
     ~AudioChannelPlayer() {
         Mix_AllocateChannels(0);
-        for (map<string, Mix_Chunk*>::iterator i = fChunks.begin(), ie = fChunks.end(); i != ie; ++i) {
+        for (std::map<std::string, Mix_Chunk*>::iterator i = fChunks.begin(), ie = fChunks.end(); i != ie; ++i) {
             Mix_FreeChunk(i->second);
             i->second = nullptr;
         }
         Mix_CloseAudio();
     }
-    static Polarity::AudioFileError addChannel(std::shared_ptr<AudioChannelPlayer> thus, string id, string filePath, int num) {
+    static Polarity::AudioFileError addChannel(std::shared_ptr<AudioChannelPlayer> thus, std::string id, std::string filePath, int num) {
         if (thus->fAllocatedChans >= thus->fNumChans) {
-            cerr << "All channels allocated, can't allocate another one" << endl;
+            std::cerr << "All channels allocated, can't allocate another one" << std::endl;
             return Polarity::AudioFileError::NO_MORE_CHANNELS;
         }
 
@@ -90,8 +85,8 @@ public:
 #ifdef EMSCRIPTEN
     struct UserData{
         std::weak_ptr<AudioChannelPlayer> aplayer;
-        string id;
-        string filePath;
+        std::string id;
+        std::string filePath;
     };
 
     static void oncomplete(unsigned handle, void*ud, const char* fileName) {
@@ -123,7 +118,7 @@ public:
     }
 
     static void queueLoad(const std::weak_ptr<AudioChannelPlayer>&aplayer,
-                          string id, string filePath) {
+                          std::string id, std::string filePath) {
         std::cerr<< "preparing to load "<<filePath<<std::endl;
         std::string fullPath = filePath;
         std::string::size_type where_slash = fullPath.find_first_of("\\/");
@@ -141,14 +136,14 @@ public:
     }
 #else
     static void queueLoad(const std::weak_ptr<AudioChannelPlayer>&aplayer,
-                          string id, string filePath) {
+                          std::string id, std::string filePath) {
         queueLoadHelper(aplayer, id, filePath);
     }
 #endif
-    static void queueLoadHelper(const std::weak_ptr<AudioChannelPlayer>&aplayer, string id, string filePath) {
+    static void queueLoadHelper(const std::weak_ptr<AudioChannelPlayer>&aplayer, std::string id, std::string filePath) {
         Mix_Chunk *chunk = Mix_LoadWAV( filePath.c_str() );
         if (chunk == nullptr) {
-            cerr << "Couldn't load " << filePath << ", got error: " << Mix_GetError() << endl;
+            std::cerr << "Couldn't load " << filePath << ", got error: " << Mix_GetError() << std::endl;
         } else {
             std::shared_ptr<AudioChannelPlayer> thus(aplayer.lock());
             if (thus) {
@@ -165,19 +160,19 @@ public:
         }
     }
 
-    bool channelLoaded(string id) {
+    bool channelLoaded(std::string id) {
         auto where= fChunks.find(id);
         return where != fChunks.end() && where->second != nullptr;
     }
 
-    bool channelExists(string id) {
+    bool channelExists(std::string id) {
         return fChunks.find(id) != fChunks.end() &&
                 fChannelNames.find(id) != fChannelNames.end() &&
                 fChannelPaths.find(id) != fChannelPaths.end();
     }
 
     // scale is 0 to 1 and maps to 0 to 128
-    Polarity::AudioFileError setChannelVolume(string id, double scale) {
+    Polarity::AudioFileError setChannelVolume(std::string id, double scale) {
         if (channelExists(id)) {
             fChannelVolumes[id] = scale;
             if (channelLoaded(id)) {
@@ -189,16 +184,16 @@ public:
         }
     }
 
-    Polarity::AudioFileError playChannel(string id, int loops = 1, bool force=false) {
+    Polarity::AudioFileError playChannel(std::string id, int loops = 1, bool force=false) {
         if (!channelExists(id)) {
-            cerr << "Channel " << id << " doesn't exist" << endl;
+            std::cerr << "Channel " << id << " doesn't exist" << std::endl;
             return Polarity::AudioFileError::NO_SUCH_CHANNEL;
         }
         if (channelLoaded(id) && (force ||
                                   fChannelStates[id] != Polarity::CurrentAudioState::PLAYING)) {
             if (Mix_Playing(fChannelNames[id]) == 0) {
                 if( Mix_PlayChannel(fChannelNames[id], fChunks[id], loops) == -1) {
-                    cerr << "Mix_PlayChannel failed: " << Mix_GetError() << endl;
+                    std::cerr << "Mix_PlayChannel failed: " << Mix_GetError() << std::endl;
                     return Polarity::AudioFileError::CANT_PLAY;
                 }
             } else if (Mix_Paused(fChannelNames[id]) || fChannelStates[id] == Polarity::CurrentAudioState::PAUSED) {
@@ -210,9 +205,9 @@ public:
         return Polarity::AudioFileError::OK;
     }
 
-    Polarity::AudioFileError stopChannel(string id) {
+    Polarity::AudioFileError stopChannel(std::string id) {
         if (!channelExists(id)) {
-            cerr << "Channel " << id << " doesn't exist" << endl;
+            std::cerr << "Channel " << id << " doesn't exist" << std::endl;
             return Polarity::AudioFileError::NO_SUCH_CHANNEL;
         }
         if (channelLoaded(id)) {
@@ -226,12 +221,16 @@ private:
 
     int fNumChans;
 
-    map<string, Mix_Chunk*> fChunks;
-    map<string, int> fChannelNames;
-    map<string, string> fChannelPaths;
-    map<string, Polarity::CurrentAudioState> fChannelStates;
-    map<string, int> fChannelLoops;
-    map<string, double> fChannelVolumes;
+    std::map<std::string, Mix_Chunk*> fChunks;
+    std::map<std::string, int> fChannelNames;
+    std::map<std::string, std::string> fChannelPaths;
+    std::map<std::string, Polarity::CurrentAudioState> fChannelStates;
+    std::map<std::string, int> fChannelLoops;
+    std::map<std::string, double> fChannelVolumes;
     int fAllocatedChans;
     int fNumAvailableChans;
 };
+}
+
+
+

@@ -23,8 +23,7 @@ AR = ar
 LDFLAGS = -lSDL -lSDL_mixer -lSDLmain $(EXTERNALS) -lGL -lSDL_gfx -lSDL_ttf
 PLATFORM_CFLAGS =
   else
-LDFLAGS = -Llibs/libsdl/lib  $(EXTERNALS)  -lSDL2_mixer -lGL -lSDL2_ttf
--lSDL2 -lSDL2main -lrt -lfreetype
+LDFLAGS = -Llibs/libsdl/lib  $(EXTERNALS)  -lSDL2_mixer -lGL -lSDL2_ttf -lSDL2 -lSDL2main -lrt -lfreetype
     ifdef NATIVE
 PLATFORM_CFLAGS = -Ilibs/libsdl/include -DUSE_SDL2
     endif

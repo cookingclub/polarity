@@ -5,6 +5,7 @@
 
 struct SDL_Surface;
 struct SDL_Color;
+union SDL_Event;
 
 namespace Polarity {
 
@@ -49,6 +50,7 @@ public:
     virtual void beginFrame() = 0;
     virtual void endFrame() = 0;
     virtual void clear() {}
+    virtual bool getNextEvent(SDL_Event* out_event) = 0;
 };
 
 }

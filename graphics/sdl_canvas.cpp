@@ -599,4 +599,8 @@ void SDLCanvas::endFrame() {
 # endif
 #endif
 }
+bool SDLCanvas::getNextEvent(SDL_Event *out_event) {
+    return 0 != SDL_PollEvent(out_event);
 }
+}
+
