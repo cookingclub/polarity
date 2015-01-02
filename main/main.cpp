@@ -10,6 +10,7 @@
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
 #else
+#include <SDL/SDL_video.h>
 #include <SDL/SDL_timer.h>
 #include <SDL/SDL_ttf.h>
 #endif
@@ -179,8 +180,15 @@ void mainThreadCallback(const std::function<void()>&&function) {
     functionsToCallOnMainThread.push_back(std::move(function));
 }
 
-
-
+#ifdef EMSCRIPTEN
+extern "C" {
+    void windowResize(int x, int y) {
+        if (Polarity::screen) {
+            Polarity::screen->resize(x, y);
+        }
+    }
+}
+#endif
 
 #ifdef EMSCRIPTEN
 void emLoopIter() {

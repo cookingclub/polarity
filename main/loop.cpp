@@ -1,7 +1,7 @@
 #include "audio/audio.hpp"
 #include "main/main.hpp"
 #include "world/world.hpp"
-
+#include <GL/gl.h>
 namespace Polarity {
 
 extern std::shared_ptr<AudioChannelPlayer> audioPlayer;
@@ -56,6 +56,20 @@ bool loopIter(Canvas *screen) {
     std::shared_ptr<World> currentWorldRef (world);
     // SDL_FillRect(screen, NULL, 0xffffffff);
     while (SDL_PollEvent(&event)) {
+        if (
+#if SDL_MAJOR_VERSION >= 2
+            event.type == SDL_WINDOWEVENT_RESIZED
+#else
+            event.type == SDL_VIDEORESIZE
+#endif
+        ) {
+#if SDL_MAJOR_VERSION >= 2
+            fprintf(stderr, "TEST\n");//%d %d\n", event.resize.w, event.resize.h);
+#else
+            fprintf(stderr, "TEST %d %d\n", event.resize.w, event.resize.h);
+            screen->resize(event.resize.w, event.resize.h);
+#endif
+        }
         if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
             if (event.type == SDL_KEYDOWN) {
                 if (event.key.keysym.sym == SDLK_ESCAPE) {

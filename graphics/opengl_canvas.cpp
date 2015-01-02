@@ -593,6 +593,16 @@ void OpenGLCanvas::clear() {
     glClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
     glFlush();
 }
+
+void OpenGLCanvas::resize(int new_width, int new_height) {
+#if SDL_MAJOR_VERSION < 2
+    SDL_FreeSurface(screen);
+    screen = SDL_SetVideoMode(
+        new_width, new_height, 0,
+        SDL_HWSURFACE | SDL_RESIZABLE | SDL_OPENGL );
+#endif
+}
+
 void OpenGLCanvas::beginFrame() {
 #if SDL_MAJOR_VERSION >= 2
     int screenw = 0, screenh =0;

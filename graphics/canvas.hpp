@@ -45,6 +45,7 @@ public:
                                          const Rect& bounds) = 0;
     virtual void attachDisplayList(DisplayList *, const std::shared_ptr<Image> &image) = 0;
     virtual void drawDisplayList(const DisplayList *, int x, int y) = 0;
+    virtual void resize(int w, int h) = 0;
     virtual void beginFrame() = 0;
     virtual void endFrame() = 0;
     virtual void clear() {}

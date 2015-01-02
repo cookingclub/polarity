@@ -139,6 +139,7 @@ public:
                            float angle, float alpha /* from 0 - 1 */);
     virtual void drawLine(int x0, int y0, int x1, int y1,
                           const SDL_Color& color, float alpha);
+    virtual void resize(int w, int h);
     virtual void beginFrame();
     virtual void endFrame();
 #if SDL_MAJOR_VERSION >= 2

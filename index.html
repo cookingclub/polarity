@@ -6,6 +6,7 @@
     <title>Emscripten-Generated Code</title>
     <style>
         html, body {
+            width:100%; height:100%;
             margin: 0;
             padding: 0;
             overflow:hidden;
@@ -13,7 +14,7 @@
       .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
       textarea.emscripten { font-family: monospace; width: 80%; }
       div.emscripten { text-align: center; }
-      div.emscripten_border { }
+      div.emscripten_border { wwidth: 100%; height:100%;}
       /* border: 1px solid black; } */
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
       canvas.emscripten { border: 0px none; }
@@ -33,12 +34,14 @@
     </style>
   </head>
   <body>
-    <div class="emscripten" id="status">Downloading...</div>
-    <div class="emscripten">
-      <progress value="0" max="100" id="progress" hidden=1></progress>  
+    <div style="position:absolute">
+        <div class="emscripten" id="status">Downloading...</div>
+        <div class="emscripten">
+           <progress value="0" max="100" id="progress" hidden=1></progress>  
+        </div>
     </div>
-    <div class="emscripten_border">
-      <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+    <div id="canvas_container" class="emscripten_border">
+      <canvas class="emscripten" style="display:none" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
     </div>
 <!--
     <hr/>
@@ -110,9 +113,16 @@
         }
       };
       Module.setStatus('Downloading...');
-
+      function fixupCanvasSize(){
+          var canvas_container = document.getElementById("canvas_container");
+          var canvas = document.getElementById("canvas");
+          canvas.width = canvas_container.clientWidth;
+          canvas.height = canvas_container.clientHeight;
+          canvas.style.display="block";
+          Module._windowResize(canvas.width, canvas.height);
+      }
       var canvas = document.getElementById("canvas");
-
+      window.addEventListener('resize', fixupCanvasSize);
       canvas.addEventListener("webglcontextlost",function(e) {
         e.preventDefault();
         Module._onContextLost();
@@ -127,9 +137,21 @@
 
       canvas.getContext_ = canvas.getContext;
       canvas.getContext = function(type) {
+        canvas.getContext = canvas.getContext_; // return to normal behavior
+        setTimeout(fixupCanvasSize,0);
         var GLctx = canvas.getContext_(type);
         if (type == '2d') {
+          var ogl_buttons = document.getElementById("opengl_buttons");
+          if (ogl_buttons !== null) {
+              ogl_buttons.style.display="none";
+          }
           return GLctx;
+        }
+        if (location.search.indexOf("debug=1") === -1) {
+            var debug_button = document.getElementById("debug1");
+            if (debug_button !== null) {
+                debug_button.style.display="none";
+            }
         }
         canvas.getContext = canvas.getContext_;
         GLctx.createTexture_=GLctx.createTexture;
@@ -242,11 +264,13 @@
     </script>
     <script async type="text/javascript" src="polarity.js"></script>
     <br />
-    <button onclick="loseContext()">Lose context</button>
-    <button onclick="restoreContext();">Restore context</button>
-    <button onclick="loseContext(); setTimeout(function(){restoreContext()},0);">Lose and restore context</button>
-    <button onclick="testLoseIn();">Lose in N calls (only if ?debug=1)</button>
-    <div style="text-indent: -100em;">
+    <div id="opengl_buttons" style="position:absolute;bottom:0;opacity:0.5">
+        <button onclick="loseContext()">Lose context</button>
+        <button onclick="restoreContext();">Restore context</button>
+        <button onclick="loseContext(); setTimeout(function(){restoreContext()},0);">Lose and restore context</button>
+        <button id="debug1" onclick="testLoseIn();">Lose in N calls (only if ?debug=1)</button>
+    </div>
+    <div style="position:absolute;text-indent: -100em;">
         <!-- preload fonts -->
         <span style="font-family: DroidSans">.</span>
         <span style="font-family: DroidSansMono">.</span>

@@ -123,6 +123,7 @@ public:
 
     virtual void drawDisplayList(const DisplayList *dl, int x, int y);
 
+    virtual void resize(int w, int h);
     virtual void beginFrame();
     virtual void endFrame();
 

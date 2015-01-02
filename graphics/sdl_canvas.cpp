@@ -1,3 +1,4 @@
+
 #ifdef USE_SDL2
 #include "SDL2/SDL_version.h"
 #include "SDL2/SDL.h"
@@ -562,6 +563,15 @@ void SDLCanvas::drawLine(int x0, int y0, int x1, int y1,
     lineRGBA(screen, x0, y0, x1, y1, color.r, color.g, color.b, (Uint8)(255 * alpha));
 #endif
 }
+void SDLCanvas::resize(int new_width, int new_height) {
+#if SDL_MAJOR_VERSION < 2
+    SDL_FreeSurface(screen);
+    screen = SDL_SetVideoMode(
+        new_width, new_height, 0,
+        SDL_HWSURFACE | SDL_RESIZABLE );
+#endif
+}
+
 void SDLCanvas::beginFrame() {
 #if SDL_MAJOR_VERSION >= 2
     if (screen == nullptr) {
