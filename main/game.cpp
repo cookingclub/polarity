@@ -68,10 +68,15 @@ void Game::stopGame(){
 
 void Game::stopGameAndCleanupGraphicsAndEvents() {
     stopGame();
+    std::weak_ptr<Canvas> wscreen(screen);
     screen.reset();
     asyncIOTask->quiesce();
     asyncIOTask.reset();
-    destroyGraphicsSystem();
+    if (!wscreen.lock()) {
+        destroyGraphicsSystem();
+    }else {
+        std::cerr << "Not destroying graphics system because live reference still exists\n";
+    }
 }
 
 Game::~Game() {

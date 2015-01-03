@@ -99,8 +99,8 @@ int main(int argc, char**argv) {
     srand(time(NULL));
     Polarity::Game::getSingleton().startGame(Polarity::screen, "assets/levels/level2.tmx");
     mainloop();
-    Polarity::Game::getSingleton().stopGameAndCleanupGraphicsAndEvents();
     Polarity::screen.reset();
+    Polarity::Game::getSingleton().stopGameAndCleanupGraphicsAndEvents();
 
     std::cerr<<"Thank you for playing polarity"<<std::endl;
     return 0;
