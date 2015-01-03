@@ -49,7 +49,7 @@ public:
         return camera;
     }
     void updateCamera(GameObject *obj, b2Vec2 player);
-    static void init(const shared_ptr<Canvas> &canvas, shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState);
+    static void init(const shared_ptr<Canvas> &canvas, shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState, const char *tmxFile=nullptr);
     shared_ptr<World> loadNewWorld(const std::string& tmxFile);
     void setBackgroundWorld(shared_ptr<World> newWorld);
     void switchToBackgroundWorld();

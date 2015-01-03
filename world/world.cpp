@@ -14,7 +14,7 @@
 #include "graphics/font_manager.hpp"
 #include "physics/jumping_behavior.hpp"
 #include "world/door_behavior.hpp"
-#include "main/main.hpp"
+#include "main/game.hpp"
 #include "tmxparser.h"
 #include "util/async_io_task.hpp"
 
@@ -42,11 +42,13 @@ World::World(const shared_ptr<Canvas> &canvas, std::shared_ptr<AudioChannelPlaye
     physics.SetContactListener(&contactListener);
 }
 
-void World::init(const shared_ptr<Canvas> &canvas, shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState) {
-    const char* tmxFile = "assets/levels/level3a.tmx";
+void World::init(const shared_ptr<Canvas> &canvas, shared_ptr<AudioChannelPlayer> audioPlayer, shared_ptr<PlayerState> playerState, shared_ptr<GameState> gameState, const char* tmxFile) {
     World *w = new World(canvas, audioPlayer, playerState, gameState);
     std::shared_ptr<World> sworld(w);
     w->wthis = sworld;
+    if (!tmxFile) {
+        tmxFile = "assets/levels/level3a.tmx";
+    }
     w->load(tmxFile);
     world = sworld;
 }
@@ -182,7 +184,7 @@ void World::load_async(const std::weak_ptr<World>&weakThis, const std::string &t
         world->mapDimensions.x = map->map.width * map->map.tileWidth;
         world->mapDimensions.y = map->map.height * map->map.tileHeight;
         std::cerr << "done load async"<<std::endl;
-        Polarity::getAsyncIOTask().mainThreadCallback(std::bind(&World::finalizeLoad,
+        Game::getSingleton().getAsyncIOTask().mainThreadCallback(std::bind(&World::finalizeLoad,
                                                            weakThis, tmxFile, map));
     }
 }
@@ -265,8 +267,11 @@ void World::finalizeLoad(const std::weak_ptr<World> &weakThis,
 }
 void World::load(const std::string &tmxFile) {
     std::cerr << "start async load " << tmxFile << std::endl;
-    Polarity::getAsyncIOTask().asyncFileLoad(tmxFile, std::bind(&World::load_async,
-                                                           wthis, tmxFile, std::placeholders::_1, std::placeholders::_2));
+    Game::getSingleton().getAsyncIOTask().asyncFileLoad(tmxFile,
+                                                        std::bind(&World::load_async,
+                                                                  wthis,
+                                                                  tmxFile,
+                                                                  std::placeholders::_1, std::placeholders::_2));
 }
 
 World::~World() {

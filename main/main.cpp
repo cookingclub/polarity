@@ -16,7 +16,7 @@
 #endif
 #include "graphics/init.hpp"
 #include "world/sounds.hpp"
-#include "main/main.hpp"
+#include "main/game.hpp"
 #include "world/world.hpp"
 #include "physics/behavior.hpp"
 #include "util/async_io_task.hpp"
@@ -32,22 +32,20 @@ const int CANVAS_HEIGHT = 720;
 namespace Polarity {
 
 static std::shared_ptr<Canvas> screen;
-std::shared_ptr<AsyncIOTask> asyncIOTask;
-std::shared_ptr<AudioChannelPlayer> audioPlayer;
-std::shared_ptr<PlayerState> playerState (new PlayerState());
-std::shared_ptr<GameState> gameState;
-
-
-AsyncIOTask& getAsyncIOTask() {
-    return *asyncIOTask;
+bool loopIter(Canvas *screen) {
+    SDL_Event event;
+    std::vector<int> keyUps;
+    // Maintain a strong reference to world so we can handle world changes.
+    std::shared_ptr<World> currentWorldRef (world);
+    // SDL_FillRect(screen, NULL, 0xffffffff);
+    while (screen->getNextEvent(&event)) {
+        if (!Game::getSingleton().injectInput(&event)) {
+            return false;
+        }
+    }
+    Game::getSingleton().performTick();
+    return true;
 }
-void exitProgram() {
-    Polarity::asyncIOTask->quiesce();
-    Polarity::world.reset();
-    Polarity::screen.reset();
-    Polarity::asyncIOTask->quiesce();
-    Polarity::asyncIOTask.reset();
-    Polarity::destroyGraphicsSystem();
 }
 
 #ifdef EMSCRIPTEN
@@ -61,8 +59,8 @@ extern "C" {
 
 bool exited = false;
 void emLoopIter() {
-    if (exited == false && !loopIter(screen.get())) {
-        exitProgram();
+    if (exited == false && !loopIter(Polarity::screen.get())) {
+        Polarity::Game::getSingleton().stopGameAndCleanupGraphicsAndEvents();
         exited = true;
     }
 }
@@ -75,7 +73,7 @@ void mainloop() {
 void mainloop() {
     Uint32 time = SDL_GetTicks();
     while (true) {
-        if (!loopIter(screen.get())) {
+        if (!loopIter(Polarity::screen.get())) {
             break;
         }
         Uint32 newTime = SDL_GetTicks();
@@ -85,10 +83,9 @@ void mainloop() {
         }
         time = SDL_GetTicks();
     }
-    exitProgram();
 }
 #endif
-}
+
 
 int main(int argc, char**argv) {
     const char *renderer_type = DEFAULT_RENDERER;
@@ -97,14 +94,14 @@ int main(int argc, char**argv) {
     }
     Polarity::initGraphicsSystem();
     std::shared_ptr<Polarity::AsyncIOTask> localAsyncIOTask(new Polarity::AsyncIOTask);
-    Polarity::asyncIOTask = localAsyncIOTask;
     Polarity::screen.reset(Polarity::makeGraphicsCanvas(localAsyncIOTask, renderer_type, CANVAS_WIDTH, CANVAS_HEIGHT));
 
     srand(time(NULL));
-    Polarity::audioPlayer = Polarity::loadAudioChannels();
-    Polarity::World::init(Polarity::screen, Polarity::audioPlayer, Polarity::playerState, Polarity::gameState);
-    Polarity::mainloop();
+    Polarity::Game::getSingleton().startGame(Polarity::screen, "assets/levels/level2.tmx");
+    mainloop();
+    Polarity::Game::getSingleton().stopGameAndCleanupGraphicsAndEvents();
     Polarity::screen.reset();
+
     std::cerr<<"Thank you for playing polarity"<<std::endl;
     return 0;
 }
