@@ -1,10 +1,10 @@
 #include <cstring>
 #include "graphics/image.hpp"
 #include "graphics/sdl_canvas.hpp"
+#include "util/async_io_task.hpp"
 #include <unordered_map>
 #include <png.h>
 #include <assert.h>
-
 namespace Polarity {
 
 std::unordered_map<std::string, std::weak_ptr<Image>> imagesCache;
@@ -143,6 +143,7 @@ void configurePngHeader(png_structp pngState, png_infop infoPtr, bool addAlpha,
 }
 }
 void Image::parseAndLoad(Image *img, const std::string &filename,
+                         const std::shared_ptr<AsyncIOTask>&asyncIOTask,
                          const std::function<void(Image*,
                                                   const std::string&,
                                                   const std::shared_ptr<DecodedImage>&)>&callback,
@@ -169,7 +170,7 @@ void Image::parseAndLoad(Image *img, const std::string &filename,
 
     png_read_end(pngState, infoPtr);
     png_destroy_read_struct(&pngState, &infoPtr, nullptr);
-    Polarity::mainThreadCallback(std::bind(callback, img, filename,
-                                           std::shared_ptr<DecodedImage>(png)));
+    asyncIOTask->mainThreadCallback(std::bind(callback, img, filename,
+                                    std::shared_ptr<DecodedImage>(png)));
 }
 }

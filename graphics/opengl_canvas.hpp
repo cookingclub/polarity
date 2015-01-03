@@ -35,14 +35,14 @@ class OpenGLImage : public Image {
 public:
     class NoLoad {};
 
-    explicit OpenGLImage(const std::string &filename, NoLoad);
+    OpenGLImage(const std::string &filename, NoLoad);
     explicit OpenGLImage(SDL_Surface *surf);
-    explicit OpenGLImage(const std::string &filename);
+    OpenGLImage(const std::shared_ptr<AsyncIOTask>& asyncIOTask, const std::string &filename);
     virtual ~OpenGLImage();
 
-    void downloadAndLoad();
-    void reload();
-    static void reloadImage(const std::shared_ptr<Image> &image);
+    void downloadAndLoad(const std::shared_ptr<AsyncIOTask>&asyncIOTask);
+    void reload(const std::shared_ptr<AsyncIOTask>&asyncIOTask);
+    static void reloadImage(const std::shared_ptr<AsyncIOTask>&asyncIOTask, const std::shared_ptr<Image> &image);
     static void loadImageOpenGL(Image *super, const std::string &filename,
                          const std::shared_ptr<DecodedImage> &image);
 
@@ -93,7 +93,7 @@ class OpenGLCanvas : public Canvas {
     friend class OpenGLDisplayList;
 
 public:
-    OpenGLCanvas(int width, int height);
+    OpenGLCanvas(const std::shared_ptr<AsyncIOTask> &asyncIOTask, int width, int height);
     ~OpenGLCanvas();
 
     void onContextLost();
@@ -104,6 +104,9 @@ public:
 
     virtual FontManager &fontManager() {
         return mFontManager;
+    }
+    virtual const std::shared_ptr<AsyncIOTask> &asyncIOTask() const {
+        return mAsyncIOTask;
     }
 
     OpenGLImage *loadImageFromSurface(SDL_Surface *surf);
@@ -154,6 +157,7 @@ public:
     std::set<OpenGLDisplayList*> displayLists;
 
     FontManager mFontManager;
+    std::shared_ptr<AsyncIOTask> mAsyncIOTask;
 };
 
 }

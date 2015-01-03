@@ -10,6 +10,8 @@ union SDL_Event;
 namespace Polarity {
 
 class FontManager;
+class AsyncIOTask;
+
 
 class Canvas {
     Canvas& operator= (const Canvas&) = delete;
@@ -32,6 +34,7 @@ public:
     virtual ~Canvas() {}
 
     virtual FontManager &fontManager() = 0;
+    virtual const std::shared_ptr<AsyncIOTask> &asyncIOTask() const = 0;
 
     // Manages lifetime of the surface from here on.
     virtual Image *loadImageFromSurface(SDL_Surface *surf) = 0;

@@ -29,12 +29,13 @@ int initGraphicsSystem() {
     return retval;
 
 }
-Canvas* makeGraphicsCanvas(const char *renderer_type, int initial_width, int initial_height) {
+Canvas* makeGraphicsCanvas(const std::shared_ptr<AsyncIOTask>& asyncIOTask,
+                           const char *renderer_type, int initial_width, int initial_height) {
     assert(graphicsInitialized);
     if (strstr(renderer_type, "SDL") || strstr(renderer_type, "sdl")) {
-        return new Polarity::SDLCanvas(initial_width, initial_height);
+        return new Polarity::SDLCanvas(asyncIOTask, initial_width, initial_height);
     }
-    return new Polarity::OpenGLCanvas(initial_width, initial_height);
+    return new Polarity::OpenGLCanvas(asyncIOTask, initial_width, initial_height);
 }
 void destroyGraphicsSystem() {
     assert(graphicsInitialized);

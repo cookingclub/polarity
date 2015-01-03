@@ -1,7 +1,7 @@
-INCLUDES =  $(wildcard graphics/*.hpp audio/*.hpp physics/*.hpp main/*.hpp world/*.hpp)
+INCLUDES =  $(wildcard graphics/*.hpp audio/*.hpp physics/*.hpp main/*.hpp world/*.hpp util/*.hpp)
 ARSRCS = $(wildcard libs/box2d/Box2D/Box2D/Collision/Shapes/*.cpp libs/box2d/Box2D/Box2D/Dynamics/*.cpp libs/box2d/Box2D/Box2D/Common/*.cpp  libs/box2d/Box2D/Box2D/Rope/*.cpp libs/box2d/Box2D/Box2D/Dynamics/Contacts/*.cpp libs/box2d/Box2D/Box2D/Dynamics/Joints/*.cpp libs/box2d/Box2D/Box2D/Collision/*.cpp libs/libpng/*.c libs/zlib/[^g]*.c)
 
-SRCS = $(wildcard graphics/*.cpp physics/*.cpp main/*.cpp world/*.cpp libs/libtmxparser/src/*.cpp )
+SRCS = $(wildcard graphics/*.cpp physics/*.cpp main/*.cpp world/*.cpp util/*.cpp libs/libtmxparser/src/*.cpp )
 # audio/*.cpp
 
 O_EXT = .o
@@ -52,7 +52,11 @@ else
 ADDITIONAL_INCLUDES=
 endif
 
-CFLAGS = $(PLATFORM_CFLAGS) -fno-exceptions -pthread -g -Wall -Wextra -Wno-unused-parameter -Wno-warn-absolute-paths -I $(CURDIR) -I$(CURDIR)/libs/box2d/Box2D/ -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/libtmxparser/src -I$(CURDIR)/libs/zlib -I$(CURDIR)/libs/libpng $(ADDITIONAL_INCLUDES)
+ifndef DEFAULT_RENDERER
+DEFAULT_RENDERER=SDL
+endif
+
+CFLAGS = $(PLATFORM_CFLAGS) -fno-exceptions -pthread -g -Wall -Wextra -Wno-unused-parameter -Wno-warn-absolute-paths -I $(CURDIR) -I$(CURDIR)/libs/box2d/Box2D/ -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/tinyxml2 -I$(CURDIR)/libs/libtmxparser/src -I$(CURDIR)/libs/zlib -I$(CURDIR)/libs/libpng $(ADDITIONAL_INCLUDES) -DDEFAULT_RENDERER="\"$(DEFAULT_RENDERER)\""
 
 CXXFLAGS = -std=gnu++11 $(CFLAGS)
 
@@ -72,6 +76,8 @@ $(EXTERNALS): $(AROBJS)
 
 $(OBJS): $(INCLUDES) Makefile
 
+changerenderer:
+	rm -f $(OBJ_DIR)/main/main.o
 clean:
 	rm -f $(patsubst %.c, %.*o, $(patsubst %.cpp, %.*o, $(ARSRCS))) libs/tinyxml2/tinyxml2.*o
 	rm -f $(patsubst %.cpp, %.*o, $(SRCS))

@@ -19,8 +19,12 @@
 #include "main/main.hpp"
 #include "world/world.hpp"
 #include "physics/behavior.hpp"
-using namespace std;
+#include "util/async_io_task.hpp"
 
+using namespace std;
+#ifndef DEFAULT_RENDERER
+#define DEFAULT_RENDERER "SDL"
+#endif
 const int CANVAS_WIDTH = 1280;
 const int CANVAS_HEIGHT = 720;
 
@@ -28,158 +32,22 @@ const int CANVAS_HEIGHT = 720;
 namespace Polarity {
 
 static std::shared_ptr<Canvas> screen;
-
+std::shared_ptr<AsyncIOTask> asyncIOTask;
 std::shared_ptr<AudioChannelPlayer> audioPlayer;
 std::shared_ptr<PlayerState> playerState (new PlayerState());
 std::shared_ptr<GameState> gameState;
 
 
-
-
-#ifdef EMSCRIPTEN
-#define LOCK_MAIN_THREAD_CALLBACK_MUTEX()
-#else
-using std::mutex;
-namespace {
-mutex mainThreadCallbackMutex;
+AsyncIOTask& getAsyncIOTask() {
+    return *asyncIOTask;
 }
-#define LOCK_MAIN_THREAD_CALLBACK_MUTEX() std::unique_lock<mutex> local_lock(mainThreadCallbackMutex)
-#endif
-namespace {
-std::vector<std::function<void()> > functionsToCallOnMainThread;
-}
-void completeAllPendingCallbacksFromMainThread(){
-    std::vector<std::function<void()> > savedFunctionsToCallOnMainThread;
-    {   // keep the function lock as short as possible
-        LOCK_MAIN_THREAD_CALLBACK_MUTEX();
-        functionsToCallOnMainThread.swap(savedFunctionsToCallOnMainThread);
-    }
-    for (auto &func : savedFunctionsToCallOnMainThread) {
-        func();
-    }
-    savedFunctionsToCallOnMainThread.resize(0);
-    {   // keep the function lock as short as possible
-        LOCK_MAIN_THREAD_CALLBACK_MUTEX();
-        functionsToCallOnMainThread.swap(savedFunctionsToCallOnMainThread);
-    }
-    for (auto &func : savedFunctionsToCallOnMainThread) {
-        func();
-    }
-}
-
-#ifdef EMSCRIPTEN
-static void asyncFileLoadOnLoad(unsigned handle, void*ctx, void *data, size_t size){
-    auto cb = reinterpret_cast<std::function<void(const char * data, int size)>*>(ctx);
-    (*cb)(reinterpret_cast<const char*>(data), (size_t)size);
-    delete cb;
-}
-static void asyncFileLoadOnError(unsigned handle, void*ctx, int, const char*){
-    auto cb = reinterpret_cast<std::function<void(const char * data, int size)>*>(ctx);
-    (*cb)(nullptr, -1);
-    delete cb;
-}
-
-// Compatibility APIs.
-static void asyncFileLoadOnLoad(void*ctx, void *data, unsigned *size){
-    asyncFileLoadOnLoad(0, ctx, data, reinterpret_cast<size_t>(size));
-}
-static void asyncFileLoadOnLoad(void*ctx, void *data, unsigned size){
-    asyncFileLoadOnLoad(0, ctx, data, size);
-}
-static void asyncFileLoadOnError(void*ctx, int size, const char*data){
-    asyncFileLoadOnError(0, ctx, size, data);
-}
-
-void asyncFileLoad(const std::string &fileName,
-                   const std::function<void(const char * data, int size)>&callback) {
-    auto cb = new std::function<void(const char * data, int size)>(callback);
-    emscripten_async_wget2_data(fileName.c_str(), "GET", "", cb, true, (em_async_wget2_data_onload_func)&asyncFileLoadOnLoad, &asyncFileLoadOnError, 0);
-}
-void platformExitProgram() {
-}
-#else
-namespace {
-mutex workerWorkMutex;
-std::condition_variable workerWorkCondition;
-}
-std::deque<std::function<void()> >work;
-std::vector<std::thread> workers;
-void platformExitProgram() {
-    for (size_t i=0;i<workers.size();++i) {
-        std::unique_lock<mutex> workLock(workerWorkMutex);
-        work.emplace_back(function<void()>());
-	workerWorkCondition.notify_all();
-    }
-    for (size_t i=0;i<workers.size();++i) {
-        workers[i].join();
-    }
-}
-
-void worker() {
-    while (true) {
-        std::function<void()> f;
-        {
-            std::unique_lock<mutex> workLock(workerWorkMutex);
-            while (work.empty()) {
-                workerWorkCondition.wait(workLock);
-            }
-            f = std::move(work.front());
-            work.pop_front();
-        }
-        if (f) {
-            f();
-        } else {
-            return;
-        }
-    }
-}
-//FIXME: USE PTHREAD so that the disk load and the async processing happen on a worker thread
-void asyncFileLoadHelper(const std::string &fileName,
-                   const std::function<void(const char * data, int size)>&callback) {
-    FILE * fp = fopen(fileName.c_str(), "rb");
-    if (fp) {
-        fseek(fp, 0, SEEK_END);
-        size_t size = ftell(fp);
-        fseek(fp, 0, SEEK_SET);
-        char *data = (char*)malloc(size);
-        fread(data, 1, size, fp);
-        fclose(fp);
-        callback(data, size);
-        free(data);
-    }else {
-        callback(NULL, -1);
-    }
-}
-void asyncFileLoadX(const std::string &fileName,
-                   const std::function<void(const char * data, int size)>&callback) {
-  asyncFileLoadHelper(fileName, callback);
-}
-void asyncFileLoad(const std::string &fileName,
-                   const std::function<void(const char * data, int size)>&callback) {
-    std::unique_lock<mutex> workLock(workerWorkMutex);
-    if (workers.empty()) {
-        for (int i=0; i < 3; ++i) {
-            workers.emplace_back(&worker);
-        }
-    }
-    work.emplace_back(std::bind(&asyncFileLoadHelper, fileName, std::move(callback)));
-    workerWorkCondition.notify_all();
-}
-#endif
-
 void exitProgram() {
-    platformExitProgram();
+    Polarity::asyncIOTask->quiesce();
     Polarity::world.reset();
     Polarity::screen.reset();
-    {
-        LOCK_MAIN_THREAD_CALLBACK_MUTEX();
-        functionsToCallOnMainThread.clear();
-    }
+    Polarity::asyncIOTask->quiesce();
+    Polarity::asyncIOTask.reset();
     Polarity::destroyGraphicsSystem();
-}
-void mainThreadCallback(const std::function<void()>&&function) {
-    LOCK_MAIN_THREAD_CALLBACK_MUTEX();
-    functionsToCallOnMainThread.push_back(std::move(function));
 }
 
 #ifdef EMSCRIPTEN
@@ -190,9 +58,7 @@ extern "C" {
         }
     }
 }
-#endif
 
-#ifdef EMSCRIPTEN
 bool exited = false;
 void emLoopIter() {
     if (exited == false && !loopIter(screen.get())) {
@@ -225,35 +91,20 @@ void mainloop() {
 }
 
 int main(int argc, char**argv) {
-    std::weak_ptr<int>test0;
-    if (!test0.lock()) {
-        cerr << "OK2"<<std::endl;
-    }
-    {
-        int * itest = nullptr;
-        itest = new int(4);
-        std::shared_ptr<int> test(itest);
-        std::weak_ptr<int> test1(test);
-        test0 = test1;
-        if (test1.lock() && test0.lock()) {
-            cerr << *test0.lock() << "OK1"<<std::endl;
-        }
-    }
-    if (!test0.lock()) {
-        cerr << "OK0"<<std::endl;
-    }
-    const char *renderer_type = "SDL";
+    const char *renderer_type = DEFAULT_RENDERER;
     if (argc > 1) {
         renderer_type = argv[1];
     }
     Polarity::initGraphicsSystem();
-    Polarity::screen.reset(Polarity::makeGraphicsCanvas(renderer_type, CANVAS_WIDTH, CANVAS_HEIGHT));
+    std::shared_ptr<Polarity::AsyncIOTask> localAsyncIOTask(new Polarity::AsyncIOTask);
+    Polarity::asyncIOTask = localAsyncIOTask;
+    Polarity::screen.reset(Polarity::makeGraphicsCanvas(localAsyncIOTask, renderer_type, CANVAS_WIDTH, CANVAS_HEIGHT));
 
     srand(time(NULL));
     Polarity::audioPlayer = Polarity::loadAudioChannels();
     Polarity::World::init(Polarity::screen, Polarity::audioPlayer, Polarity::playerState, Polarity::gameState);
     Polarity::mainloop();
     Polarity::screen.reset();
-    std::cerr<<"Game over, man"<<std::endl;
+    std::cerr<<"Thank you for playing polarity"<<std::endl;
     return 0;
 }

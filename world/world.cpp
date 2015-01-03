@@ -16,6 +16,7 @@
 #include "world/door_behavior.hpp"
 #include "main/main.hpp"
 #include "tmxparser.h"
+#include "util/async_io_task.hpp"
 
 using std::shared_ptr;
 
@@ -181,7 +182,8 @@ void World::load_async(const std::weak_ptr<World>&weakThis, const std::string &t
         world->mapDimensions.x = map->map.width * map->map.tileWidth;
         world->mapDimensions.y = map->map.height * map->map.tileHeight;
         std::cerr << "done load async"<<std::endl;
-        Polarity::mainThreadCallback(std::bind(&World::finalizeLoad, weakThis, tmxFile, map));
+        Polarity::getAsyncIOTask().mainThreadCallback(std::bind(&World::finalizeLoad,
+                                                           weakThis, tmxFile, map));
     }
 }
 
@@ -263,7 +265,8 @@ void World::finalizeLoad(const std::weak_ptr<World> &weakThis,
 }
 void World::load(const std::string &tmxFile) {
     std::cerr << "start async load " << tmxFile << std::endl;
-    Polarity::asyncFileLoad(tmxFile, std::bind(&World::load_async, wthis, tmxFile, std::placeholders::_1, std::placeholders::_2));
+    Polarity::getAsyncIOTask().asyncFileLoad(tmxFile, std::bind(&World::load_async,
+                                                           wthis, tmxFile, std::placeholders::_1, std::placeholders::_2));
 }
 
 World::~World() {

@@ -14,7 +14,7 @@ namespace Polarity {
 
 class Canvas;
 class DisplayList;
-
+class AsyncIOTask;
 
 class Image {
 protected:
@@ -55,6 +55,7 @@ public:
         std::vector<unsigned char> data;
     };
     static void parseAndLoad(Image *img, const std::string &filename,
+                             const std::shared_ptr<AsyncIOTask>&,
                              const std::function<void(Image*,
                                                       const std::string&,
                                                       const std::shared_ptr<DecodedImage>&)>&mainThreadCallback,

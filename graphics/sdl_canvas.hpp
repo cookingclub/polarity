@@ -16,7 +16,6 @@
 #include "image.hpp"
 #include "canvas.hpp"
 #include "display_list.hpp"
-#include "main/main.hpp"
 #include "font_manager.hpp"
 
 namespace Polarity {
@@ -26,10 +25,10 @@ class SDLImage : public Image {
     static void loadImageSDL(Image *super,
                              const std::string &filename,
                              const std::shared_ptr<DecodedImage> &image);
-    void downloadAndLoad();
+    void downloadAndLoad(const std::shared_ptr<AsyncIOTask>&);
 public:
     explicit SDLImage(SDL_Surface* surf);
-    SDLImage(const std::string&filename);
+    SDLImage(const std::shared_ptr<AsyncIOTask>& canvas, const std::string&filename);
     virtual ~SDLImage();
 
     virtual int width() { return w; }
@@ -70,17 +69,17 @@ public:
 #else
     typedef SDL_Surface SDLRenderTargetType;
 #endif
-    SDLCanvas(
-              SDLRenderTargetType*surf,
+    SDLCanvas(SDLRenderTargetType*surf,
               int width,
               int height,
               SDLCanvas *parent);
-    SDLCanvas(int width, int height);
+    SDLCanvas(const std::shared_ptr<AsyncIOTask>& asyncIOTask, int width, int height);
     ~SDLCanvas();
     virtual int width() { return w; }
     virtual int height() { return h; }
 
     virtual FontManager &fontManager();
+    virtual const std::shared_ptr<AsyncIOTask> &asyncIOTask() const;
 
 private:
     static SDL_Rect rectToSDL(const Rect& rect);
@@ -154,6 +153,7 @@ public:
     std::shared_ptr<SDLContext> context;
 
     FontManager mFontManager;
+    std::shared_ptr<AsyncIOTask> mAsyncIOTask;
 };
 
 }

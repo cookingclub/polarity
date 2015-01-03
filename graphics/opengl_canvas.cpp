@@ -1,9 +1,8 @@
 #include <set>
 #include "opengl_canvas.hpp"
 #include "display_list.hpp"
-#include "main/main.hpp"
 #include "graphics/matrix4x4.hpp"
-
+#include "util/async_io_task.hpp"
 
 #ifdef EMSCRIPTEN
 
@@ -169,10 +168,10 @@ OpenGLImage::OpenGLImage(const std::string &filename, NoLoad)
     : Image(filename), tex(0), w(0), h(0) {
 }
 
-OpenGLImage::OpenGLImage(const std::string &filename)
+OpenGLImage::OpenGLImage(const std::shared_ptr<AsyncIOTask>& asyncIOTask, const std::string &filename)
     : Image(filename), tex(genTexture()), w(0), h(0) {
     if (!filename.empty()) {
-        downloadAndLoad();
+        downloadAndLoad(asyncIOTask);
     }
 }
 
@@ -272,25 +271,27 @@ void OpenGLImage::loadImageOpenGL(Image *super,
     }
 }
 
-void OpenGLImage::downloadAndLoad() {
+void OpenGLImage::downloadAndLoad(const std::shared_ptr<AsyncIOTask>&asyncIOTask) {
     Image * super = this;
-    Polarity::asyncFileLoad(filename,
-                            std::bind(Image::parseAndLoad,
-                                      super,
-                                      filename,
-                                      &OpenGLImage::loadImageOpenGL,
-                                      std::placeholders::_1,
-                                      std::placeholders::_2));
+    asyncIOTask->asyncFileLoad(filename,
+                               std::bind(Image::parseAndLoad,
+                                         super,
+                                         filename,
+                                         asyncIOTask,
+                                         &OpenGLImage::loadImageOpenGL,
+                                         std::placeholders::_1,
+                                         std::placeholders::_2));
 }
 
-void OpenGLImage::reload() {
+void OpenGLImage::reload(const std::shared_ptr<AsyncIOTask>&asyncIOTask) {
     stage = LOADING;
     tex = genTexture();
-    downloadAndLoad();
+    downloadAndLoad(asyncIOTask);
 }
 
-void OpenGLImage::reloadImage(const std::shared_ptr<Image> &image) {
-    static_cast<OpenGLImage*>(image.get())->reload();
+void OpenGLImage::reloadImage(const std::shared_ptr<AsyncIOTask>&asyncIOTask,
+                              const std::shared_ptr<Image> &image) {
+    static_cast<OpenGLImage*>(image.get())->reload(asyncIOTask);
 }
 
 void OpenGLCanvas::createSpriteRectArray() {
@@ -424,8 +425,9 @@ void OpenGLCanvas::createWhiteTexture() {
                   GL_RGBA, GL_UNSIGNED_BYTE, pixel);
 }
 
-OpenGLCanvas::OpenGLCanvas(int width, int height)
-        : w(width), h(height), mFontManager(FONT_CACHE_SIZE, TEXT_CACHE_SIZE) {
+OpenGLCanvas::OpenGLCanvas(const std::shared_ptr<AsyncIOTask> &asyncIOTask, int width, int height)
+        : w(width), h(height),
+          mFontManager(FONT_CACHE_SIZE, TEXT_CACHE_SIZE), mAsyncIOTask(asyncIOTask) {
     SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 8 );
     SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 8 );
     SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 8 );
@@ -473,7 +475,9 @@ void OpenGLCanvas::reinitialize() {
     createRectProgram();
     createWhiteTexture();
     glViewport(0, 0, width(), height());
-    Image::forEachImage(OpenGLImage::reloadImage);
+    std::function<void(const std::shared_ptr<Image>&)> bound
+        = std::bind(&OpenGLImage::reloadImage, mAsyncIOTask, std::placeholders::_1);
+    Image::forEachImage(bound);
     for (OpenGLDisplayList *dl : displayLists) {
         dl->reinitialize();
     }
@@ -500,7 +504,7 @@ OpenGLImage *OpenGLCanvas::loadImage(const std::string &filename) {
     if (lostContext) {
         return new OpenGLImage(filename, OpenGLImage::NoLoad());
     }
-    OpenGLImage *retval = new OpenGLImage(filename);
+    OpenGLImage *retval = new OpenGLImage(mAsyncIOTask, filename);
     return retval;
 }
 
@@ -604,6 +608,7 @@ void OpenGLCanvas::resize(int new_width, int new_height) {
 }
 
 void OpenGLCanvas::beginFrame() {
+    mAsyncIOTask->callPendingCallbacksFromMainThread();
 #if SDL_MAJOR_VERSION >= 2
     int screenw = 0, screenh =0;
     SDL_GL_GetDrawableSize(window, &screenw, &screenh);
@@ -627,6 +632,7 @@ void OpenGLCanvas::endFrame() {
 #else
     SDL_GL_SwapBuffers();
 #endif
+    mAsyncIOTask->callPendingCallbacksFromMainThread();
 }
 
 bool OpenGLCanvas::getNextEvent(SDL_Event *out_event) {

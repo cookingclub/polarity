@@ -1,24 +1,13 @@
-
-#ifdef USE_SDL2
-#include "SDL2/SDL_version.h"
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_video.h"
-#else
-#include "SDL/SDL_version.h"
-#include "SDL/SDL.h"
-#include "SDL/SDL_video.h"
-#include "SDL/SDL_image.h"
-#include "SDL/SDL_ttf.h"
-#include "SDL/SDL_mixer.h"
-#include "SDL/SDL_rotozoom.h"
-#include "SDL/SDL_gfxPrimitives.h"
-#endif
+#include "util/async_io_task.hpp"
 #include "image.hpp"
 #include "canvas.hpp"
 #include "display_list.hpp"
-#include "main/main.hpp"
-#include "font_manager.hpp"
 #include "sdl_canvas.hpp"
+#include "font_manager.hpp"
+#if SDL_MAJOR_VERSION < 2
+#include "SDL/SDL_gfxPrimitives.h"
+#include "SDL/SDL_rotozoom.h"
+#endif
 
 namespace Polarity {
 
@@ -92,15 +81,16 @@ void SDLImage::loadImageSDL(Image *super,
         }
     }
 }
-void SDLImage::downloadAndLoad(){
+void SDLImage::downloadAndLoad(const std::shared_ptr<AsyncIOTask>& asyncIOTask){
     Image * super = this;
-    Polarity::asyncFileLoad(filename,
-                            std::bind(Image::parseAndLoad,
-                                      super,
-                                      filename,
-                                      &SDLImage::loadImageSDL,
-                                      std::placeholders::_1,
-                                      std::placeholders::_2));
+    asyncIOTask->asyncFileLoad(filename,
+                               std::bind(Image::parseAndLoad,
+                                         super,
+                                         filename,
+                                         asyncIOTask,
+                                         &SDLImage::loadImageSDL,
+                                         std::placeholders::_1,
+                                         std::placeholders::_2));
 }
 
 SDLImage::SDLImage(SDL_Surface* surf) :
@@ -114,13 +104,14 @@ SDLImage::SDLImage(SDL_Surface* surf) :
 {
         this->stage = COMPLETE;
 }
-SDLImage::SDLImage(const std::string&filename) : Image(filename), w(0), h(0) {
+SDLImage::SDLImage(const std::shared_ptr<AsyncIOTask>& asyncIOTask,
+                   const std::string&filename) : Image(filename), w(0), h(0) {
     surf = nullptr;
 #if SDL_MAJOR_VERSION >= 2
     texture = nullptr;
 #endif
     if (!filename.empty()) {
-        downloadAndLoad();
+        downloadAndLoad(asyncIOTask);
     }
 }
 SDLImage::~SDLImage() {
@@ -177,14 +168,14 @@ SDLCanvas::SDLCanvas(SDLRenderTargetType*surf,
                      int height,
                      SDLCanvas *parent)
     : screen(surf), context(parent->context),
-     mFontManager(FONT_CACHE_SIZE, TEXT_CACHE_SIZE) {
+     mFontManager(FONT_CACHE_SIZE, TEXT_CACHE_SIZE), mAsyncIOTask(parent->mAsyncIOTask) {
     w = width;
     h = height;
     temp_buffer = nullptr;
 }
-SDLCanvas::SDLCanvas(int width, int height)
+SDLCanvas::SDLCanvas(const std::shared_ptr<AsyncIOTask>&asyncIOTask, int width, int height)
             : w(width), h(height), context(new SDLContext()),
-              mFontManager(FONT_CACHE_SIZE, TEXT_CACHE_SIZE) {
+              mFontManager(FONT_CACHE_SIZE, TEXT_CACHE_SIZE), mAsyncIOTask(asyncIOTask) {
     temp_buffer = nullptr;
 #if SDL_MAJOR_VERSION >= 2
     context->window = SDL_CreateWindow("Polarity",
@@ -216,6 +207,9 @@ SDLCanvas::~SDLCanvas() {
 }
 FontManager &SDLCanvas::fontManager() {
     return mFontManager;
+}
+const std::shared_ptr<AsyncIOTask> &SDLCanvas::asyncIOTask() const {
+    return mAsyncIOTask;
 }
 
 SDL_Rect SDLCanvas::rectToSDL(const Rect& rect) {
@@ -249,7 +243,7 @@ SDLImage *SDLCanvas::loadImageFromSurface(SDL_Surface *surf) {
     return new SDLImage(surf);
 }
 SDLImage *SDLCanvas::loadImage(const std::string &filename) {
-    SDLImage *retval = new SDLImage(filename);
+    SDLImage *retval = new SDLImage(mAsyncIOTask, filename);
     return retval;
 }
 bool SDLCanvas::similar(float a, float b, float tol) {
@@ -573,6 +567,7 @@ void SDLCanvas::resize(int new_width, int new_height) {
 }
 
 void SDLCanvas::beginFrame() {
+    mAsyncIOTask->callPendingCallbacksFromMainThread();
 #if SDL_MAJOR_VERSION >= 2
     if (screen == nullptr) {
         SDL_GetWindowSize(context->window,
@@ -598,6 +593,7 @@ void SDLCanvas::endFrame() {
     SDL_Flip(screen);
 # endif
 #endif
+    mAsyncIOTask->callPendingCallbacksFromMainThread();
 }
 bool SDLCanvas::getNextEvent(SDL_Event *out_event) {
     return 0 != SDL_PollEvent(out_event);
