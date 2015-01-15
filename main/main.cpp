@@ -36,7 +36,7 @@ bool loopIter(Canvas *screen) {
     SDL_Event event;
     std::vector<int> keyUps;
     // Maintain a strong reference to world so we can handle world changes.
-    std::shared_ptr<World> currentWorldRef (world);
+    std::shared_ptr<World> currentWorldRef (Game::getSingleton().pinWorld());
     // SDL_FillRect(screen, NULL, 0xffffffff);
     while (screen->getNextEvent(&event)) {
         if (!Game::getSingleton().injectInput(&event)) {

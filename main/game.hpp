@@ -1,15 +1,17 @@
 #include <vector>
 #include <memory>
+#include "util/shared.hpp"
 namespace Polarity{
 class AudioChannelPlayer;
 struct PlayerState;
 class Canvas;
 class AsyncIOTask;
+class World;
 struct GameState;
 
 
 
-class Game {
+class POLARITYENGINE_EXPORT Game {
 public:
     Game();
     void startGame(const std::shared_ptr<Canvas> &screen, const std::string &level);
@@ -18,6 +20,7 @@ public:
     void performTick();
     void stopGame();
     void stopGameAndCleanupGraphicsAndEvents();
+    const std::shared_ptr<Polarity::World> &pinWorld()const;
     ~Game();
     AsyncIOTask& getAsyncIOTask() {
         return *asyncIOTask;

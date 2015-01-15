@@ -7,7 +7,7 @@
 
 namespace Polarity {
     class Canvas;
-    class DisplayList {
+    class POLARITYGFX_EXPORT DisplayList {
     public:
         virtual ~DisplayList(){}
         virtual void draw(Canvas * cavas, int x, int y) const = 0;

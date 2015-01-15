@@ -1,7 +1,9 @@
 #ifndef POLARITY_GRAPHICS_RECT_HPP__
 #define POLARITY_GRAPHICS_RECT_HPP__
+#include "util/shared.hpp"
 
-class Rect {
+namespace Polarity {
+class POLARITYGFX_EXPORT Rect {
 public:
     float x, y;
     float w, h;
@@ -65,5 +67,6 @@ public:
                 bottom() < other.bottom() ? bottom() : other.bottom());
     }
 };
+}
 
 #endif

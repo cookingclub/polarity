@@ -8,16 +8,16 @@
 #include <cstdlib>
 #include <memory>
 
-#include "animation.hpp"
-#include "display_list.hpp"
-#include "rect.hpp"
+#include "graphics/animation.hpp"
+#include "graphics/display_list.hpp"
+#include "graphics/rect.hpp"
 
 #include "tmxparser.h"
 
 namespace Polarity {
 class Canvas;
 
-class Tileset : tmxparser::TmxTileset {
+class POLARITYENGINE_EXPORT Tileset : tmxparser::TmxTileset {
     Tileset() = delete;
     Tileset(const Tileset&x) = delete;
     Tileset& operator=(const Tileset&x) = delete;
@@ -32,7 +32,7 @@ public:
         return tileHeight;
     }
     Rect positionInImage(int tileindex);
-    Image::BlitDescription drawTile(int tileindex, int x, int y);
+    BlitDescription drawTile(int tileindex, int x, int y);
     Rect getTileOutputBounds(int tileindex, int x, int y);
     std::shared_ptr<Image> image;
 };

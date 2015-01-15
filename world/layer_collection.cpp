@@ -1,7 +1,8 @@
 #include "graphics/image.hpp"
 #include "graphics/animation.hpp"
-#include "graphics/layer_collection.hpp"
 
+#include "graphics/blit_description.hpp"
+#include "world/layer_collection.hpp"
 #include <algorithm>
 
 namespace Polarity {
@@ -26,13 +27,13 @@ Rect Tileset::positionInImage(int tileindex) {
 Rect Tileset::getTileOutputBounds(int tileindex, int x, int y) {
     return Rect(x, y - tileHeight, tileWidth, tileHeight);
 }
-Image::BlitDescription Tileset::drawTile(int tileindex, int x, int y) {
+BlitDescription Tileset::drawTile(int tileindex, int x, int y) {
     Rect srcpos = positionInImage(tileindex);
-    Image::BlitDescription bd = {srcpos,
-                                 static_cast<float>(x + tileWidth / 2.0f),
-                                 static_cast<float>(y + tileHeight / 2.0f - tileHeight),
-                                 static_cast<float>(tileWidth),
-                                 static_cast<float>(tileHeight), 0};
+    BlitDescription bd = {srcpos,
+                          static_cast<float>(x + tileWidth / 2.0f),
+                          static_cast<float>(y + tileHeight / 2.0f - tileHeight),
+                          static_cast<float>(tileWidth),
+                          static_cast<float>(tileHeight), 0};
     return bd;
     //image->drawSubimage(surf, srcpos, x, y, 0); // DRH fixme - tileHeight
 }
@@ -105,7 +106,7 @@ void Layer::makeDisplayLists(Canvas *screen) {
             return; // not loaded
         }
     }
-    std::vector<std::vector<Image::BlitDescription> >displayListCoords(layers->tilesets.size());
+    std::vector<std::vector<BlitDescription> >displayListCoords(layers->tilesets.size());
     std::vector<Rect>bounds(layers->tilesets.size());
     for (int layerY = 0; layerY < layerHeight; layerY += layers->tileHeight) {
         for (int layerX = 0; layerX < layerWidth; layerX += layers->tileWidth, ++tileid) {

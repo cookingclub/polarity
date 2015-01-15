@@ -71,7 +71,7 @@ public:
         : fontCache(fontCacheSize), textCache(textCacheSize) {
     }
 
-    void drawText(Canvas *canvas, Rect rect, const std::string &fontName,
+    void drawText(Canvas *canvas, int rect_left, int rect_top, const std::string &fontName,
                   int ptSize, SDL_Color color, const std::string &message,
                   bool cacheText=true) {
 #ifdef USE_SDL2
@@ -106,8 +106,8 @@ public:
             image = imagePtr->get();
         }
         canvas->drawSprite(image,
-                           rect.left() + image->width() / 2,
-                           rect.top() + image->height() / 2,
+                           rect_left + image->width() / 2,
+                           rect_top + image->height() / 2,
                            image->width(), image->height(), 0, 1);
     }
 

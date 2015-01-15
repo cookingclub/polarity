@@ -5,8 +5,9 @@
 #ifndef EMSCRIPTEN
 #include <thread>
 #endif
+#include "util/shared.hpp"
 namespace Polarity {
-class AsyncIOTask{
+class POLARITYGFX_EXPORT AsyncIOTask{
 public:
     AsyncIOTask();
     // loads the file into ram and calls back on a different thread

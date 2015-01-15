@@ -66,6 +66,10 @@ void Game::stopGame(){
     world.reset();    
 }
 
+const std::shared_ptr<World>& Game::pinWorld() const{
+    return world;
+}
+
 void Game::stopGameAndCleanupGraphicsAndEvents() {
     stopGame();
     std::weak_ptr<Canvas> wscreen(screen);

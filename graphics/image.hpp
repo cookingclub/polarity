@@ -16,7 +16,7 @@ class Canvas;
 class DisplayList;
 class AsyncIOTask;
 
-class Image {
+class POLARITYGFX_EXPORT Image {
 protected:
     friend class Animation;
     static std::shared_ptr<Image> getValidImage(const std::string&filename);
@@ -68,14 +68,6 @@ public:
     static void forEachImage(std::function<void(const std::shared_ptr<Image>&)> func);
     static std::shared_ptr<Image> get(Canvas *canvas, const std::string &filename);
     void draw(Canvas *screen, int x, int y, float angle, float alpha);
-    struct BlitDescription {
-        Rect src;
-        float centerX;
-        float centerY;
-        float scaleX;
-        float scaleY;
-        float angle;
-    };
     virtual void drawSprite(Canvas *screen, float centerX, float centerY,
                             float scaleX, float scaleY, float angle, float alpha);
     virtual int width() = 0;

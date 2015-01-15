@@ -3,7 +3,7 @@
 #include "display_list.hpp"
 #include "graphics/matrix4x4.hpp"
 #include "util/async_io_task.hpp"
-
+#include "blit_description.hpp"
 #ifdef EMSCRIPTEN
 
 namespace {
@@ -30,7 +30,7 @@ void onContextRestored() {
 namespace Polarity {
 OpenGLDisplayList::OpenGLDisplayList(
         OpenGLCanvas *canvas,
-        const std::vector<Image::BlitDescription> &blits)
+        const std::vector<BlitDescription> &blits)
     : blits(blits), canvas(canvas), vbo(-1), uploaded(false) {
     reinitialize();
     canvas->displayLists.insert(this);
@@ -509,7 +509,7 @@ OpenGLImage *OpenGLCanvas::loadImage(const std::string &filename) {
 }
 
 DisplayList *OpenGLCanvas::makeDisplayList(const std::shared_ptr<Image> &image,
-                                           const std::vector<Image::BlitDescription> &draws,
+                                           const std::vector<BlitDescription> &draws,
                                            const Rect&bounds) {
     OpenGLDisplayList *list = new OpenGLDisplayList(this, draws);
     list->attach(image);

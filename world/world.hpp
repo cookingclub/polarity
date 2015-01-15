@@ -5,7 +5,7 @@
 #include "physics/vector.hpp"
 #include "physics/game_object.hpp"
 #include "physics/contact.hpp"
-#include "graphics/layer_collection.hpp"
+#include "world/layer_collection.hpp"
 #include "audio/audio.hpp"
 #include "player.hpp"
 #include <memory>

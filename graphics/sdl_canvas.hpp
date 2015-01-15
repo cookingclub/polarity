@@ -17,6 +17,7 @@
 #include "canvas.hpp"
 #include "display_list.hpp"
 #include "font_manager.hpp"
+#include "blit_description.hpp"
 
 namespace Polarity {
 
@@ -93,11 +94,11 @@ public:
     class SDLDisplayList : public DisplayList {
     protected:
         std::weak_ptr<Image> image;
-        std::vector<Image::BlitDescription> dl;
+        std::vector<BlitDescription> dl;
     public:
         SDLDisplayList(SDLCanvas *canvas,
                        const std::shared_ptr<Image> &image,
-                       const std::vector<Image::BlitDescription> &draws);
+                       const std::vector<BlitDescription> &draws);
         void attach(const std::shared_ptr<Image>&newImage);
         void draw(Canvas *canvas, int x, int y) const;
         ~SDLDisplayList();
@@ -109,7 +110,7 @@ public:
     public:
         SDLImageCacheDisplayList(SDLCanvas *canvas,
                                   const std::shared_ptr<Image> &image,
-                                  const std::vector<Image::BlitDescription> &lst,
+                                  const std::vector<BlitDescription> &lst,
                                  const Rect &bound);
         ~SDLImageCacheDisplayList();
         void loadImage();
@@ -118,7 +119,7 @@ public:
         void draw(Canvas *canvas, int x, int y) const;
     };
     virtual DisplayList *makeDisplayList(const std::shared_ptr<Image> &image,
-                                         const std::vector<Image::BlitDescription> &draws,
+                                         const std::vector<BlitDescription> &draws,
                                          const Rect&bounds);
     virtual void attachDisplayList(DisplayList *dl, const std::shared_ptr<Image> &image);
     virtual void drawDisplayList(const DisplayList *dl, int x, int y);

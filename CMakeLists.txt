@@ -9,7 +9,7 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 
 
 IF(NOT WIN32)
-ADD_DEFINITIONS("-Wall -Wno-unused-function -Wno-unused-variable -fvisibility=hidden")
+ADD_DEFINITIONS("-Wall -Wno-unused-function -Wno-unused-variable -fvisibility=hidden -DPOLARITY_SHARED")
 ENDIF()
 
 IF(NOT SDL_VERSION)
@@ -35,7 +35,39 @@ IF(NOT CMAKE_BUILD_TYPE)
       )
 ENDIF()
 
-add_library(polarityext
+
+SET(POLARITYGFX_EXT_SOURCES #            libs/tinyxml2/tinyxml2.cpp
+            libs/libpng/example.c
+            libs/libpng/png.c
+            libs/libpng/pngerror.c
+            libs/libpng/pngget.c
+            libs/libpng/pngmem.c
+            libs/libpng/pngpread.c
+            libs/libpng/pngread.c
+            libs/libpng/pngrio.c
+            libs/libpng/pngrtran.c
+            libs/libpng/pngrutil.c
+            libs/libpng/pngset.c
+            libs/libpng/pngtest.c
+            libs/libpng/pngtrans.c
+            libs/libpng/pngwio.c
+            libs/libpng/pngwrite.c
+            libs/libpng/pngwtran.c
+            libs/libpng/pngwutil.c
+            libs/zlib/adler32.c
+            libs/zlib/compress.c
+            libs/zlib/crc32.c
+            libs/zlib/deflate.c
+            libs/zlib/infback.c
+            libs/zlib/inffast.c
+            libs/zlib/inflate.c
+            libs/zlib/inftrees.c
+            libs/zlib/trees.c
+            libs/zlib/uncompr.c
+            libs/zlib/zutil.c)
+
+SET(POLARITYENGINE_EXT_SOURCES
+             libs/tinyxml2/tinyxml2.cpp             
             libs/box2d/Box2D/Box2D/Collision/b2BroadPhase.cpp
             libs/box2d/Box2D/Box2D/Collision/b2CollideCircle.cpp
             libs/box2d/Box2D/Box2D/Collision/b2CollideEdge.cpp
@@ -81,44 +113,16 @@ add_library(polarityext
             libs/box2d/Box2D/Box2D/Dynamics/Joints/b2RopeJoint.cpp
             libs/box2d/Box2D/Box2D/Dynamics/Joints/b2WeldJoint.cpp
             libs/box2d/Box2D/Box2D/Dynamics/Joints/b2WheelJoint.cpp
-            libs/box2d/Box2D/Box2D/Rope/b2Rope.cpp
-            libs/tinyxml2/tinyxml2.cpp
-            libs/libpng/example.c
-            libs/libpng/png.c
-            libs/libpng/pngerror.c
-            libs/libpng/pngget.c
-            libs/libpng/pngmem.c
-            libs/libpng/pngpread.c
-            libs/libpng/pngread.c
-            libs/libpng/pngrio.c
-            libs/libpng/pngrtran.c
-            libs/libpng/pngrutil.c
-            libs/libpng/pngset.c
-            libs/libpng/pngtest.c
-            libs/libpng/pngtrans.c
-            libs/libpng/pngwio.c
-            libs/libpng/pngwrite.c
-            libs/libpng/pngwtran.c
-            libs/libpng/pngwutil.c
-            libs/zlib/adler32.c
-            libs/zlib/compress.c
-            libs/zlib/crc32.c
-            libs/zlib/deflate.c
-            libs/zlib/infback.c
-            libs/zlib/inffast.c
-            libs/zlib/inflate.c
-            libs/zlib/inftrees.c
-            libs/zlib/trees.c
-            libs/zlib/uncompr.c
-            libs/zlib/zutil.c)
+            libs/box2d/Box2D/Box2D/Rope/b2Rope.cpp )
 
 
-add_library(polaritygraphics 
+add_library(polaritygraphics SHARED
+            ${POLARITYGFX_EXT_SOURCES}
             graphics/animation.cpp
             graphics/font_renderer.cpp
             graphics/image.cpp
             graphics/init.cpp
-            graphics/layer_collection.cpp
+
             graphics/opengl_canvas.cpp
             graphics/sdl_canvas.cpp
             util/async_io_task.cpp
@@ -129,19 +133,20 @@ add_library(polaritygraphics
             graphics/opengl_canvas.hpp
             graphics/canvas.hpp
             graphics/display_list.hpp
-            graphics/layer_collection.hpp
             graphics/font_manager.hpp
             graphics/matrix4x4.hpp
             graphics/rect.hpp
             graphics/animation.hpp)
 
-add_library(polarityengine
+add_library(polarityengine SHARED
+            ${POLARITYENGINE_EXT_SOURCES}
             physics/contact.cpp
             physics/game_object.cpp
             physics/jumping_behavior.cpp
             physics/player_behavior.cpp
             main/game.cpp
             world/door_behavior.cpp
+            world/layer_collection.cpp
             world/sounds.cpp
             world/world.cpp
             libs/libtmxparser/src/tmxparser.cpp
@@ -152,7 +157,6 @@ add_library(polarityengine
             graphics/font_renderer.hpp
             graphics/image.hpp
             graphics/init.hpp
-            graphics/layer_collection.hpp
             graphics/matrix4x4.hpp
             graphics/opengl_canvas.hpp
             graphics/rect.hpp
@@ -166,6 +170,7 @@ add_library(polarityengine
             physics/vector.hpp
             main/game.hpp
             world/door_behavior.hpp
+            world/layer_collection.hpp
             world/player.hpp
             world/sounds.hpp
             world/trigger.hpp
@@ -177,11 +182,13 @@ add_library(polarityengine
 
 add_executable(polarity
             main/main.cpp)
-
+SET_TARGET_PROPERTIES(polaritygraphics PROPERTIES COMPILE_FLAGS "-DPOLARITYGFX_BUILD")
+SET_TARGET_PROPERTIES(polarityengine PROPERTIES COMPILE_FLAGS "-DPOLARITYENGINE_BUILD")
 TARGET_LINK_LIBRARIES(polarity LINK_PUBLIC polarityengine)
 TARGET_LINK_LIBRARIES(polarity LINK_PUBLIC polaritygraphics)
-TARGET_LINK_LIBRARIES(polarity LINK_PUBLIC polarityext)
+TARGET_LINK_LIBRARIES(polarityengine LINK_PUBLIC polaritygraphics)
 
 FOREACH(POLARITY_LINK_LIBRARY IN ITEMS ${POLARITY_LINK_LIBRARIES})
-TARGET_LINK_LIBRARIES(polarity LINK_PUBLIC ${POLARITY_LINK_LIBRARY})
+
+TARGET_LINK_LIBRARIES(polaritygraphics LINK_PUBLIC ${POLARITY_LINK_LIBRARY})
 ENDFOREACH(POLARITY_LINK_LIBRARY)

@@ -253,7 +253,7 @@ bool SDLCanvas::similar(float a, float b, float tol) {
 }
 SDLCanvas::SDLDisplayList::SDLDisplayList(SDLCanvas *canvas,
                                           const std::shared_ptr<Image> &image,
-                                          const std::vector<Image::BlitDescription> &draws)
+                                          const std::vector<BlitDescription> &draws)
     : image(image), dl(draws) {
 }
 void SDLCanvas::SDLDisplayList::attach(const std::shared_ptr<Image>&newImage) {
@@ -309,7 +309,7 @@ SDLCanvas * SDLCanvas::SDLImageCacheDisplayList::makeBlankDrawableSurface(int w,
 }
 SDLCanvas::SDLImageCacheDisplayList::SDLImageCacheDisplayList(SDLCanvas *canvas,
                                                               const std::shared_ptr<Image> &image,
-                                                              const std::vector<Image::BlitDescription> &lst,
+                                                              const std::vector<BlitDescription> &lst,
                                                               const Rect &bound)
     : SDLDisplayList(canvas, image, lst),
      bounds(bound),
@@ -325,7 +325,7 @@ void SDLCanvas::SDLImageCacheDisplayList::loadImage() {
     // this lets us copy the alpha channel directly
     static_cast<SDLImage*>(img.get())->disableAlphaBlend();
     if (img) {
-        for(Image::BlitDescription blit : dl) {
+        for(const BlitDescription &blit : dl) {
             cache.get()->drawSpriteSrc(
                 img.get(), blit.src,
                 blit.centerX - bounds.x,
@@ -374,7 +374,7 @@ void SDLCanvas::SDLImageCacheDisplayList::draw(Canvas *canvas, int x, int y) con
 }
 
 DisplayList *SDLCanvas::makeDisplayList(const std::shared_ptr<Image> &image,
-                                        const std::vector<Image::BlitDescription> &draws,
+                                        const std::vector<BlitDescription> &draws,
                                         const Rect&bounds) {
     if (false && bounds.w && bounds.h) {
         return new SDLImageCacheDisplayList(this, image, draws, bounds);

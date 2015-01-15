@@ -2,6 +2,7 @@
 #define POLARITY_GRAPHICS_FONT_RENDERER_HPP__
 
 #include <string>
+#include "util/shared.hpp"
 
 typedef struct _TTF_Font TTF_Font;
 struct SDL_Color;
@@ -10,7 +11,7 @@ namespace Polarity {
 class Image;
 class Canvas;
 
-class FontRenderer {
+class POLARITYGFX_EXPORT FontRenderer {
 public:
 
     FontRenderer(const std::string &fontName, int ptSize);

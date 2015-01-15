@@ -15,7 +15,7 @@
 
 namespace Polarity {
 
-class Animation : public Image{
+class POLARITYGFX_EXPORT Animation : public Image{
     Animation()=delete;
     Animation(const Animation&x) = delete;
     Animation &operator=(const Animation&x) = delete;

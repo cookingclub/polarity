@@ -1,19 +1,20 @@
 #ifndef POLARITY_GRAPHICS_CANVAS_HPP__
 #define POLARITY_GRAPHICS_CANVAS_HPP__
-
+#include "util/shared.hpp"
 #include "image.hpp"
-
 struct SDL_Surface;
 struct SDL_Color;
 union SDL_Event;
 
+
 namespace Polarity {
 
+struct BlitDescription;
 class FontManager;
 class AsyncIOTask;
+class Rect;
 
-
-class Canvas {
+class POLARITYGFX_EXPORT Canvas {
     Canvas& operator= (const Canvas&) = delete;
     Canvas(const Canvas&) = delete;
 protected:
@@ -45,7 +46,7 @@ public:
                             float angle, float alpha) = 0;
     virtual void drawLine(int x0, int y0, int x1, int y1, const SDL_Color& color, float alpha) = 0;
     virtual DisplayList *makeDisplayList(const std::shared_ptr<Image> &image,
-                                         const std::vector<Image::BlitDescription> &draws,
+                                         const std::vector<BlitDescription> &draws,
                                          const Rect& bounds) = 0;
     virtual void attachDisplayList(DisplayList *, const std::shared_ptr<Image> &image) = 0;
     virtual void drawDisplayList(const DisplayList *, int x, int y) = 0;

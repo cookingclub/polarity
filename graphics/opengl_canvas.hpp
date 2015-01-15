@@ -61,7 +61,7 @@ private:
 };
 
 class OpenGLDisplayList : public DisplayList {
-    std::vector<Image::BlitDescription> blits;
+    std::vector<BlitDescription> blits;
     std::shared_ptr<OpenGLImage> image;
     OpenGLCanvas *canvas;
     GLuint vbo;
@@ -70,7 +70,7 @@ class OpenGLDisplayList : public DisplayList {
     void uploadVertexArray() const;
 public:
     OpenGLDisplayList(OpenGLCanvas *canvas,
-            const std::vector<Image::BlitDescription> &blits);
+            const std::vector<BlitDescription> &blits);
     ~OpenGLDisplayList();
 
     void reinitialize();
@@ -119,7 +119,7 @@ public:
     virtual void drawLine(int x0, int y0, int x1, int y1,
                           const SDL_Color& color, float alpha);
     virtual DisplayList *makeDisplayList(const std::shared_ptr<Image> &image,
-                                         const std::vector<Image::BlitDescription> &draws,
+                                         const std::vector<BlitDescription> &draws,
                                          const Rect&bounds);
 
     virtual void attachDisplayList(DisplayList *dl, const std::shared_ptr<Image> &image);
