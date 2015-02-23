@@ -55,6 +55,8 @@ public:
     virtual void endFrame() = 0;
     virtual void clear() {}
     virtual bool getNextEvent(SDL_Event* out_event) = 0;
+    virtual SDL_Event* makeBlankEventUnion() const = 0;
+    virtual void destroyEventUnion(SDL_Event*) const = 0;
 };
 
 }

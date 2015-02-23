@@ -598,5 +598,14 @@ void SDLCanvas::endFrame() {
 bool SDLCanvas::getNextEvent(SDL_Event *out_event) {
     return 0 != SDL_PollEvent(out_event);
 }
+SDL_Event* SDLCanvas::makeBlankEventUnion()const {
+    SDL_Event * retval = new SDL_Event();
+    memset(retval, 0, sizeof(SDL_Event));
+    return retval;
+}
+void SDLCanvas::destroyEventUnion(SDL_Event*e)const {
+    delete e;
+}
+
 }
 

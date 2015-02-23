@@ -32,14 +32,14 @@ const int CANVAS_HEIGHT = 720;
 namespace Polarity {
 
 static std::shared_ptr<Canvas> screen;
+SDL_Event *event;
 bool loopIter(Canvas *screen) {
-    SDL_Event event;
     std::vector<int> keyUps;
     // Maintain a strong reference to world so we can handle world changes.
     std::shared_ptr<World> currentWorldRef (Game::getSingleton().pinWorld());
     // SDL_FillRect(screen, NULL, 0xffffffff);
-    while (screen->getNextEvent(&event)) {
-        if (!Game::getSingleton().injectInput(&event)) {
+    while (screen->getNextEvent(event)) {
+        if (!Game::getSingleton().injectInput(event)) {
             return false;
         }
     }
@@ -95,13 +95,15 @@ int main(int argc, char**argv) {
     Polarity::initGraphicsSystem();
     std::shared_ptr<Polarity::AsyncIOTask> localAsyncIOTask(new Polarity::AsyncIOTask);
     Polarity::screen.reset(Polarity::makeGraphicsCanvas(localAsyncIOTask, renderer_type, CANVAS_WIDTH, CANVAS_HEIGHT));
+    Polarity::event = Polarity::screen->makeBlankEventUnion();
 
     srand(time(NULL));
     Polarity::Game::getSingleton().startGame(Polarity::screen, "assets/levels/level2.tmx");
     mainloop();
+    Polarity::screen->destroyEventUnion(Polarity::event);
+    Polarity::event = NULL;
     Polarity::screen.reset();
     Polarity::Game::getSingleton().stopGameAndCleanupGraphicsAndEvents();
-
     std::cerr<<"Thank you for playing polarity"<<std::endl;
     return 0;
 }

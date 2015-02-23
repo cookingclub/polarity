@@ -639,5 +639,14 @@ bool OpenGLCanvas::getNextEvent(SDL_Event *out_event) {
     return 0 != SDL_PollEvent(out_event);
 }
 
+SDL_Event* OpenGLCanvas::makeBlankEventUnion()const {
+    SDL_Event * retval = new SDL_Event();
+    memset(retval, 0, sizeof(SDL_Event));
+    return retval;
+}
+void OpenGLCanvas::destroyEventUnion(SDL_Event*e)const {
+    delete e;
+}
+
 }
 

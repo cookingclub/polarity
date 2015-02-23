@@ -131,6 +131,8 @@ public:
     virtual void endFrame();
     virtual bool getNextEvent(SDL_Event* out_event);
     virtual void clear();
+    SDL_Event *makeBlankEventUnion()const;
+    void destroyEventUnion(SDL_Event*)const;
 
     GLuint spriteVBO;
     GLint positionLocation;

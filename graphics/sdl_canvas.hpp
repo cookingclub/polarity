@@ -91,6 +91,8 @@ public:
     SDLImage *loadImageFromSurface(SDL_Surface *surf);
     SDLImage *loadImage(const std::string &filename);
     static bool similar(float a, float b, float tol);
+    SDL_Event *makeBlankEventUnion()const;
+    void destroyEventUnion(SDL_Event*)const;
     class SDLDisplayList : public DisplayList {
     protected:
         std::weak_ptr<Image> image;
