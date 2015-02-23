@@ -3,6 +3,7 @@
 #include "canvas.hpp"
 #include "opengl_canvas.hpp"
 #include "sdl_canvas.hpp"
+#include "util/async_io_task.hpp"
 #if SDL_MAJOR_VERSION >= 2
 #include <SDL2/SDL_ttf.h>
 #else
@@ -10,6 +11,10 @@
 #endif
 
 namespace Polarity {
+std::shared_ptr<AsyncIOTask> createAsyncIoTask(){
+    std::shared_ptr<Polarity::AsyncIOTask> localAsyncIOTask(new Polarity::AsyncIOTask);
+    return localAsyncIOTask;
+}
 static bool graphicsInitialized = false;
 int initGraphicsSystem() {
     int retval = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO |
