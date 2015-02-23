@@ -1,6 +1,12 @@
 #include <vector>
 #include <memory>
 #include "util/shared.hpp"
+extern "C" {
+
+union SDL_Event;
+
+}
+
 namespace Polarity{
 class AudioChannelPlayer;
 struct PlayerState;
