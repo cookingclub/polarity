@@ -1,4 +1,6 @@
+#include <stdlib.h>
 #include <string>
+
 #include <functional>
 #ifdef EMSCRIPTEN
 #include <emscripten.h>

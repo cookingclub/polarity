@@ -13,15 +13,26 @@ ADD_DEFINITIONS("-Wall -Wno-unused-function -Wno-unused-variable -fvisibility=hi
 ENDIF()
 
 IF(NOT SDL_VERSION)
-  SET(SDL_VERSION "SDL" CACHE STRING
-      "Which version of sdl to use" FORCE
-      )
+  IF(APPLE)
+    SET(SDL_VERSION "SDL2" CACHE STRING
+        "Which version of sdl to use" FORCE
+        )
+  ELSE()
+    SET(SDL_VERSION "SDL" CACHE STRING
+        "Which version of sdl to use" FORCE
+        )
+  ENDIF()
 ENDIF()
 
 IF(SDL_VERSION STREQUAL "SDL2")
 ADD_DEFINITIONS("-DUSE_SDL2")
 SET(POLARITY_INCLUDE_DIRS ${POLARITY_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/libs/libsdl/include)
-SET(POLARITY_LINK_LIBRARIES ${POLARITY_LINK_LIBRARIES} -lSDL2_mixer -lGL -lSDL2_ttf -lSDL2 -lSDL2main -lrt -lfreetype)
+SET(POLARITY_LINK_LIBRARIES ${POLARITY_LINK_LIBRARIES} -L${CMAKE_CURRENT_SOURCE_DIR}/libs/libsdl/lib -lSDL2_mixer -lSDL2_ttf -lSDL2 -lSDL2main )
+    IF(APPLE)
+        SET(POLARITY_LINK_LIBRARIES ${POLARITY_LINK_LIBRARIES} "-framework OpenGL")
+    ELSE()
+        SET(POLARITY_LINK_LIBRARIES ${POLARITY_LINK_LIBRARIES} -lGL -lrt -lfreetype)
+    ENDIF()
 ELSE()
 SET(POLARITY_LINK_LIBRARIES ${POLARITY_LINK_LIBRARIES} -lSDL_mixer -lGL -lSDL_ttf -lSDL -lSDLmain -lSDL_gfx -lrt -lfreetype)
 ENDIF()

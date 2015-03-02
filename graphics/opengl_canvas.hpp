@@ -1,12 +1,18 @@
 #ifndef POLARITY_GRAPHICS_OPENGL_CANVAS_HPP__
 #define POLARITY_GRAPHICS_OPENGL_CANVAS_HPP__
 
+#ifdef __APPLE__
+#define GL_GLEXT_PROTOTYPES
+#include <OpenGL/gl.h>
+#include <OpenGL/glext.h>
+#else
 #ifdef USE_GLES
 #include "GLES2/gl2.h"
 #else
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glext.h>
+#endif
 #endif
 #ifdef USE_SDL2
 #include "SDL2/SDL_version.h"
