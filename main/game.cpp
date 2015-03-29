@@ -48,6 +48,10 @@ bool Game::injectInput(SDL_Event*event) {
     return true;
 }
 
+void Game::drawFrame() {
+    drawFrame("Polarity version 0.1 alpha");
+}
+
 void Game::drawFrame(const std::string &title_text) {
     screen->beginFrame();
     screen->clear();
