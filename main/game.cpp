@@ -65,7 +65,9 @@ void Game::performTick() {
 }
 
 void Game::stopGame(){
-    asyncIOTask->quiesce();
+    if (asyncIOTask) {
+        asyncIOTask->quiesce();
+    }
     world.reset();    
 }
 
