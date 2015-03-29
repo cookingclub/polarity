@@ -339,6 +339,7 @@ void SDLCanvas::SDLImageCacheDisplayList::loadImage() {
 void SDLCanvas::SDLImageCacheDisplayList::reloadImage() {
 #if SDL_MAJOR_VERSION >= 2
     SDL_SetRenderTarget(cache->context->renderer, cache->screen);
+    SDL_SetRenderDrawColor(cache->context->renderer, 0, 0, 0, 0);
     SDL_RenderClear(cache->context->renderer);
     SDL_SetRenderTarget(cache->context->renderer, cache->screen);
 #else
@@ -586,6 +587,8 @@ void SDLCanvas::beginFrame() {
 }
 void SDLCanvas::clear() {
 #if SDL_MAJOR_VERSION >= 2
+    SDL_SetRenderDrawColor(context->renderer, 0, 0, 0, 0);
+
     SDL_RenderClear(context->renderer);
 #else
     SDL_Rect full;
