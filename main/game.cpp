@@ -2,6 +2,8 @@
 #include <vector>
 #include "graphics/init.hpp"
 #include "graphics/canvas.hpp"
+#include "graphics/color.hpp"
+#include "graphics/font_manager.hpp"
 #include "game.hpp"
 #include "util/async_io_task.hpp"
 #include "world/sounds.hpp"
@@ -46,10 +48,13 @@ bool Game::injectInput(SDL_Event*event) {
     return true;
 }
 
-void Game::drawFrame() {
+void Game::drawFrame(const std::string &title_text) {
     screen->beginFrame();
     screen->clear();
     world->draw(screen.get());
+    screen->fontManager().drawText(
+        screen.get(), 12, 2, "DroidSerif", 12, Color(128,128,64, 255),
+        title_text);
     screen->endFrame();
 }
 

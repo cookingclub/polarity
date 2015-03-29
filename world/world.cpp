@@ -158,9 +158,6 @@ void World::draw(Canvas *screen) {
     for (auto& object : objects) {
         object->draw(this, screen);
     }
-    screen->fontManager().drawText(
-            screen, 12, 2, "DroidSerif", 12, Color(128,128,64, 255),
-            "Polarity version 0.1 alpha");
     screen->drawLine(2,12,2,2,{0,192,0, 255},.25);
     screen->drawLine(12,2,2,12,{0,128,0, 255},.5);
 
