@@ -131,6 +131,7 @@ add_library(polaritygraphics SHARED
             ${POLARITYGFX_EXT_SOURCES}
             graphics/animation.cpp
             graphics/font_renderer.cpp
+            graphics/font_manager.cpp
             graphics/image.cpp
             graphics/init.cpp
             graphics/canvas.cpp
