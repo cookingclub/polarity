@@ -1,6 +1,6 @@
 #include "graphics/font_renderer.hpp"
 #include "graphics/canvas.hpp"
-
+#include "graphics/color.hpp"
 #ifdef USE_SDL2
 #include <SDL2/SDL_ttf.h>
 #else
@@ -40,12 +40,31 @@ FontRenderer::~FontRenderer() {
     TTF_CloseFont(font);
 }
 
-Image *FontRenderer::render(Canvas *canvas, const SDL_Color &color,
+Rect FontRenderer::textSize(const std::string&message) {
+    if (isLoaded()) {
+        int w = 0, h = 0;
+        TTF_SizeUTF8(font, message.c_str(), &w, &h);
+        return Rect(0, 0, w, h);
+    }
+    return Rect(0,0,0,0);
+}
+
+Image *FontRenderer::render(Canvas *canvas, const Color &color,
                             const std::string &message) {
+    SDL_Color sdl_color;
+    sdl_color.r = color.r;
+    sdl_color.g = color.g;
+    sdl_color.b = color.b;
+#ifdef USE_SDL2
+    sdl_color.a = color.a;
+#else
+    sdl_color.unused = color.a;
+#endif
+
     if (!isLoaded()) {
         return nullptr;
     }
-    SDL_Surface *surf = TTF_RenderUTF8_Blended(font, message.c_str(), color);
+    SDL_Surface *surf = TTF_RenderUTF8_Blended(font, message.c_str(), sdl_color);
     return canvas->loadImageFromSurface(surf);
 }
 

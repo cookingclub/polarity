@@ -2,7 +2,7 @@
 #define POLARITY_GRAPHICS_FONT_MANAGER_HPP__
 
 #include "graphics/font_renderer.hpp"
-
+#include "color.hpp"
 #include "util/lru_map.hpp"
 
 #include <unordered_map>
@@ -30,6 +30,9 @@ class FontManager {
         bool operator==(const FontKey &oth) const {
             return (ptSize == oth.ptSize && fontName == oth.fontName);
         }
+        const std::string & name() const{ return fontName; }
+        int pointSize() const{ return ptSize; }
+        
     private:
         std::string fontName;
         int ptSize;
@@ -43,51 +46,54 @@ class FontManager {
             size_t operator () (const TextKey &key) const {
                 return FontKey::Hash()(key.fontKey) ^
                        (std::hash<std::string>()(key.message) * 31) ^
-                       (std::hash<int>()(key.colorUnion.colorVal) * 37);
+                       (std::hash<int>()(key.color.asInt()) * 37);
             }
         };
 
-        TextKey(FontKey &fk, SDL_Color c, std::string msg)
+        TextKey(FontKey &fk, Color c, std::string msg)
             : fontKey(fk), message(msg) {
-            colorUnion.color = c;
+            color = c;
         }
 
         bool operator==(const TextKey &oth) const {
-            return (colorUnion.colorVal == oth.colorUnion.colorVal &&
+            return (color == oth.color &&
                     fontKey == oth.fontKey && message == oth.message);
         }
     private:
         FontKey fontKey;
-        union {
-            SDL_Color color;
-            int colorVal;
-        } colorUnion;
+        Color color;
         std::string message;
     };
+    FontRenderer* getFontRenderer(const FontKey &fcKey) {
+        auto fontRendererPtr = fontCache.get(fcKey);
+        FontRenderer *fontRenderer = nullptr;
+        if (fontRendererPtr == nullptr) {
+            fontRenderer = new FontRenderer(fcKey.name(), fcKey.pointSize());
+            fontCache.insert(fcKey, std::move(std::unique_ptr<FontRenderer>(fontRenderer)));
+        } else {
+            fontRenderer = fontRendererPtr->get();
+        }
+        return fontRenderer;
 
+    }
 public:
 
     FontManager(size_t fontCacheSize, size_t textCacheSize)
         : fontCache(fontCacheSize), textCache(textCacheSize) {
     }
 
+
+    Rect textSize(const std::string&fontName, int ptSize, const std::string &message) {
+        FontRenderer *fontRenderer = getFontRenderer(FontKey(fontName, ptSize));
+        return fontRenderer->textSize(message);
+    }
+
     void drawText(Canvas *canvas, int rect_left, int rect_top, const std::string &fontName,
-                  int ptSize, SDL_Color color, const std::string &message,
+                  int ptSize, Color color, const std::string &message,
                   bool cacheText=true) {
-#ifdef USE_SDL2
         color.a = 255;
-#else
-        color.unused = 255;
-#endif
         FontKey fcKey(fontName, ptSize);
-        auto fontRendererPtr = fontCache.get(fcKey);
-        FontRenderer *fontRenderer;
-        if (fontRendererPtr == nullptr) {
-            fontRenderer = new FontRenderer(fontName, ptSize);
-            fontCache.insert(fcKey, std::move(std::unique_ptr<FontRenderer>(fontRenderer)));
-        } else {
-            fontRenderer = fontRendererPtr->get();
-        }
+        FontRenderer *fontRenderer = getFontRenderer(fcKey);
         TextKey tcKey(fcKey, color, message);
         auto imagePtr = textCache.get(tcKey);
         std::unique_ptr<Image> throwaway;

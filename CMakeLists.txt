@@ -133,7 +133,8 @@ add_library(polaritygraphics SHARED
             graphics/font_renderer.cpp
             graphics/image.cpp
             graphics/init.cpp
-
+            graphics/canvas.cpp
+            graphics/color.cpp
             graphics/opengl_canvas.cpp
             graphics/sdl_canvas.cpp
             util/async_io_task.cpp

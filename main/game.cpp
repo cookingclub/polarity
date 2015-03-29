@@ -46,19 +46,22 @@ bool Game::injectInput(SDL_Event*event) {
     return true;
 }
 
+void Game::drawFrame() {
+    screen->beginFrame();
+    screen->clear();
+    world->draw(screen.get());
+    screen->endFrame();
+}
+
 void Game::performTick() {
     // Maintain a strong reference to world so we can handle world changes.
     std::shared_ptr<World> currentWorldRef (world);
     world->tick();
-    screen->beginFrame();
-    screen->clear();
-    world->draw(screen.get());
     // all key up have to happen after key downs so we get a full tick of downs
     for (auto &key : keyUps) {
       world->keyEvent(key, false);
     }
     keyUps.clear();
-    screen->endFrame();
 }
 
 void Game::stopGame(){

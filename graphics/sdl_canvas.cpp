@@ -335,6 +335,7 @@ void SDLCanvas::SDLImageCacheDisplayList::loadImage() {
     }
     static_cast<SDLImage*>(img.get())->enableAlphaBlend();
 }
+
 void SDLCanvas::SDLImageCacheDisplayList::reloadImage() {
 #if SDL_MAJOR_VERSION >= 2
     SDL_SetRenderTarget(cache->context->renderer, cache->screen);
@@ -583,6 +584,20 @@ void SDLCanvas::beginFrame() {
     h = screen->h;
 #endif
 }
+void SDLCanvas::clear() {
+#if SDL_MAJOR_VERSION >= 2
+    SDL_RenderClear(context->renderer);
+#else
+    SDL_Rect full;
+    full.x = 0;
+    full.y = 0;
+    full.w = width();
+    full.h = height();
+    SDL_FillRect(screen, &full, 0);
+#endif
+
+}
+
 void SDLCanvas::endFrame() {
 #if SDL_MAJOR_VERSION >= 2
     if (screen == nullptr) {

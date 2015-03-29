@@ -44,6 +44,7 @@ bool loopIter(Canvas *screen) {
         }
     }
     Game::getSingleton().performTick();
+    Game::getSingleton().drawFrame();
     return true;
 }
 }

@@ -3,11 +3,12 @@
 
 #include <string>
 #include "util/shared.hpp"
-
+#include "rect.hpp"
 typedef struct _TTF_Font TTF_Font;
 struct SDL_Color;
 
 namespace Polarity {
+struct Color;
 class Image;
 class Canvas;
 
@@ -22,9 +23,10 @@ public:
         return (font != nullptr);
     }
 
-    Image *render(Canvas *canvas, const SDL_Color &color,
+    Image *render(Canvas *canvas, const Color &color,
                   const std::string &message);
-
+    Rect textSize(const std::string &message);
+    
 private:
 
     TTF_Font *font;

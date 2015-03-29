@@ -24,6 +24,7 @@ public:
     void resetGame(const std::string &level);
     bool injectInput(SDL_Event*);
     void performTick();
+    void drawFrame();
     void stopGame();
     void stopGameAndCleanupGraphicsAndEvents();
     const std::shared_ptr<Polarity::World> &pinWorld()const;

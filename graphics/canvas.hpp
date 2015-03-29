@@ -10,6 +10,7 @@ union SDL_Event;
 namespace Polarity {
 
 struct BlitDescription;
+struct Color;
 class FontManager;
 class AsyncIOTask;
 class Rect;
@@ -45,6 +46,7 @@ public:
                             float scaleX, float scaleY,
                             float angle, float alpha) = 0;
     virtual void drawLine(int x0, int y0, int x1, int y1, const SDL_Color& color, float alpha) = 0;
+    void drawLine(int x0, int y0, int x1, int y1, const Color &color);
     virtual DisplayList *makeDisplayList(const std::shared_ptr<Image> &image,
                                          const std::vector<BlitDescription> &draws,
                                          const Rect& bounds) = 0;
@@ -53,7 +55,7 @@ public:
     virtual void resize(int w, int h) = 0;
     virtual void beginFrame() = 0;
     virtual void endFrame() = 0;
-    virtual void clear() {}
+    virtual void clear() = 0;
     virtual bool getNextEvent(SDL_Event* out_event) = 0;
     virtual SDL_Event* makeBlankEventUnion() const = 0;
     virtual void destroyEventUnion(SDL_Event*) const = 0;

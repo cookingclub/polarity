@@ -78,7 +78,7 @@ public:
     ~SDLCanvas();
     virtual int width() { return w; }
     virtual int height() { return h; }
-
+    virtual void clear();
     virtual FontManager &fontManager();
     virtual const std::shared_ptr<AsyncIOTask> &asyncIOTask() const;
 
